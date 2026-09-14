@@ -1,12 +1,14 @@
 import {PlayerColor} from "./PlayerColor";
+import {Asset} from "./Asset";
+import {OwnedAsset} from "./OwnedAsset";
 
 export class Player {
     private _money: number = 0;
     private _lifePoints: number = 0;
+    private _salary: number = 5000;
     private _married: boolean = false;
     private _kids: number = 0;
-    private hasEconomyCar: boolean = false;
-    private hasLuxuryCar: boolean = false;
+    private _assets: Array<OwnedAsset> = [];
 
     constructor(
         public name: string,
@@ -15,7 +17,14 @@ export class Player {
 
     }
 
-    get money(): number {
+    public onNewTurn() {
+        this.addMoney(this.salary);
+        for (const asset of this._assets) {
+            asset.onNewTurn(this);
+        }
+    }
+
+    public get money(): number {
         return this._money;
     }
 
@@ -25,7 +34,17 @@ export class Player {
         this._money += money;
     }
 
-    get lifePoints(): number {
+    public get salary(): number {
+        return this._salary;
+    }
+
+    public set salary(value: number) {
+        if (value < 5000 || value > 2000000)
+            throw new Error("salary must be between 1 and 2.000.000 (inclusive)");
+        this._salary = value;
+    }
+
+    public get lifePoints(): number {
         return this._lifePoints;
     }
 
@@ -35,16 +54,16 @@ export class Player {
         this._lifePoints += lifePoints;
     }
 
-    get married() {
+    public get marry() {
         return this._married;
     }
 
-    public marriage() {
+    public getMarried() {
         this._married = true;
         //this.lifePoints += 5000;
     }
 
-    get kids() {
+    public get kids() {
         return this._kids;
     }
 
@@ -56,12 +75,26 @@ export class Player {
         this._kids += kids;
     }
 
+    public addAsset(asset: Asset) {
+        if (this.hasAsset(asset))
+            throw new Error("Cannot add asset. Player already has asset");
+        this._assets.push(new OwnedAsset(asset));
+    }
+
+    public hasAsset(asset: Asset): boolean {
+        return this._assets.some(ownedAsset => ownedAsset.asset === asset);
+    }
+
+    public removeAsset(asset: Asset) {
+        this._assets = this._assets.filter(ownedAsset => ownedAsset.asset !== asset);
+    }
+
     /**
      * Clamps rolls by car. With luxury car you can't roll 1 or 2 and with an economy car you can't roll a 1
      */
     public modifyRollByCar(rolledNumber: number): number {
-        if (this.hasLuxuryCar && rolledNumber < 3) return 3;
-        if (this.hasEconomyCar && rolledNumber < 2) return 2;
+        if (this.hasAsset(Asset.LuxuryCar) && rolledNumber < 3) return 3;
+        if (this.hasAsset(Asset.EconomyCar) && rolledNumber < 2) return 2;
         return rolledNumber;
     }
 }

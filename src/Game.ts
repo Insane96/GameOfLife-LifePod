@@ -17,10 +17,9 @@ export class Game {
     }
 
     public static addPlayer(name: string, color: PlayerColor) {
-        for (const player of Game.players) {
-            if (color === player.color)
+        if (Game.players.some(player => player.name === name)
+                || (Game.players.some(player => player.color === color)))
                 throw new Error(`Player ${name} already has ${color}`);
-        }
         Game.players.push(new Player(name, color));
     }
 
