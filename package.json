@@ -1,0 +1,21 @@
+{
+  "name": "LifePod2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "npm run build:ts && npm run build:css",
+    "build:ts": "tsc",
+    "build:css": "sass --quiet-deps --load-path=node_modules src/scss/main.scss:dist/css/main.css",
+    "watch:ts": "tsc --watch",
+    "watch:css": "sass --quiet-deps --load-path=node_modules --watch src/scss/main.scss:dist/css/main.css"
+  },
+  "dependencies": {
+    "bootstrap": "^5.3.8"
+  },
+  "devDependencies": {
+    "sass": "^1.104.1",
+    "typescript": "^6.0.3"
+  },
+  "private": true
+}
