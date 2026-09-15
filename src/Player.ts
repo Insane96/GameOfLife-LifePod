@@ -195,8 +195,8 @@ export class Player {
     }
 
     public convertMoneyToLifePoints() {
-        this.addLifePoints(this._money / Game.conversionRatio);
-        this.removeMoney(this._money);
+        this._lifePoints += this._money / Game.conversionRatio;
+        this._money = 0;
     }
 }
 

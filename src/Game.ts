@@ -35,6 +35,7 @@ export class Game {
             Game.playedRounds++;
             if (Game.years <= 0) {
                 this.endGame();
+                return Game.getCurrentPlayerTurn();
             }
         }
         Game.getCurrentPlayerTurn().onNewTurn();
