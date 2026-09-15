@@ -105,6 +105,12 @@ export class Player {
         this._kids += kids;
     }
 
+    public tryForAKid() {
+        let kids = Game.probability();
+        if (kids > 0)
+            this.addKids(kids);
+    }
+
     public buyAsset(asset: Asset) {
         if (this.hasAsset(asset))
             throw new Error("Cannot add asset. Player already has asset");
@@ -130,6 +136,14 @@ export class Player {
         this.addLifePoints(4500);
         if (this._qualification < Qualification.PhD)
             this._qualification = Qualification.PhD;
+    }
+
+    public bid(amount: number) {
+        let result = Game.probability();
+        if (result == 0)
+            this.removeMoney(amount);
+        else
+            this.addMoney(amount);
     }
 
     /**
