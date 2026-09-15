@@ -134,6 +134,26 @@ export class Player {
         return this._assets.some(ownedAsset => ownedAsset.asset === asset);
     }
 
+    public getOwnedAsset(asset: Asset): OwnedAsset | undefined {
+        return this._assets.find(ownedAsset => ownedAsset.asset === asset);
+    }
+
+    public sellAsset(asset: Asset) {
+        if (!this.hasAsset(asset))
+            throw new Error("Cannot sell asset. Player doesn't have the asset");
+        let ownedAsset = this.getOwnedAsset(asset);
+        if (ownedAsset === undefined)
+            throw new Error("Cannot sell asset. Failed to get OwnedAsset");
+        this.addMoney(ownedAsset._value);
+        this.removeAsset(asset);
+    }
+
+    public sellAllAssets() {
+        for (const ownedAsset of this._assets) {
+            this.sellAsset(ownedAsset.asset);
+        }
+    }
+
     public removeAsset(asset: Asset) {
         this._assets = this._assets.filter(ownedAsset => ownedAsset.asset !== asset);
     }
@@ -172,6 +192,11 @@ export class Player {
             if (this.hasAsset(Asset.EconomyCar) && rolledNumber < 2) return 2;
         }
         return rolledNumber;
+    }
+
+    public convertMoneyToLifePoints() {
+        this.addLifePoints(this._money / Game.conversionRatio);
+        this.removeMoney(this._money);
     }
 }
 

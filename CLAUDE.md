@@ -26,9 +26,9 @@ cards" originali).
   larghezza.
 - **Giocatori**: fino a 6 (l'hardware originale ne supportava 4 tramite le
   carte Visa colorate: rosso, blu, verde, giallo). In digitale estendiamo la
-  palette con viola e verde acqua per i due giocatori extra. Ogni giocatore è
-  sempre identificato da colore + iniziale/nome, mai dal solo colore
-  (accessibilità).
+  palette con magenta e nero per i due giocatori extra (vedi `PlayerColor` nel
+  backend). Ogni giocatore è sempre identificato da colore + iniziale/nome,
+  mai dal solo colore (accessibilità).
 - **Cambio turno**: schermata esplicita di passaggio ("Fine turno" → "Chi
   gioca ora?"), non uno switcher sempre visibile toccabile in ogni momento.
   Serve a replicare la ritualità dell'inserire/togliere la carta fisica ed
@@ -45,6 +45,11 @@ cards" originali).
 - **Undo**: pulsante "Annulla ultima azione" sempre visibile vicino a "Fine
   turno". Più importante che nell'originale perché il dispositivo passa di
   mano più spesso.
+- **Creazione partita**: prima si inseriscono i giocatori (nome + colore),
+  poi si preme "Nuova partita", che chiama il backend (`Game.init` con il
+  numero di anni) e avvia la partita.
+- **Lotteria**: pannello a parte, separato dalle categorie di eventi
+  principali (Carriera / Famiglia / Casa e auto / Eventi).
 
 ## Persistenza (localStorage) — requisito critico
 
@@ -77,4 +82,13 @@ concordato. Sovrascrivere le CSS variable di Bootstrap (`--bs-border-radius`,
 ## Aperto / da decidere
 
 - Undo: limitato all'ultima azione o pila di più azioni nel turno?
-- Flusso di inserimento nomi/colori giocatori in fase di "Nuova partita".
+- Dettagli della schermata di inserimento giocatori (campi, validazione nomi
+  duplicati/colori duplicati, dove si imposta il numero di anni prima di
+  premere "Nuova partita").
+- Regole opzionali (house rules) nel backend (`HouseRules`: figli illimitati,
+  tiro bilanciato, bonus jackpot lotteria senza vincitore): decisione
+  rimandata a dopo (bassa priorità), da sistemare dove si attivano
+  nell'interfaccia e se sono modificabili a partita in corso.
+- Fine partita: in fase di implementazione lato backend (conversione Life
+  Points → denaro tramite `conversionRatio`, generato a inizio partita); la
+  schermata di fine partita/punteggio finale non è ancora stata disegnata.

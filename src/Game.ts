@@ -10,6 +10,8 @@ export class Game {
     public static players: Array<Player> = [];
     public static currentPlayerTurn: number;
 
+    public static winner: Player;
+
     public static init(years: number) {
         Game.conversionRatio = Mth.randomDouble(80, 100);
         Game.years = years;
@@ -31,9 +33,22 @@ export class Game {
             Game.currentPlayerTurn = 0;
             Game.years--;
             Game.playedRounds++;
+            if (Game.years <= 0) {
+                this.endGame();
+            }
         }
         Game.getCurrentPlayerTurn().onNewTurn();
         return Game.getCurrentPlayerTurn();
+    }
+
+    public static endGame() {
+        for (const player of Game.players) {
+            player.sellAllAssets();
+            player.convertMoneyToLifePoints();
+        }
+        Game.winner = Game.players.reduce((best, player) =>
+            player.lifePoints > best.lifePoints ? player : best
+        );
     }
 
     public static getCurrentPlayerTurn(): Player {
