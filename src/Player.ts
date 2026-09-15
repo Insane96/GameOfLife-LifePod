@@ -21,10 +21,19 @@ export class Player {
     }
 
     public onNewTurn() {
-        let calculatedSalary: number = this._salary;
+        let salaryPenalty: number = 0;
         if (Game.playedRounds >= 3 && !this._assets.some(ownedAsset => ownedAsset.asset.isHouse()))
-            //Rent
-            calculatedSalary *= 0.85;
+            salaryPenalty += 0.15;
+        if (this._kids > 0) {
+            //TODO Track age so they will no longer cost anything @ 18 years
+            let kidsPenalty = 0.05 + (Math.min(this._kids, 5) * 0.05);
+            if (this._kids > 5)
+                kidsPenalty += 0.03 * (this._kids - 5);
+            if (kidsPenalty > 0.4)
+                kidsPenalty = 0.4;
+            salaryPenalty += kidsPenalty;
+        }
+        let calculatedSalary: number = this._salary * (1 - salaryPenalty);
         this.addMoney(calculatedSalary);
         if (this._money < 0)
             this.removeMoney(-this._money * 0.10);
@@ -33,8 +42,9 @@ export class Player {
         }
         if (this._married)
             this.addLifePoints(1500);
-        if (this._kids > 0)
+        if (this._kids > 0) {
             this.addLifePoints(this._kids * 350);
+        }
     }
 
     public get money(): number {
