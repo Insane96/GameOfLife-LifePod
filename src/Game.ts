@@ -11,7 +11,7 @@ export class Game {
     public static currentPlayerTurn: number;
 
     public static init(years: number) {
-        Game.conversionRatio = Mth.randomDouble(80, 120);
+        Game.conversionRatio = Mth.randomDouble(80, 100);
         Game.years = years;
     }
 

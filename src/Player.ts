@@ -2,6 +2,7 @@ import {PlayerColor} from "./PlayerColor";
 import {Asset} from "./Asset";
 import {OwnedAsset} from "./OwnedAsset";
 import {HouseRules} from "./HouseRules";
+import {Game} from "./Game";
 
 export class Player {
     private _money: number = 0;
@@ -10,6 +11,7 @@ export class Player {
     private _married: boolean = false;
     private _kids: number = 0;
     private _assets: Array<OwnedAsset> = [];
+    private _qualification: Qualification = Qualification.None;
 
     constructor(
         public name: string,
@@ -19,8 +21,13 @@ export class Player {
     }
 
     public onNewTurn() {
-        //TODO From the 4th year and on, the player gets -15% of salary. House rule to be from round 1, not after 3.
-        this.addMoney(this.salary);
+        let calculatedSalary: number = this._salary;
+        if (Game.playedRounds >= 3 && !this._assets.some(ownedAsset => ownedAsset.asset.isHouse()))
+            //Rent
+            calculatedSalary *= 0.85;
+        this.addMoney(calculatedSalary);
+        if (this._money < 0)
+            this.removeMoney(this._money * 0.10);
         for (const asset of this._assets) {
             asset.onNewTurn(this);
         }
@@ -37,6 +44,12 @@ export class Player {
         if (money <= 0 || money > 2000000)
             throw new Error("money must be between 1 and 2.000.000 (inclusive)");
         this._money += money;
+    }
+
+    public removeMoney(money: number): void {
+        if (money <= 0 || money > 2000000)
+            throw new Error("money must be between 1 and 2.000.000 (inclusive)");
+        this._money -= money;
     }
 
     public get salary(): number {
@@ -59,13 +72,25 @@ export class Player {
         this._lifePoints += lifePoints;
     }
 
+    public removeLifePoints(lifePoints: number): void {
+        if (lifePoints <= 0 || lifePoints > 5000)
+            throw new Error("lifePoints must be between 1 and 5.000 (inclusive)");
+        this._lifePoints -= lifePoints;
+    }
+
     public get marry() {
         return this._married;
     }
 
     public getMarried() {
         this._married = true;
-        //this.lifePoints += 5000;
+        this._lifePoints += 3000;
+        for (const player of Game.players) {
+            if (player === this)
+                continue;
+            player.removeMoney(1000);
+            this.addMoney(1000);
+        }
     }
 
     public get kids() {
@@ -80,10 +105,11 @@ export class Player {
         this._kids += kids;
     }
 
-    public addAsset(asset: Asset) {
+    public buyAsset(asset: Asset) {
         if (this.hasAsset(asset))
             throw new Error("Cannot add asset. Player already has asset");
         this._assets.push(new OwnedAsset(asset));
+        this.removeMoney(asset.buyCost);
     }
 
     public hasAsset(asset: Asset): boolean {
@@ -92,6 +118,18 @@ export class Player {
 
     public removeAsset(asset: Asset) {
         this._assets = this._assets.filter(ownedAsset => ownedAsset.asset !== asset);
+    }
+
+    public degree() {
+        this.addLifePoints(4000);
+        if (this._qualification < Qualification.Degree)
+            this._qualification = Qualification.Degree;
+    }
+
+    public phd() {
+        this.addLifePoints(4500);
+        if (this._qualification < Qualification.PhD)
+            this._qualification = Qualification.PhD;
     }
 
     /**
@@ -108,4 +146,10 @@ export class Player {
         }
         return rolledNumber;
     }
+}
+
+enum Qualification {
+    None,
+    Degree,
+    PhD
 }
