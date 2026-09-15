@@ -27,13 +27,14 @@ export class Player {
             calculatedSalary *= 0.85;
         this.addMoney(calculatedSalary);
         if (this._money < 0)
-            this.removeMoney(this._money * 0.10);
+            this.removeMoney(-this._money * 0.10);
         for (const asset of this._assets) {
             asset.onNewTurn(this);
         }
         if (this._married)
             this.addLifePoints(1500);
-        this.addLifePoints(this._kids * 500);
+        if (this._kids > 0)
+            this.addLifePoints(this._kids * 350);
     }
 
     public get money(): number {
@@ -84,7 +85,7 @@ export class Player {
 
     public getMarried() {
         this._married = true;
-        this._lifePoints += 3000;
+        this._lifePoints += 3500;
         for (const player of Game.players) {
             if (player === this)
                 continue;
@@ -103,6 +104,7 @@ export class Player {
         if (!HouseRules.UnlimitedKids && this._kids + kids > 9)
             throw new Error("Can't add kids. Can't go over 9");
         this._kids += kids;
+        this.addLifePoints(kids * 350);
     }
 
     public tryForAKid() {
