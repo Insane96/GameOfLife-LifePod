@@ -142,9 +142,10 @@ export class Player {
 
     public bid(amount: number) {
         let result = Game.probability();
+        //TODO House rule to win with 1 and 2
         if (result == 0)
             this.removeMoney(amount);
-        else
+        else if (result == 2)
             this.addMoney(amount);
     }
 
