@@ -66,6 +66,14 @@ Il look di default è troppo generico per l'obiettivo moderno/minimal
 concordato. Sovrascrivere le CSS variable di Bootstrap (`--bs-border-radius`,
 `--bs-body-font-family`, palette colori) invece di usare i default as-is.
 
+## Modalità di collaborazione
+
+- Non scrivere codice (modifiche a file esistenti o nuovi file) a meno che non
+  sia richiesto espressamente. Se durante una review o una discussione emerge
+  un possibile fix, proporlo e aspettare conferma esplicita prima di
+  implementarlo — non basta che l'utente dica "magari faccio X" per
+  interpretarlo come una richiesta di implementazione.
+
 ## Aperto / da decidere
 
 - Undo: limitato all'ultima azione o pila di più azioni nel turno?

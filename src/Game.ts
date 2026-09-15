@@ -1,15 +1,14 @@
 import {Player} from "./Player";
 import {Mth} from "./Mth";
 import {PlayerColor} from "./PlayerColor";
+import {HouseRules} from "./HouseRules";
 
 export class Game {
     public static conversionRatio: number;
     public static years: number;
+    public static playedRounds: number = 0;
     public static players: Array<Player> = [];
     public static currentPlayerTurn: number;
-
-    //Maybe move to class with each house rule configurable, like unlimited kids and better rolling
-    public static houseRules: boolean = false;
 
     public static init(years: number) {
         Game.conversionRatio = Mth.randomDouble(80, 120);
@@ -31,7 +30,9 @@ export class Game {
         if (Game.currentPlayerTurn >= Game.players.length) {
             Game.currentPlayerTurn = 0;
             Game.years--;
+            Game.playedRounds++;
         }
+        Game.getCurrentPlayerTurn().onNewTurn();
         return Game.getCurrentPlayerTurn();
     }
 
@@ -40,11 +41,14 @@ export class Game {
     }
 
     public static roll(): number {
-        return Game.getCurrentPlayerTurn().modifyRollByCar(Mth.randomInt(1, 11));
+        if (HouseRules.BalancedRolling)
+            return Game.getCurrentPlayerTurn().modifyRollByCar(Mth.triangleInt(1, 10));
+        else
+            return Game.getCurrentPlayerTurn().modifyRollByCar(Mth.randomInt(1, 10));
     }
 
     public static probability(): number {
-        let r = Math.random();
+        const r = Math.random();
         if (r < 0.5)
             return 0;
         if (r < 0.75)

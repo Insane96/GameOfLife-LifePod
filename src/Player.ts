@@ -1,6 +1,7 @@
 import {PlayerColor} from "./PlayerColor";
 import {Asset} from "./Asset";
 import {OwnedAsset} from "./OwnedAsset";
+import {HouseRules} from "./HouseRules";
 
 export class Player {
     private _money: number = 0;
@@ -18,10 +19,14 @@ export class Player {
     }
 
     public onNewTurn() {
+        //TODO From the 4th year and on, the player gets -15% of salary. House rule to be from round 1, not after 3.
         this.addMoney(this.salary);
         for (const asset of this._assets) {
             asset.onNewTurn(this);
         }
+        if (this._married)
+            this.addLifePoints(1500);
+        this.addLifePoints(this._kids * 500);
     }
 
     public get money(): number {
@@ -70,7 +75,7 @@ export class Player {
     public addKids(kids: number) {
         if (kids < 1 || kids > 2)
             throw new Error("kids must be between 1 or 2");
-        if (/*!Game.houseRules && */this._kids + kids > 9)
+        if (!HouseRules.UnlimitedKids && this._kids + kids > 9)
             throw new Error("Can't add kids. Can't go over 9");
         this._kids += kids;
     }
@@ -93,8 +98,14 @@ export class Player {
      * Clamps rolls by car. With luxury car you can't roll 1 or 2 and with an economy car you can't roll a 1
      */
     public modifyRollByCar(rolledNumber: number): number {
-        if (this.hasAsset(Asset.LuxuryCar) && rolledNumber < 3) return 3;
-        if (this.hasAsset(Asset.EconomyCar) && rolledNumber < 2) return 2;
+        if (HouseRules.BalancedRolling) {
+            if (this.hasAsset(Asset.LuxuryCar)) return rolledNumber + 2;
+            if (this.hasAsset(Asset.EconomyCar)) return rolledNumber + 1;
+        }
+        else {
+            if (this.hasAsset(Asset.LuxuryCar) && rolledNumber < 3) return 3;
+            if (this.hasAsset(Asset.EconomyCar) && rolledNumber < 2) return 2;
+        }
         return rolledNumber;
     }
 }

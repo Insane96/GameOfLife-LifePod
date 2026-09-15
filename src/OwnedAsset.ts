@@ -3,6 +3,9 @@ import {Player} from "./Player";
 
 export class OwnedAsset {
     public _value: number;
+    /**
+     * Used by Luxury Car to keep track of years until the car becomes classic
+     */
     public years: number = 0;
 
     public constructor(public readonly asset: Asset) {

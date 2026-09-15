@@ -1,8 +1,8 @@
 export enum PlayerColor {
-    RED,
-    BLUE,
-    GREEN,
-    YELLOW,
-    MAGENTA,
-    BLACK
+    Red,
+    Blue,
+    Green,
+    Yellow,
+    Magenta,
+    Black
 }
