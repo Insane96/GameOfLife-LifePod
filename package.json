@@ -2,6 +2,7 @@
   "name": "LifePod2",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "main": "dist/index.js",
   "scripts": {
     "build": "npm run build:ts && npm run build:css",

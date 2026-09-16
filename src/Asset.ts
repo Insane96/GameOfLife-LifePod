@@ -1,5 +1,5 @@
-import {OwnedAsset} from "./OwnedAsset";
-import {Player} from "./Player";
+import {OwnedAsset} from "./OwnedAsset.js";
+import {Player} from "./Player.js";
 
 export class Asset {
     private static readonly houseOnNewTurn: (ownedAsset: OwnedAsset, player: Player) => void = (ownedAsset, player) => {

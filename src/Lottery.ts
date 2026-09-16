@@ -1,7 +1,7 @@
-import {Player} from "./Player";
-import {Mth} from "./Mth";
-import {Game} from "./Game";
-import {HouseRules} from "./HouseRules";
+import {Player} from "./Player.js";
+import {Mth} from "./Mth.js";
+import {Game} from "./Game.js";
+import {HouseRules} from "./HouseRules.js";
 
 export class Lottery {
     public static pot: number;

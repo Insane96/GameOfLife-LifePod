@@ -1,5 +1,5 @@
-import {Asset} from "./Asset";
-import {Player} from "./Player";
+import {Asset} from "./Asset.js";
+import {Player} from "./Player.js";
 
 export class OwnedAsset {
     public _value: number;

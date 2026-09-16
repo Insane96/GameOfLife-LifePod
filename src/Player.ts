@@ -1,8 +1,8 @@
-import {PlayerColor} from "./PlayerColor";
-import {Asset} from "./Asset";
-import {OwnedAsset} from "./OwnedAsset";
-import {HouseRules} from "./HouseRules";
-import {Game} from "./Game";
+import {PlayerColor} from "./PlayerColor.js";
+import {Asset} from "./Asset.js";
+import {OwnedAsset} from "./OwnedAsset.js";
+import {HouseRules} from "./HouseRules.js";
+import {Game} from "./Game.js";
 
 export class Player {
     private _money: number = 0;

@@ -1,7 +1,7 @@
-import {Player} from "./Player";
-import {Mth} from "./Mth";
-import {PlayerColor} from "./PlayerColor";
-import {HouseRules} from "./HouseRules";
+import {Player} from "./Player.js";
+import {Mth} from "./Mth.js";
+import {PlayerColor} from "./PlayerColor.js";
+import {HouseRules} from "./HouseRules.js";
 
 export class Game {
     public static conversionRatio: number;
