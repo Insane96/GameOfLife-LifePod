@@ -7,3 +7,18 @@
   $font-family-base: (system-ui, -apple-system, "Segoe UI", Roboto, sans-serif),
   $primary: #2f6fed
 );
+
+.circle {
+  display: inline-block;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.red { background-color: #d6423f; }
+.blue { background-color: #2f6fed; }
+.green { background-color: #2e9e5b; }
+.yellow { background-color: #e0b023; }
+.magenta { background-color: #c23b9c; }
+.black { background-color: #1f1f1f; }

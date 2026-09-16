@@ -1,1 +1,1 @@
-console.log('Happy developing ✨')
+import "./ui/MainUI.js";

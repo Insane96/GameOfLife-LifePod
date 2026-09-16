@@ -9,7 +9,8 @@
     "build:ts": "tsc",
     "build:css": "sass --quiet-deps --load-path=node_modules src/scss/main.scss:dist/css/main.css",
     "watch:ts": "tsc --watch",
-    "watch:css": "sass --quiet-deps --load-path=node_modules --watch src/scss/main.scss:dist/css/main.css"
+    "watch:css": "sass --quiet-deps --load-path=node_modules --watch src/scss/main.scss:dist/css/main.css",
+    "dev": "node scripts/dev.js"
   },
   "dependencies": {
     "bootstrap": "^5.3.8"

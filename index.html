@@ -7,7 +7,27 @@
   <link rel="stylesheet" href="dist/css/main.css">
 </head>
 <body>
-  <div id="app"></div>
+  <div id="app">
+    <div id="start-screen">
+      <button id="add-player">Aggiungi giocatore</button>
+      <div id="players-list">
+
+      </div>
+      <button id="start-button">VAI!</button>
+    </div>
+    <div id="play-screen">
+
+    </div>
+  </div>
+
+  <div id="color-picker-template" style="display: none">
+    <div class="red circle"></div>
+    <div class="blue circle"></div>
+    <div class="green circle"></div>
+    <div class="yellow circle"></div>
+    <div class="magenta circle"></div>
+    <div class="black circle"></div>
+  </div>
 
   <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module" src="dist/index.js"></script>
