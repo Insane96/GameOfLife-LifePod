@@ -103,7 +103,7 @@ export class MainMenuUI {
             if (playerWithColor === null)
                 continue;
             document.querySelectorAll<HTMLInputElement>(`.color-picker-circle[data-color="${PlayerColor[color]}"]`).forEach((circle: HTMLInputElement) => {
-                if (playerWithColor !== null && parseInt(circle.id.split("-")[3]) == playerWithColor.id)
+                if (playerWithColor !== null && playerWithColor.domElement?.contains(circle))
                     return;
                 circle.disabled = true;
             });
