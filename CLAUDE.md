@@ -48,6 +48,15 @@ cards" originali).
 - **Creazione partita**: prima si inseriscono i giocatori (nome + colore),
   poi si preme "Nuova partita", che chiama il backend (`Game.init` con il
   numero di anni) e avvia la partita.
+  - Da 2 a 6 giocatori (si parte con 2 righe; "Aggiungi giocatore" / "X" per
+    aggiungere e rimuovere, mai sotto 2).
+  - Nome: se lasciato vuoto si usa il placeholder ("Giocatore N"); un nome
+    fatto di soli spazi è invalido. Nomi duplicati non ammessi.
+  - Colore: obbligatorio e univoco. Selettore a radio button stilizzati a
+    cerchio; i colori già scelti da altri giocatori sono disabilitati.
+  - Anni: intero tra 1 e 99, default 15 (campo vuoto → default).
+  - Tutte le validazioni avvengono prima di toccare `Game`, così non si
+    resta mai con una partita inizializzata a metà.
 - **Lotteria**: pannello a parte, separato dalle categorie di eventi
   principali (Carriera / Famiglia / Casa e auto / Eventi).
 
@@ -71,6 +80,26 @@ Il look di default è troppo generico per l'obiettivo moderno/minimal
 concordato. Sovrascrivere le CSS variable di Bootstrap (`--bs-border-radius`,
 `--bs-body-font-family`, palette colori) invece di usare i default as-is.
 
+## Convenzioni di codice
+
+- **HTML vs TS**: la struttura statica (contenitori, schermate, bottoni
+  fissi) si scrive a mano in `index.html`; TS genera/clona solo ciò che è
+  dinamico (es. righe giocatore). Niente `onclick` inline: gli eventi si
+  agganciano da TS con `addEventListener`.
+- **Id e classi**: kebab-case. Prefisso `btn-` per i bottoni e `input-`/`txt-`
+  per i campi di input; nessun prefisso per contenitori e schermate
+  (`start-screen`, `players-list`).
+- **UI a componenti**: una classe per componente (es. `DOMPlayer`), che riceve
+  callback dal contenitore invece di importarlo (niente import circolari).
+  Lo stato dipendente da più elementi (es. colori disabilitati) si ricalcola
+  da zero in un'unica funzione, non con aggiornamenti incrementali.
+- **Modelli vs UI**: il backend (`Game`, `Player`, ...) non conosce mai il DOM.
+- **Moduli ES nativi, senza bundler**: gli import relativi vogliono
+  l'estensione `.js` (`import {X} from "./X.js"`); `package.json` ha
+  `"type": "module"` e `tsconfig` usa `NodeNext`.
+- **Sviluppo**: `npm run dev` builda, avvia i watcher (`tsc` e `sass`), un
+  server statico su `localhost:5500` e apre il browser.
+
 ## Modalità di collaborazione
 
 - Non scrivere codice (modifiche a file esistenti o nuovi file) a meno che non
@@ -82,13 +111,18 @@ concordato. Sovrascrivere le CSS variable di Bootstrap (`--bs-border-radius`,
 ## Aperto / da decidere
 
 - Undo: limitato all'ultima azione o pila di più azioni nel turno?
-- Dettagli della schermata di inserimento giocatori (campi, validazione nomi
-  duplicati/colori duplicati, dove si imposta il numero di anni prima di
-  premere "Nuova partita").
+- Persistenza localStorage: non ancora implementata (il bottone "Continua
+  partita" è un segnaposto). `Game` è tutto statico e senza reset per una
+  nuova partita; gli `Asset` contengono funzioni, quindi vanno salvati per
+  nome e ricostruiti, non serializzati.
+- Traduzioni: rimandate. Quando servirà: IT + EN, helper `t(key)` fatto a
+  mano con dizionari TS (il tipo dell'inglese vincolato alle chiavi
+  dell'italiano), nessuna libreria esterna.
 - Regole opzionali (house rules) nel backend (`HouseRules`: figli illimitati,
   tiro bilanciato, bonus jackpot lotteria senza vincitore): decisione
   rimandata a dopo (bassa priorità), da sistemare dove si attivano
   nell'interfaccia e se sono modificabili a partita in corso.
-- Fine partita: in fase di implementazione lato backend (conversione Life
-  Points → denaro tramite `conversionRatio`, generato a inizio partita); la
-  schermata di fine partita/punteggio finale non è ancora stata disegnata.
+- Fine partita: la logica backend c'è (`Game.endGame`: vende gli asset,
+  converte il denaro in Life Points tramite `conversionRatio` e calcola il
+  vincitore); la schermata di fine partita/punteggio finale non è ancora
+  stata disegnata.
