@@ -61,6 +61,9 @@ export class DOMPlayer {
     }
 
     public getName(): string {
-        return (document.getElementById(`txt-player-${this.id}-name`) as HTMLInputElement).value;
+        let txtPlayerName = document.getElementById(`txt-player-${this.id}-name`) as HTMLInputElement;
+        if (txtPlayerName.value === "")
+            txtPlayerName.value = txtPlayerName.placeholder;
+        return txtPlayerName.value.trim();
     }
 }

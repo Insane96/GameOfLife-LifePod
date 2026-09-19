@@ -23,16 +23,31 @@ export class MainMenuUI {
 
     public static init() {
         MainMenuUI.btnStartGame?.addEventListener("click", () => {
-            Game.init(Number(MainMenuUI.inputYears.value));
+            let playingPlayers: DOMPlayer[] = [];
             for (const domPlayer of MainMenuUI.domPlayers) {
                 if (domPlayer === null)
                     continue;
-                if (domPlayer.color === null)
-                    continue;
-                domPlayer.player = Game.addPlayer(domPlayer.getName(), domPlayer.color);
-                MainMenuUI.startScreen?.classList.add("d-none");
-                MainMenuUI.playScreen?.classList.remove("d-none");
+                if (domPlayer.color === null) {
+                    alert("Non tutti i giocatori hanno scelto un colore");
+                    return;
+                }
+                //Returns true for null, undefined and "". Since getName() trims the input, it also checks for spaces only names
+                if (!domPlayer.getName()) {
+                    alert("Rilevati giocatori con nome vuoto");
+                    return;
+                }
+                if (playingPlayers.some(otherDomPlayer => otherDomPlayer.getName() === domPlayer.getName())) {
+                    alert("Rilevati giocatori con nome uguale");
+                    return;
+                }
+                playingPlayers.push(domPlayer);
             }
+            for (const domPlayer of playingPlayers) {
+                domPlayer.player = Game.addPlayer(domPlayer.getName(), domPlayer.color!);
+            }
+            Game.init(Number(MainMenuUI.inputYears.value));
+            MainMenuUI.startScreen?.classList.add("d-none");
+            MainMenuUI.playScreen?.classList.remove("d-none");
         });
         MainMenuUI.btnAddPlayer?.addEventListener("click", () => {
             if (MainMenuUI.playersCount < 6)
