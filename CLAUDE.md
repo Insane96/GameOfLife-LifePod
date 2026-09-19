@@ -77,7 +77,7 @@ concordato. Sovrascrivere le CSS variable di Bootstrap (`--bs-border-radius`,
   sia richiesto espressamente. Se durante una review o una discussione emerge
   un possibile fix, proporlo e aspettare conferma esplicita prima di
   implementarlo — non basta che l'utente dica "magari faccio X" per
-  interpretarlo come una richiesta di implementazione.
+  interpretarlo come una richiesta di implementazione. La scrittura di tooling, invece, è consentita.
 
 ## Aperto / da decidere
 

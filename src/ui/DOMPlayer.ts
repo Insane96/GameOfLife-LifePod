@@ -1,42 +1,62 @@
 import {PlayerColor} from "../PlayerColor.js";
-import {MainUI} from "./MainUI.js";
 
 export class DOMPlayer {
     public id: number;
     public name: string = "";
     public color: PlayerColor | null = null;
 
+    private _domElement: HTMLElement | null = null;
+
     constructor(id: number) {
         this.id = id;
     }
 
-    public getDomElement(): HTMLElement {
+    public get domElement(): HTMLElement | null {
+        return this._domElement;
+    }
+
+    public createDOMElement(updateColorGrid: () => void, onTryRemove: (id: number) => boolean): HTMLElement {
         let div = document.createElement("div");
-        div.id = "player" + this.id;
+        div.id = "player-" + this.id;
 
         let textBox = document.createElement("input");
-        textBox.id = `txtPlayer${this.id}Name`;
+        textBox.id = `txt-player-${this.id}-name`;
         textBox.type = "text";
+        textBox.placeholder = "Giocatore " + (this.id + 1);
+        textBox.ariaLabel = "Nome giocatore " + (this.id + 1);
         div.appendChild(textBox);
 
         let colorPicker = document.getElementById("color-picker-template")?.cloneNode(true) as HTMLElement;
-        colorPicker.id = "colorPicker" + this.id;
+        colorPicker.id = "player-color-picker-" + this.id;
+        colorPicker.classList.remove("color-picker-template");
+        colorPicker.classList.add("color-picker");
         colorPicker.style.display = "initial";
+        colorPicker.querySelectorAll<HTMLInputElement>(".color-picker-circle").forEach((circle: HTMLInputElement) => {
+            circle.name = circle.name.replace("x", String(this.id));
+            circle.id = circle.id.replace("x", String(this.id));
+            circle.addEventListener("click", () => {
+                this.color = PlayerColor[circle.dataset.color as keyof typeof PlayerColor];
+                updateColorGrid();
+            })
+        });
         div.appendChild(colorPicker);
 
         let removePlayer = document.createElement("button");
-        removePlayer.id = "removePlayer" + this.id;
+        removePlayer.id = "btn-remove-player-" + this.id;
         removePlayer.addEventListener("click", () => {
-            if (MainUI.playersCount <= 2) {
+            if (!onTryRemove(this.id)) {
                 alert("Almeno due giocatori sono necessari");
                 return;
             }
             div.remove();
-            MainUI.onRemovePlayer(this.id);
         });
-        removePlayer.innerHTML = "X";
+        removePlayer.textContent = "X";
+        removePlayer.ariaLabel = "Rimuovi giocatore";
         div.appendChild(removePlayer);
 
+        this._domElement = div;
         return div;
     }
+
+
 }

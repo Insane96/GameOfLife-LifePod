@@ -9,11 +9,16 @@
 <body>
   <div id="app">
     <div id="start-screen">
-      <button id="add-player">Aggiungi giocatore</button>
+      <label>
+        Anni <input id="input-years" type="number" min="1" max="99" placeholder="10">
+      </label>
+      <button id="btn-start">VAI!</button> oppure <button id="btn-continue" disabled>Continua partita</button>
+      <br/>
+      <button id="btn-add-player">Aggiungi giocatore</button>
+      <button id="btn-house-rules" disabled>House Rules</button>
       <div id="players-list">
 
       </div>
-      <button id="start-button">VAI!</button>
     </div>
     <div id="play-screen">
 
@@ -21,12 +26,12 @@
   </div>
 
   <div id="color-picker-template" style="display: none">
-    <div class="red circle"></div>
-    <div class="blue circle"></div>
-    <div class="green circle"></div>
-    <div class="yellow circle"></div>
-    <div class="magenta circle"></div>
-    <div class="black circle"></div>
+    <input type="radio" name="player-color-x" class="red color-picker-circle" id="red-color-picker-x" data-color="Red" aria-label="Rosso">
+    <input type="radio" name="player-color-x" class="blue color-picker-circle" id="blue-color-picker-x" data-color="Blue" aria-label="Blu">
+    <input type="radio" name="player-color-x" class="green color-picker-circle" id="green-color-picker-x" data-color="Green" aria-label="Verde">
+    <input type="radio" name="player-color-x" class="yellow color-picker-circle" id="yellow-color-picker-x" data-color="Yellow" aria-label="Giallo">
+    <input type="radio" name="player-color-x" class="magenta color-picker-circle" id="magenta-color-picker-x" data-color="Magenta" aria-label="Magenta">
+    <input type="radio" name="player-color-x" class="black color-picker-circle" id="black-color-picker-x" data-color="Black" aria-label="Nero">
   </div>
 
   <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

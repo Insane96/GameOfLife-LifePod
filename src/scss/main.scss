@@ -8,12 +8,29 @@
   $primary: #2f6fed
 );
 
-.circle {
+.color-picker-circle {
+  appearance: none;
   display: inline-block;
   width: 2rem;
   height: 2rem;
+  margin: 0;
+  border: 4px solid transparent;
   border-radius: 50%;
   cursor: pointer;
+
+  &:checked {
+    border-color: #89532a;
+  }
+
+  &:disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+  }
 }
 
 .red { background-color: #d6423f; }
