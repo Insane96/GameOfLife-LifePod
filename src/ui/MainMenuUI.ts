@@ -23,6 +23,11 @@ export class MainMenuUI {
 
     public static init() {
         MainMenuUI.btnStartGame?.addEventListener("click", () => {
+            let years = parseInt(!MainMenuUI.inputYears.value ? MainMenuUI.inputYears.placeholder : MainMenuUI.inputYears.value);
+            if (years < 1 || years > 99) {
+                alert("Gli anni devono essere tra 1 e 99");
+                return;
+            }
             let playingPlayers: DOMPlayer[] = [];
             for (const domPlayer of MainMenuUI.domPlayers) {
                 if (domPlayer === null)
@@ -45,7 +50,7 @@ export class MainMenuUI {
             for (const domPlayer of playingPlayers) {
                 domPlayer.player = Game.addPlayer(domPlayer.getName(), domPlayer.color!);
             }
-            Game.init(Number(MainMenuUI.inputYears.value));
+            Game.init(years);
             MainMenuUI.startScreen?.classList.add("d-none");
             MainMenuUI.playScreen?.classList.remove("d-none");
         });

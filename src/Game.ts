@@ -8,7 +8,7 @@ export class Game {
     public static years: number;
     public static playedRounds: number = 0;
     public static players: Array<Player> = [];
-    public static currentPlayerTurn: number;
+    public static currentPlayerTurn: number = 0;
 
     public static winner: Player;
 
