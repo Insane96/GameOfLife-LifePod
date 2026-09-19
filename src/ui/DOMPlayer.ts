@@ -1,11 +1,13 @@
 import {PlayerColor} from "../PlayerColor.js";
+import {Player} from "../Player.js";
 
 export class DOMPlayer {
     public id: number;
-    public name: string = "";
     public color: PlayerColor | null = null;
 
     private _domElement: HTMLElement | null = null;
+
+    public player: Player | null = null;
 
     constructor(id: number) {
         this.id = id;
@@ -58,5 +60,7 @@ export class DOMPlayer {
         return div;
     }
 
-
+    public getName(): string {
+        return (document.getElementById(`txt-player-${this.id}-name`) as HTMLInputElement).value;
+    }
 }

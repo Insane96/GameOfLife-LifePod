@@ -1,1 +1,1 @@
-import "./ui/MainUI.js";
+import "./ui/MainMenuUI.js";

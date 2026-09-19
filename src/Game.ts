@@ -17,11 +17,13 @@ export class Game {
         Game.years = years;
     }
 
-    public static addPlayer(name: string, color: PlayerColor) {
+    public static addPlayer(name: string, color: PlayerColor): Player {
         if (Game.players.some(player => player.name === name)
                 || (Game.players.some(player => player.color === color)))
                 throw new Error(`Player ${name} already has ${color}`);
-        Game.players.push(new Player(name, color));
+        let player = new Player(name, color);
+        Game.players.push(player);
+        return player;
     }
 
     /**
