@@ -10,6 +10,8 @@ export class Game {
     public static players: Array<Player> = [];
     public static currentPlayerTurn: number = 0;
 
+    public static rolledNumber: number = 0;
+
     public static winner: Player;
 
     public static init(years: number) {
@@ -59,11 +61,10 @@ export class Game {
         return Game.players[Game.currentPlayerTurn];
     }
 
-    public static roll(): number {
-        if (HouseRules.BalancedRolling)
-            return Game.getCurrentPlayerTurn().modifyRollByCar(Mth.triangleInt(1, 10));
-        else
-            return Game.getCurrentPlayerTurn().modifyRollByCar(Mth.randomInt(1, 10));
+    public static roll() {
+        Game.rolledNumber = HouseRules.BalancedRolling ?
+            Game.getCurrentPlayerTurn().modifyRollByCar(Mth.triangleInt(1, 10)) :
+            Game.getCurrentPlayerTurn().modifyRollByCar(Mth.randomInt(1, 10));
     }
 
     public static probability(): number {

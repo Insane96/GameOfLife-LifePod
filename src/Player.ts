@@ -51,6 +51,7 @@ export class Player {
         if (this._kids > 0) {
             this.addLifePoints(this._kids * 350);
         }
+        Game.roll();
         this._hasPressedSpin = true;
     }
 

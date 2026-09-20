@@ -27,6 +27,7 @@ class PlayScreenUI {
         this.btnSpin.addEventListener("click", () => {
             try {
                 Game.getCurrentPlayerTurn().onSpin();
+                alert(`Rolled ${Game.rolledNumber}`);
             }
             catch (e) {
                 alert(`Error: ${e}`);
