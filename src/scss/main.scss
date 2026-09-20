@@ -38,4 +38,6 @@
 .green { background-color: #2e9e5b; }
 .yellow { background-color: #e0b023; }
 .magenta { background-color: #c23b9c; }
-.black { background-color: #1f1f1f; }
+// Nel codice il colore resta "Black" (PlayerColor.Black), ma sul tema scuro
+// viene mostrato bianco, altrimenti sparirebbe sullo sfondo.
+.black { background-color: #f2f2f2; }
