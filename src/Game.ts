@@ -27,12 +27,12 @@ export class Game {
     }
 
     /**
-     * Ends the current player's turn if has pressed go
+     * Ends the current player's turn if has pressed spin
      */
     public static endTurn() {
         let currentPlayer: Player = Game.getCurrentPlayerTurn();
-        if (!currentPlayer.hasPressedGo)
-            throw new Error("Can't end turn: player hasn't pressed go");
+        if (!currentPlayer.hasPressedSpin)
+            throw new Error("Can't end turn: player hasn't pressed Spin");
         currentPlayer.endTurn();
         Game.currentPlayerTurn++;
         if (Game.currentPlayerTurn >= Game.players.length) {

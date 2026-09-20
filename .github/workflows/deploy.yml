@@ -29,8 +29,8 @@ jobs:
 
       - run: npm run build
 
-      # Assembla solo i file serviti dal sito. Il bundle JS di Bootstrap viene
-      # copiato nello stesso percorso che usa index.html, così l'HTML non cambia.
+      # Assemble only the files served by the site. Bootstrap's JS bundle is
+      # copied to the same path index.html uses, so the HTML doesn't change.
       - name: Assemble site
         run: |
           mkdir -p _site/node_modules/bootstrap/dist/js

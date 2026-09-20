@@ -13,20 +13,20 @@ export class Player {
     private _assets: Array<OwnedAsset> = [];
     private _qualification: Qualification = Qualification.None;
 
-    private _hasPressedGo: boolean = false;
+    private _hasPressedSpin: boolean = false;
 
     constructor(
         public name: string,
         public color: PlayerColor,
     ) { }
 
-    public get hasPressedGo(): boolean {
-        return this._hasPressedGo;
+    public get hasPressedSpin(): boolean {
+        return this._hasPressedSpin;
     }
 
-    public onGo() {
-        if (this._hasPressedGo)
-            throw new Error("Player has already pressed Go!");
+    public onSpin() {
+        if (this._hasPressedSpin)
+            throw new Error("Player has already pressed Spin");
         let salaryPenalty: number = 0;
         if (Game.playedRounds >= 3 && !this._assets.some(ownedAsset => ownedAsset.asset.isHouse()))
             salaryPenalty += 0.15;
@@ -51,11 +51,11 @@ export class Player {
         if (this._kids > 0) {
             this.addLifePoints(this._kids * 350);
         }
-        this._hasPressedGo = true;
+        this._hasPressedSpin = true;
     }
 
     public endTurn() {
-        this._hasPressedGo = false;
+        this._hasPressedSpin = false;
     }
 
     public get money(): number {

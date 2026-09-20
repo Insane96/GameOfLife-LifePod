@@ -1,49 +1,49 @@
 import {DOMPlayer} from "./DOMPlayer.js";
 import {ALL_PLAYER_COLORS, PlayerColor} from "../PlayerColor.js";
 import {Game} from "../Game.js";
-import {PlayScreenUI} from "./PlayScreenUI.js";
+import {playScreenUI} from "./PlayScreenUI.js";
 
-export class MainMenuUI {
-    static startScreen = document.getElementById("start-screen");
-    static playScreen = document.getElementById("play-screen");
-    static btnStartGame = document.getElementById("btn-start");
-    static btnAddPlayer = document.getElementById("btn-add-player");
-    static playersList = document.getElementById("players-list");
-    static inputYears = document.getElementById("input-years") as HTMLInputElement;
+class MainMenuUI {
+    private startScreen = document.getElementById("start-screen");
+    private playScreen = document.getElementById("play-screen");
+    private btnStartGame = document.getElementById("btn-start");
+    private btnAddPlayer = document.getElementById("btn-add-player");
+    private playersList = document.getElementById("players-list");
+    private inputYears = document.getElementById("input-years") as HTMLInputElement;
 
-    static domPlayers: (DOMPlayer | null)[] = new Array(6).fill(null);
+    private domPlayers: (DOMPlayer | null)[] = new Array(6).fill(null);
 
-    public static get playersCount() {
+    private get playersCount() {
         let count = 0;
-        for (const domPlayer of MainMenuUI.domPlayers) {
+        for (const domPlayer of this.domPlayers) {
             if (domPlayer !== null)
                 count++;
         }
         return count;
     };
 
-    public static init() {
-        MainMenuUI.btnStartGame?.addEventListener("click", () => {
-            let years = parseInt(!MainMenuUI.inputYears.value ? MainMenuUI.inputYears.placeholder : MainMenuUI.inputYears.value);
+    constructor() {
+        this.btnStartGame?.addEventListener("click", () => {
+            let years = parseInt(!this.inputYears.value ? this.inputYears.placeholder : this.inputYears.value);
             if (years < 1 || years > 99) {
-                alert("Gli anni devono essere tra 1 e 99");
+                alert("Years must be between 1 and 99");
                 return;
             }
             let playingPlayers: DOMPlayer[] = [];
-            for (const domPlayer of MainMenuUI.domPlayers) {
+            for (const domPlayer of this.domPlayers) {
                 if (domPlayer === null)
                     continue;
                 if (domPlayer.color === null) {
-                    alert("Non tutti i giocatori hanno scelto un colore");
+                    alert("Some players haven't chosen a color");
                     return;
                 }
                 //Returns true for null, undefined and "". Since getName() trims the input, it also checks for spaces only names
                 if (!domPlayer.getName()) {
-                    alert("Rilevati giocatori con nome vuoto");
+                    alert("Detected empty names for some player(s)");
                     return;
                 }
                 if (playingPlayers.some(otherDomPlayer => otherDomPlayer.getName() === domPlayer.getName())) {
-                    alert("Rilevati giocatori con nome uguale");
+                    alert("Detected equal names for some player(s)");
                     return;
                 }
                 playingPlayers.push(domPlayer);
@@ -52,22 +52,22 @@ export class MainMenuUI {
                 domPlayer.player = Game.addPlayer(domPlayer.getName(), domPlayer.color!);
             }
             Game.init(years);
-            MainMenuUI.startScreen?.classList.add("d-none");
-            MainMenuUI.playScreen?.classList.remove("d-none");
-            PlayScreenUI.render();
+            this.startScreen?.classList.add("d-none");
+            this.playScreen?.classList.remove("d-none");
+            playScreenUI.render();
         });
-        MainMenuUI.btnAddPlayer?.addEventListener("click", () => {
-            if (MainMenuUI.playersCount < 6)
-                MainMenuUI.addPlayer();
+        this.btnAddPlayer?.addEventListener("click", () => {
+            if (this.playersCount < 6)
+                this.addPlayer();
             else
-                alert("Limite di giocatori raggiunto");
+                alert("Player limit reached");
         });
-        MainMenuUI.addPlayer();
-        MainMenuUI.addPlayer();
+        this.addPlayer();
+        this.addPlayer();
     }
 
-    public static addPlayer() {
-        if (MainMenuUI.playersCount >= 6)
+    private addPlayer() {
+        if (this.playersCount >= 6)
             throw new Error("Players limit reached");
         let firstAvailableSlot = 0;
         for (let i = 0; i < 6; i++) {
@@ -77,26 +77,27 @@ export class MainMenuUI {
             }
         }
         let player = new DOMPlayer(firstAvailableSlot);
-        MainMenuUI.domPlayers[firstAvailableSlot] = player;
-        MainMenuUI.playersList?.appendChild(player.createDOMElement(MainMenuUI.updateColorGrid, MainMenuUI.tryRemovePlayer));
-        MainMenuUI.updateColorGrid();
+        this.domPlayers[firstAvailableSlot] = player;
+        // Arrow functions: passing this.updateColorGrid directly would make the method lose its this
+        this.playersList?.appendChild(player.createDOMElement(() => this.updateColorGrid(), (id) => this.tryRemovePlayer(id)));
+        this.updateColorGrid();
     }
 
-    public static tryRemovePlayer(id: number): boolean {
-        if (MainMenuUI.playersCount <= 2)
+    private tryRemovePlayer(id: number): boolean {
+        if (this.playersCount <= 2)
             return false;
-        MainMenuUI.domPlayers[id] = null;
-        MainMenuUI.updateColorGrid();
+        this.domPlayers[id] = null;
+        this.updateColorGrid();
         return true;
     }
 
-    public static updateColorGrid() {
+    private updateColorGrid() {
         document.querySelectorAll<HTMLInputElement>(`.color-picker-circle`).forEach((circle: HTMLInputElement) => {
             circle.disabled = false;
         });
         for (const color of ALL_PLAYER_COLORS) {
             let playerWithColor: DOMPlayer | null = null;
-            for (const domPlayer of MainMenuUI.domPlayers) {
+            for (const domPlayer of this.domPlayers) {
                 if (domPlayer?.color !== color)
                     continue;
                 playerWithColor = domPlayer;
@@ -113,4 +114,5 @@ export class MainMenuUI {
     }
 }
 
-MainMenuUI.init();
+// Singleton: the module is executed only once, so this is the only instance.
+export const mainMenuUI = new MainMenuUI();

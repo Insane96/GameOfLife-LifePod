@@ -1,21 +1,21 @@
 <!doctype html>
-<html lang="it" data-bs-theme="dark">
+<html lang="en" data-bs-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Lifepod digitale</title>
+  <title>Digital LifePod</title>
   <link rel="stylesheet" href="dist/css/main.css">
 </head>
 <body>
   <div id="app">
     <div id="start-screen">
       <label>
-        Anni <input id="input-years" type="number" min="1" max="99" placeholder="15">
+        Years <input id="input-years" type="number" min="1" max="99" placeholder="15">
       </label>
-      <button id="btn-start">VAI!</button> oppure <button id="btn-continue" disabled>Continua partita</button>
+      <button id="btn-start">Spin</button> or <button id="btn-continue" disabled>Continue game</button>
       <br/>
-      <button id="btn-add-player">Aggiungi giocatore</button>
-      <button id="btn-house-rules" disabled>Regole casalinghe</button>
+      <button id="btn-add-player">Add player</button>
+      <button id="btn-house-rules" disabled>House rules</button>
       <div id="players-list">
 
       </div>
@@ -23,13 +23,13 @@
     <div id="play-screen" class="d-none container-fluid min-vh-100 d-flex flex-column">
       <div class="row flex-grow-1 align-items-start">
         <div class="col d-flex justify-content-start m-4">
-          <!-- Lotteria, Stipendio e Iniziativa / Casino, Probabilita -->
+          <!-- Lottery, Salary e Business / Auction, Chance -->
         </div>
         <div class="col d-flex justify-content-center m-4">
-          <!-- Case e auto -->
+          <!-- Houses and cars -->
         </div>
         <div class="col d-flex justify-content-end m-4">
-          <!-- Spazi sul tabellone -->
+          <!-- Board spaces -->
         </div>
       </div>
       <div class="row flex-grow-1 align-items-center">
@@ -37,15 +37,20 @@
           <div id="player-name"></div>
           <div class="d-flex align-items-center gap-2">
             <div id="player-money"></div>
-            <button id="btn-add-money" aria-label="Aggiungi denaro">+</button>
-            <button id="btn-remove-money" aria-label="Sottrai denaro">−</button>
-            <input id="input-money" type="text" inputmode="numeric" pattern="[0-9]*" class="d-none" aria-label="Valore denaro"><button id="btn-confirm-money" aria-label="Conferma operazione" class="d-none">✓</button>
+            <button id="btn-add-money" aria-label="Add money">+</button>
+            <button id="btn-remove-money" aria-label="Subtract money">−</button>
           </div>
           <div class="d-flex align-items-center gap-2">
+            <input id="input-money" type="text" inputmode="numeric" pattern="[0-9]*" class="d-none" aria-label="Money input"><button id="btn-confirm-money" aria-label="Confirm operation" class="d-none">✓</button>
+          </div>
+
+          <div class="d-flex align-items-center gap-2">
             <div id="player-life-points"></div>
-            <button id="btn-add-life-points" aria-label="Aggiungi punti vita">+</button>
-            <button id="btn-remove-life-points" aria-label="Sottrai punti vita">−</button>
-            <input id="input-life-points" type="text" inputmode="numeric" pattern="[0-9]*" class="d-none" aria-label="Valore punti vita"><button id="btn-confirm-life-points" aria-label="Conferma operazione" class="d-none">✓</button>
+            <button id="btn-add-life-points" aria-label="Add life points">+</button>
+            <button id="btn-remove-life-points" aria-label="Subtract life points">−</button>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <input id="input-life-points" type="text" inputmode="numeric" pattern="[0-9]*" class="d-none" aria-label="Life points input"><button id="btn-confirm-life-points" aria-label="Confirm operation" class="d-none">✓</button>
           </div>
         </div>
       </div>
@@ -54,23 +59,23 @@
           <!-- Volume -->
         </div>
         <div class="col d-flex justify-content-center m-4">
-          <button id="btn-go">VIA!</button>
+          <button id="btn-spin">Spin</button>
         </div>
         <div class="col d-flex flex-column align-items-end m-4">
-          <div id="years-left">Anni: </div>
-          <button id="btn-end-turn">Termina turno</button>
+          <div id="years-left">Years: </div>
+          <button id="btn-end-turn">End turn</button>
         </div>
       </div>
     </div>
   </div>
 
   <div id="color-picker-template" style="display: none">
-    <input type="radio" name="player-color-x" class="red color-picker-circle" id="red-color-picker-x" data-color="Red" aria-label="Rosso">
-    <input type="radio" name="player-color-x" class="blue color-picker-circle" id="blue-color-picker-x" data-color="Blue" aria-label="Blu">
-    <input type="radio" name="player-color-x" class="green color-picker-circle" id="green-color-picker-x" data-color="Green" aria-label="Verde">
-    <input type="radio" name="player-color-x" class="yellow color-picker-circle" id="yellow-color-picker-x" data-color="Yellow" aria-label="Giallo">
+    <input type="radio" name="player-color-x" class="red color-picker-circle" id="red-color-picker-x" data-color="Red" aria-label="Red">
+    <input type="radio" name="player-color-x" class="blue color-picker-circle" id="blue-color-picker-x" data-color="Blue" aria-label="Blue">
+    <input type="radio" name="player-color-x" class="green color-picker-circle" id="green-color-picker-x" data-color="Green" aria-label="Green">
+    <input type="radio" name="player-color-x" class="yellow color-picker-circle" id="yellow-color-picker-x" data-color="Yellow" aria-label="Yellow">
     <input type="radio" name="player-color-x" class="magenta color-picker-circle" id="magenta-color-picker-x" data-color="Magenta" aria-label="Magenta">
-    <input type="radio" name="player-color-x" class="black color-picker-circle" id="black-color-picker-x" data-color="Black" aria-label="Nero">
+    <input type="radio" name="player-color-x" class="black color-picker-circle" id="black-color-picker-x" data-color="Black" aria-label="Black">
   </div>
 
   <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

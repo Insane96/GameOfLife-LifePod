@@ -1,198 +1,210 @@
-# Lifepod digitale
+# Digital Lifepod
 
-## Cos'è
+## What it is
 
-Sostituto digitale del solo dispositivo elettronico Lifepod del gioco da tavolo
-"The Game of Life: Twists & Turns". **Non sostituisce l'intero gioco**: tabellone,
-carte, pedine e regolamento restano fisici. L'app rimpiazza solo il dispositivo
-che i giocatori usavano per tracciare stipendio, Life Points, famiglia, casa,
-auto e per generare il risultato dello spin al posto della ruota.
+A digital replacement for the electronic Lifepod device only, from the board
+game "The Game of Life: Twists & Turns". **It does not replace the whole game**:
+board, cards, pawns and rulebook stay physical. The app replaces only the
+device players used to track salary, Life Points, family, house, car, and to
+generate the spin result in place of the wheel.
 
-Riferimento sul dispositivo originale, per contesto: si inseriva la propria
-carta Visa personale a inizio turno, il dispositivo generava il risultato dello
-spin, calcolava stipendio e Life Points, teneva traccia di famiglia/casa/auto,
-e aveva pulsanti dedicati per i vari eventi di gioco (vedi le "Lifepod reference
-cards" originali).
+Reference on the original device, for context: you inserted your personal Visa
+card at the start of your turn, the device generated the spin result,
+calculated salary and Life Points, tracked family/house/car, and had dedicated
+buttons for the various game events (see the original "Lifepod reference
+cards").
 
 ## Stack
 
-- Vanilla JS/TS + Bootstrap. Niente framework (React/Vue/ecc).
-- Persistenza: localStorage (vedi sezione dedicata, è un requisito critico).
+- Vanilla JS/TS + Bootstrap. No framework (React/Vue/etc.).
+- Persistence: localStorage (see the dedicated section, it is a critical
+  requirement).
 
-## Decisioni di interfaccia prese
+## Interface decisions made
 
-- **Orientamento**: landscape principale, ma deve restare utilizzabile in
-  portrait. Reflow tramite media query `orientation`, non solo breakpoint di
-  larghezza.
-- **Giocatori**: fino a 6 (l'hardware originale ne supportava 4 tramite le
-  carte Visa colorate: rosso, blu, verde, giallo). In digitale estendiamo la
-  palette con magenta e nero per i due giocatori extra (vedi `PlayerColor` nel
-  backend). Ogni giocatore è sempre identificato da colore + iniziale/nome,
-  mai dal solo colore (accessibilità).
-- **Cambio turno**: schermata esplicita di passaggio ("Fine turno" → "Chi
-  gioca ora?"), non uno switcher sempre visibile toccabile in ogni momento.
-  Serve a replicare la ritualità dell'inserire/togliere la carta fisica ed
-  evitare azioni compiute sul turno sbagliato.
-- **Layout landscape**: sidebar sinistra con lista verticale dei giocatori +
-  riepilogo finanziario del giocatore attivo (saldo, Life Points, famiglia).
-  Area principale a destra con bottone Spin (azione primaria, grande,
-  circolare, sempre raggiungibile) e categorie di eventi (Carriera / Famiglia
-  / Casa e auto / Eventi) con griglia di bottoni icona + etichetta.
-- **Layout portrait**: stack verticale (barra giocatori in alto, riepilogo,
-  spin, categorie, azioni), stessa gerarchia info del layout landscape.
-- **Feedback cambi valore**: toast (es. "+50.000 €", "+2 Life Points")
-  invece di solo aggiornamento silenzioso del numero.
-- **Undo**: pulsante "Annulla ultima azione" sempre visibile vicino a "Fine
-  turno". Più importante che nell'originale perché il dispositivo passa di
-  mano più spesso.
-- **Creazione partita**: prima si inseriscono i giocatori (nome + colore),
-  poi si preme "Nuova partita", che chiama il backend (`Game.init` con il
-  numero di anni) e avvia la partita.
-  - Da 2 a 6 giocatori (si parte con 2 righe; "Aggiungi giocatore" / "X" per
-    aggiungere e rimuovere, mai sotto 2).
-  - Nome: se lasciato vuoto si usa il placeholder ("Giocatore N"); un nome
-    fatto di soli spazi è invalido. Nomi duplicati non ammessi.
-  - Colore: obbligatorio e univoco. Selettore a radio button stilizzati a
-    cerchio; i colori già scelti da altri giocatori sono disabilitati.
-  - Anni: intero tra 1 e 99, default 15 (campo vuoto → default).
-  - Tutte le validazioni avvengono prima di toccare `Game`, così non si
-    resta mai con una partita inizializzata a metà.
-- **Lotteria**: pannello a parte, separato dalle categorie di eventi
-  principali (Carriera / Famiglia / Casa e auto / Eventi).
-- **Schermata di gioco (implementata in parte)**: griglia Bootstrap a 3 righe
-  (`container-fluid`, `min-vh-100`, `d-flex flex-column`, righe con
-  `flex-grow-1`), con il contenuto di ogni cella ancorato alla sua posizione
-  (alto-sinistra, alto-centro, alto-destra, ecc.).
-  - In alto: lotteria/stipendio/iniziativa, case e auto, spazi del tabellone
-    (celle ancora vuote).
-  - Al centro: nome del giocatore di turno, denaro e punti vita, ciascuno con
-    i pulsanti `+` / `−` che aprono un campo numerico (`inputmode="numeric"`)
-    con conferma ✓. Un solo campo aperto alla volta, gestito da
-    `PlayScreenUI._operation` (enum `Operation`).
-  - In basso: volume (vuoto), "VIA!" al centro, anni rimanenti e "Termina
-    turno" a destra.
-  - **Flusso del turno**: "VIA!" (`Player.onGo()`) accredita stipendio e
-    bonus e sblocca "Termina turno"; "Termina turno" (`Game.endTurn()`) lancia
-    un errore se VIA! non è stato premuto. "VIA!" si può premere una volta per
-    turno. Cambiando turno si chiude l'operazione aperta e si svuotano i
-    campi.
-  - **Fine partita**: a `Game.years <= 0` `endGame` imposta
-    `currentPlayerTurn` sul vincitore, `render()` mostra "Vincitore: nome" e
-    disattiva/nasconde VIA! e i pulsanti +/−.
+- **Orientation**: landscape first, but it must stay usable in portrait.
+  Reflow through the `orientation` media query, not just width breakpoints.
+- **Players**: up to 6 (the original hardware supported 4 through the colored
+  Visa cards: red, blue, green, yellow). In the digital version we extend the
+  palette with magenta and black for the two extra players (see `PlayerColor`
+  in the backend). Every player is always identified by color + initial/name,
+  never by color alone (accessibility).
+- **Turn change**: an explicit handover screen ("End turn" → "Who plays
+  now?"), not an always-visible switcher that can be tapped at any moment. It
+  replicates the ritual of inserting/removing the physical card and prevents
+  actions taken on the wrong turn.
+- **Landscape layout**: left sidebar with a vertical list of players +
+  financial summary of the active player (balance, Life Points, family). Main
+  area on the right with the Spin button (primary action, large, circular,
+  always reachable) and event categories (Career / Family / Home and car /
+  Events) with a grid of icon + label buttons.
+- **Portrait layout**: vertical stack (player bar on top, summary, spin,
+  categories, actions), same information hierarchy as the landscape layout.
+- **Value change feedback**: toasts (e.g. "+50,000 €", "+2 Life Points")
+  instead of a silent number update only.
+- **Undo**: an "Undo last action" button always visible next to "End turn".
+  More important than in the original because the device changes hands more
+  often.
+- **Game creation**: players are entered first (name + color), then "New
+  game" is pressed, which calls the backend (`Game.init` with the number of
+  years) and starts the game.
+  - From 2 to 6 players (start with 2 rows; "Add player" / "X" to add and
+    remove, never below 2).
+  - Name: if left empty the placeholder is used ("Player N"); a name made of
+    spaces only is invalid. Duplicate names are not allowed.
+  - Color: mandatory and unique. Selector made of radio buttons styled as
+    circles; colors already chosen by other players are disabled.
+  - Years: integer between 1 and 99, default 15 (empty field → default).
+  - All validations happen before touching `Game`, so we never end up with a
+    half-initialized game.
+- **Lottery**: a separate panel, apart from the main event categories
+  (Career / Family / Home and car / Events).
+- **Game screen (partially implemented)**: Bootstrap grid with 3 rows
+  (`container-fluid`, `min-vh-100`, `d-flex flex-column`, rows with
+  `flex-grow-1`), with the content of each cell anchored to its position
+  (top-left, top-center, top-right, etc.).
+  - Top: lottery/salary/initiative, houses and cars, board spaces (cells still
+    empty).
+  - Middle: name of the player whose turn it is, money and life points, each
+    with `+` / `−` buttons that open a numeric field (`inputmode="numeric"`)
+    with a ✓ confirm button. Only one field open at a time, managed by
+    `PlayScreenUI._operation` (`Operation` enum).
+  - Bottom: volume (empty), "Spin" in the center, years left and "End turn" on
+    the right.
+  - **Turn flow**: the button is called "Spin" as on the original Lifepod (it
+    is the same primary Spin button described in the layouts above, not a
+    separate "Go!" button). Pressing it (`Player.onSpin()`) credits salary and
+    bonuses and unlocks "End turn"; "End turn" (`Game.endTurn()`) throws an
+    error if Spin was not pressed. Spin can be pressed once per turn. When the
+    turn changes, the open operation is closed and the fields are cleared.
+    The code uses the same naming (`btn-spin`, `btnSpin`, `hasPressedSpin`,
+    `Player.onSpin()`). The button does not show the roll result yet
+    (`Game.roll()` exists in the backend but is not wired to the UI).
+  - **End of game**: at `Game.years <= 0`, `endGame` sets `currentPlayerTurn`
+    to the winner, `render()` shows "Winner: name" and disables/hides Spin and
+    the +/− buttons.
 
-## Persistenza (localStorage) — requisito critico
+## Persistence (localStorage) — critical requirement
 
-Se la pagina si ricarica per sbaglio, la partita non deve andare persa.
+If the page is reloaded by mistake, the game must not be lost.
 
-- Scrivere l'intero stato di gioco ad ogni singola azione (spin, evento
-  applicato, cambio turno). Scritture piccole e istantanee, non serve
-  debounce.
-- All'avvio, se esiste uno stato salvato: chiedere sempre esplicitamente
-  "Riprendi partita" vs "Nuova partita". Mai riprendere o cancellare in
-  automatico senza chiedere.
-- Serve un'azione esplicita "Nuova partita" da qualche parte nell'interfaccia
-  (impostazioni o angolo dello schermo) per azzerare deliberatamente lo
-  storage a fine partita.
+- Write the entire game state on every single action (spin, applied event,
+  turn change). Small, instant writes, no debounce needed.
+- At startup, if a saved state exists: always explicitly ask "Resume game" vs
+  "New game". Never resume or delete automatically without asking.
+- An explicit "New game" action is needed somewhere in the interface (settings
+  or a screen corner) to deliberately wipe the storage at the end of a game.
 
 ## Deploy (GitHub Pages)
 
-- Il sito è statico e viene pubblicato su GitHub Pages dal workflow
-  `.github/workflows/deploy.yml`, a ogni push su `master` (o manualmente da
-  Actions). In *Settings → Pages* la sorgente deve essere "GitHub Actions".
-- Il workflow esegue `npm ci` e `npm run build`, poi assembla `_site/` con
-  solo `index.html`, `dist/` e `bootstrap.bundle.min.js`. Quest'ultimo è
-  copiato in `node_modules/bootstrap/dist/js/` (stesso percorso dell'HTML) così
-  `index.html` funziona uguale in locale e online. Se si sposta Bootstrap,
-  aggiornare HTML e workflow insieme.
-- `dist/` e `node_modules/` restano nel `.gitignore`: non vanno committati.
-- I percorsi in `index.html` devono restare **relativi** (il sito vive sotto
-  `/GameOfLife-LifePod/`, non alla radice del dominio).
-- `localStorage` è condiviso per origine (`insane96.github.io`), quindi tutte
-  le chiavi usano un prefisso (`lifepod.`), per non collidere con altri
-  progetti pubblicati dallo stesso account.
+- The site is static and is published to GitHub Pages by the workflow
+  `.github/workflows/deploy.yml`, on every push to `master` (or manually from
+  Actions). In *Settings → Pages* the source must be "GitHub Actions".
+- The workflow runs `npm ci` and `npm run build`, then assembles `_site/` with
+  only `index.html`, `dist/` and `bootstrap.bundle.min.js`. The latter is
+  copied to `node_modules/bootstrap/dist/js/` (same path as in the HTML) so
+  `index.html` works the same locally and online. If Bootstrap is moved,
+  update the HTML and the workflow together.
+- `dist/` and `node_modules/` stay in `.gitignore`: they must not be
+  committed.
+- Paths in `index.html` must stay **relative** (the site lives under
+  `/GameOfLife-LifePod/`, not at the domain root).
+- `localStorage` is shared per origin (`insane96.github.io`), so all keys use a
+  prefix (`lifepod.`), to avoid colliding with other projects published from
+  the same account.
 
-## Nota su Bootstrap
+## Note on Bootstrap
 
-Il look di default è troppo generico per l'obiettivo moderno/minimal
-concordato. Sovrascrivere le CSS variable di Bootstrap (`--bs-border-radius`,
-`--bs-body-font-family`, palette colori) invece di usare i default as-is.
+The default look is too generic for the agreed modern/minimal goal. Override
+Bootstrap's CSS variables (`--bs-border-radius`, `--bs-body-font-family`, color
+palette) instead of using the defaults as-is.
 
-## Convenzioni di codice
+## Code conventions
 
-- **HTML vs TS**: la struttura statica (contenitori, schermate, bottoni
-  fissi) si scrive a mano in `index.html`; TS genera/clona solo ciò che è
-  dinamico (es. righe giocatore). Niente `onclick` inline: gli eventi si
-  agganciano da TS con `addEventListener`.
-- **Id e classi**: kebab-case. Prefisso `btn-` per i bottoni e `input-`/`txt-`
-  per i campi di input; nessun prefisso per contenitori e schermate
+- **HTML vs TS**: the static structure (containers, screens, fixed buttons) is
+  written by hand in `index.html`; TS generates/clones only what is dynamic
+  (e.g. player rows). No inline `onclick`: events are attached from TS with
+  `addEventListener`.
+- **Ids and classes**: kebab-case. `btn-` prefix for buttons and
+  `input-`/`txt-` for input fields; no prefix for containers and screens
   (`start-screen`, `players-list`).
-- **UI a componenti**: una classe per componente (es. `DOMPlayer`), che riceve
-  callback dal contenitore invece di importarlo (niente import circolari).
-  Lo stato dipendente da più elementi (es. colori disabilitati) si ricalcola
-  da zero in un'unica funzione, non con aggiornamenti incrementali.
-- **Rendering**: un'unica funzione `render()` per schermata rilegge lo stato
-  e riscrive tutto il DOM (testi, bottoni attivi/disattivati, elementi
-  nascosti con `classList.toggle("d-none", condizione)`). Ogni handler fa:
-  azione sul modello, poi `render()`. Gli handler racchiudono le chiamate al
-  modello in `try/catch` con `alert` (i setter lanciano fuori dal range).
-- **Callback a metodi del modello**: passare arrow function
-  (`(v) => Game.getCurrentPlayerTurn().addMoney(v)`), mai il metodo nudo
-  (`player.addMoney`, perde il `this`). L'arrow risolve il giocatore di turno
-  al momento della chiamata.
-- **Testo utente nel DOM**: sempre `textContent`, mai `innerHTML` (i nomi li
-  scrive l'utente).
-- **Accessibilità**: i bottoni con solo un simbolo (`+`, `−`, `✓`, `X`) e gli
-  input senza `<label>` visibile hanno `aria-label` in italiano ("punti vita"
-  nell'interfaccia; "Life Points" resta solo nel codice e in questa
-  documentazione).
-- **Input numerici**: `type="text" inputmode="numeric" pattern="[0-9]*"`;
-  `parseInt` + `Number.isNaN` prima di chiamare il modello. Il backend
-  rifiuta comunque `NaN` e i valori fuori range.
-- **Export**: solo nominali (`export class X`), niente `export default`.
-- **Modelli vs UI**: il backend (`Game`, `Player`, ...) non conosce mai il DOM.
-- **Moduli ES nativi, senza bundler**: gli import relativi vogliono
-  l'estensione `.js` (`import {X} from "./X.js"`); `package.json` ha
-  `"type": "module"` e `tsconfig` usa `NodeNext`.
-- **Sviluppo**: `npm run dev` builda, avvia i watcher (`tsc` e `sass`), un
-  server statico su `localhost:5500` e apre il browser.
+- **Component UI**: one class per component (e.g. `DOMPlayer`), which receives
+  callbacks from the container instead of importing it (no circular imports).
+  State that depends on several elements (e.g. disabled colors) is recomputed
+  from scratch in a single function, not with incremental updates.
+- **Rendering**: a single `render()` function per screen re-reads the state
+  and rewrites the whole DOM (texts, enabled/disabled buttons, elements hidden
+  with `classList.toggle("d-none", condition)`). Every handler does: action on
+  the model, then `render()`. Handlers wrap calls to the model in `try/catch`
+  with `alert` (the setters throw when out of range).
+- **Callbacks to model methods**: pass arrow functions
+  (`(v) => Game.getCurrentPlayerTurn().addMoney(v)`), never the bare method
+  (`player.addMoney`, it loses `this`). The arrow resolves the current player
+  at call time.
+- **User text in the DOM**: always `textContent`, never `innerHTML` (names are
+  typed by the user).
+- **Accessibility**: buttons with only a symbol (`+`, `−`, `✓`, `X`) and
+  inputs without a visible `<label>` have an `aria-label` in the UI language.
+- **Numeric inputs**: `type="text" inputmode="numeric" pattern="[0-9]*"`;
+  `parseInt` + `Number.isNaN` before calling the model. The backend rejects
+  `NaN` and out-of-range values anyway.
+- **Screens as singletons**: `MainMenuUI` and `PlayScreenUI` are **non-exported**
+  classes with instance fields and methods (`this.` is used); listeners are
+  attached in the constructor. The module exports the single instance
+  (`export const playScreenUI = new PlayScreenUI();`), which other files import
+  by name. An ES module is executed only once, so `getInstance()` is not
+  needed. When an instance method is passed as a callback (e.g. to `DOMPlayer`)
+  it must be wrapped in an arrow function (`() => this.updateColorGrid()`),
+  otherwise it loses `this`.
+- **Export**: named only (`export class X`, `export const x`), no
+  `export default`.
+- **Models vs UI**: the backend (`Game`, `Player`, ...) never knows the DOM.
+- **Language**: this file, code comments (also in SCSS, scripts and workflows)
+  and identifiers are in English. Conversation with the user is in Italian.
+- **Native ES modules, no bundler**: relative imports need the `.js` extension
+  (`import {X} from "./X.js"`); `package.json` has `"type": "module"` and
+  `tsconfig` uses `NodeNext`.
+- **Development**: `npm run dev` builds, starts the watchers (`tsc` and
+  `sass`), a static server on `localhost:5500`, and opens the browser.
 
-## Modalità di collaborazione
+## Collaboration mode
 
-- Non scrivere codice (modifiche a file esistenti o nuovi file) a meno che non
-  sia richiesto espressamente. Se durante una review o una discussione emerge
-  un possibile fix, proporlo e aspettare conferma esplicita prima di
-  implementarlo — non basta che l'utente dica "magari faccio X" per
-  interpretarlo come una richiesta di implementazione. La scrittura di tooling, invece, è consentita.
+- Do not write code (changes to existing files or new files) unless expressly
+  requested. If a possible fix comes up during a review or a discussion,
+  propose it and wait for explicit confirmation before implementing it — it is
+  not enough for the user to say "maybe I'll do X" to interpret it as an
+  implementation request. Writing tooling, on the other hand, is allowed.
 
-## Aperto / da decidere
+## Open / to be decided
 
-- Undo: limitato all'ultima azione o pila di più azioni nel turno?
-- Persistenza localStorage: non ancora implementata (il bottone "Continua
-  partita" è un segnaposto). `Game` è tutto statico e senza reset per una
-  nuova partita; gli `Asset` contengono funzioni, quindi vanno salvati per
-  nome e ricostruiti, non serializzati.
-- Traduzioni: rimandate. Quando servirà: IT + EN, helper `t(key)` fatto a
-  mano con dizionari TS (il tipo dell'inglese vincolato alle chiavi
-  dell'italiano), nessuna libreria esterna.
-- PWA (futuro): il Lifepod si userà sul telefono al tavolo da gioco. Con un
-  Service Worker e un `manifest.json` potrebbe funzionare offline e
-  installarsi come app.
-- Regole opzionali (house rules) nel backend (`HouseRules`: figli illimitati,
-  tiro bilanciato, bonus jackpot lotteria senza vincitore): decisione
-  rimandata a dopo (bassa priorità), da sistemare dove si attivano
-  nell'interfaccia e se sono modificabili a partita in corso.
-- Fine partita: la logica backend c'è (`Game.endGame`: vende gli asset,
-  converte il denaro in Life Points arrotondati tramite `conversionRatio` e
-  calcola il vincitore). Per ora la UI mostra il vincitore riusando
-  `currentPlayerTurn`, che `endGame` sovrascrive (scorciatoia: perde
-  l'informazione di chi era di turno); manca la schermata di fine
-  partita/classifica, che dovrà leggere `Game.winner` e i punteggi.
-- Toast dei delta ("+50.000 €") non ancora implementati: previsto un confronto
-  tra i valori prima/dopo l'azione (snapshot) in `PlayScreenUI`, senza eventi
-  nel modello.
-- Celle della schermata di gioco ancora vuote (lotteria, case e auto, spazi
-  del tabellone, volume) e `Player` senza getter per `assets`/`qualification`
-  (`marry` andrebbe rinominato `married`).
-- Nome giocatore fatto di soli spazi: `DOMPlayer.getName()` ora lo sostituisce
-  col placeholder (`trim() || placeholder`), mentre la regola di creazione
-  partita lo dichiara invalido: decidere quale dei due vale.
+- Undo: limited to the last action or a stack of several actions within the
+  turn?
+- localStorage persistence: not implemented yet (the "Continue game" button is
+  a placeholder). `Game` is entirely static with no reset for a new game;
+  `Asset`s contain functions, so they must be saved by name and rebuilt, not
+  serialized.
+- Translations: postponed. When needed: IT + EN, a hand-made `t(key)` helper
+  with TS dictionaries (the English type constrained to the Italian keys), no
+  external library.
+- PWA (future): the Lifepod will be used on a phone at the game table. With a
+  Service Worker and a `manifest.json` it could work offline and be installed
+  as an app.
+- Optional rules (house rules) in the backend (`HouseRules`: unlimited kids,
+  balanced rolling, lottery jackpot bonus with no winner): decision postponed
+  (low priority), to be settled where they are enabled in the interface and
+  whether they can be changed mid-game.
+- End of game: the backend logic exists (`Game.endGame`: sells the assets,
+  converts money into rounded Life Points through `conversionRatio` and
+  computes the winner). For now the UI shows the winner by reusing
+  `currentPlayerTurn`, which `endGame` overwrites (shortcut: it loses the
+  information about whose turn it was); the end-of-game/leaderboard screen is
+  missing, and it will need to read `Game.winner` and the scores.
+- Delta toasts ("+50,000 €") not implemented yet: planned as a before/after
+  comparison of values (snapshot) in `PlayScreenUI`, without events in the
+  model.
+- Cells of the game screen still empty (lottery, houses and cars, board
+  spaces, volume) and `Player` has no getters for `assets`/`qualification`
+  (`marry` should be renamed `married`).
+- Player name made of spaces only: `DOMPlayer.getName()` now replaces it with
+  the placeholder (`trim() || placeholder`), while the game creation rule
+  declares it invalid: decide which of the two applies.

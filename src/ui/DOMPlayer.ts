@@ -24,8 +24,8 @@ export class DOMPlayer {
         let textBox = document.createElement("input");
         textBox.id = `txt-player-${this.id}-name`;
         textBox.type = "text";
-        textBox.placeholder = "Giocatore " + (this.id + 1);
-        textBox.ariaLabel = "Nome giocatore " + (this.id + 1);
+        textBox.placeholder = "Player " + (this.id + 1);
+        textBox.ariaLabel = "Player " + (this.id + 1) + " name";
         div.appendChild(textBox);
 
         let colorPicker = document.getElementById("color-picker-template")?.cloneNode(true) as HTMLElement;
@@ -47,13 +47,13 @@ export class DOMPlayer {
         removePlayer.id = "btn-remove-player-" + this.id;
         removePlayer.addEventListener("click", () => {
             if (!onTryRemove(this.id)) {
-                alert("Almeno due giocatori sono necessari");
+                alert("At least two players are required");
                 return;
             }
             div.remove();
         });
         removePlayer.textContent = "X";
-        removePlayer.ariaLabel = "Rimuovi giocatore";
+        removePlayer.ariaLabel = "Remove player";
         div.appendChild(removePlayer);
 
         this._domElement = div;

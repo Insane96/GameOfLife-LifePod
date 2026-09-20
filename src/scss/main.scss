@@ -1,5 +1,5 @@
-// Override delle variabili Bootstrap: valori placeholder, da rifinire quando
-// il look moderno/minimal sarà definito nel dettaglio (vedi CLAUDE.md).
+// Bootstrap variable overrides: placeholder values, to be refined once the
+// modern/minimal look is defined in detail (see CLAUDE.md).
 @use "bootstrap/scss/bootstrap" with (
   $border-radius: 0.75rem,
   $border-radius-sm: 0.5rem,
@@ -38,6 +38,6 @@
 .green { background-color: #2e9e5b; }
 .yellow { background-color: #e0b023; }
 .magenta { background-color: #c23b9c; }
-// Nel codice il colore resta "Black" (PlayerColor.Black), ma sul tema scuro
-// viene mostrato bianco, altrimenti sparirebbe sullo sfondo.
+// In code the color stays "Black" (PlayerColor.Black), but on the dark theme
+// it is displayed as white, otherwise it would vanish into the background.
 .black { background-color: #f2f2f2; }

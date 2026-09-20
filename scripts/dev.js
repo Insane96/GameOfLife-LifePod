@@ -46,7 +46,7 @@ function startServer() {
             res.end("Not found");
         }
     });
-    server.listen(PORT, () => console.log(`Server in ascolto su http://localhost:${PORT}`));
+    server.listen(PORT, () => console.log(`Server listening on http://localhost:${PORT}`));
     return server;
 }
 
@@ -68,7 +68,7 @@ function shutdown() {
     process.exit(0);
 }
 
-console.log("Build iniziale...");
+console.log("Initial build...");
 runToCompletion(["run", "build"]);
 
 startServer();
