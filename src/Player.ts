@@ -13,14 +13,20 @@ export class Player {
     private _assets: Array<OwnedAsset> = [];
     private _qualification: Qualification = Qualification.None;
 
+    private _hasPressedGo: boolean = false;
+
     constructor(
         public name: string,
         public color: PlayerColor,
-    ) {
+    ) { }
 
+    public get hasPressedGo(): boolean {
+        return this._hasPressedGo;
     }
 
-    public onNewTurn() {
+    public onGo() {
+        if (this._hasPressedGo)
+            throw new Error("Player has already pressed Go!");
         let salaryPenalty: number = 0;
         if (Game.playedRounds >= 3 && !this._assets.some(ownedAsset => ownedAsset.asset.isHouse()))
             salaryPenalty += 0.15;
@@ -45,6 +51,11 @@ export class Player {
         if (this._kids > 0) {
             this.addLifePoints(this._kids * 350);
         }
+        this._hasPressedGo = true;
+    }
+
+    public endTurn() {
+        this._hasPressedGo = false;
     }
 
     public get money(): number {
@@ -52,15 +63,22 @@ export class Player {
     }
 
     public addMoney(money: number): void {
+        if (Number.isNaN(money))
+            throw new Error("money must be a number.");
         if (money <= 0 || money > 2000000)
             throw new Error("money must be between 1 and 2.000.000 (inclusive)");
         this._money += money;
+        this._money = Math.round(this._money);
+
     }
 
     public removeMoney(money: number): void {
+        if (Number.isNaN(money))
+            throw new Error("money must be a number.");
         if (money <= 0 || money > 2000000)
             throw new Error("money must be between 1 and 2.000.000 (inclusive)");
         this._money -= money;
+        this._money = Math.round(this._money);
     }
 
     public get salary(): number {
@@ -78,15 +96,21 @@ export class Player {
     }
 
     public addLifePoints(lifePoints: number): void {
+        if (Number.isNaN(lifePoints))
+            throw new Error("lifePoints must be a number.");
         if (lifePoints <= 0 || lifePoints > 5000)
             throw new Error("lifePoints must be between 1 and 5.000 (inclusive)");
         this._lifePoints += lifePoints;
+        this._lifePoints = Math.round(this._lifePoints);
     }
 
     public removeLifePoints(lifePoints: number): void {
+        if (Number.isNaN(lifePoints))
+            throw new Error("lifePoints must be a number.");
         if (lifePoints <= 0 || lifePoints > 5000)
             throw new Error("lifePoints must be between 1 and 5.000 (inclusive)");
         this._lifePoints -= lifePoints;
+        this._lifePoints = Math.round(this._lifePoints);
     }
 
     public get marry() {
@@ -95,7 +119,7 @@ export class Player {
 
     public getMarried() {
         this._married = true;
-        this._lifePoints += 3500;
+        this.addLifePoints(3500);
         for (const player of Game.players) {
             if (player === this)
                 continue;
@@ -196,6 +220,7 @@ export class Player {
 
     public convertMoneyToLifePoints() {
         this._lifePoints += this._money / Game.conversionRatio;
+        this._lifePoints = Math.round(this._lifePoints);
         this._money = 0;
     }
 }

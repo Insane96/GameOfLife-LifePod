@@ -15,13 +15,52 @@
       <button id="btn-start">VAI!</button> oppure <button id="btn-continue" disabled>Continua partita</button>
       <br/>
       <button id="btn-add-player">Aggiungi giocatore</button>
-      <button id="btn-house-rules" disabled>House Rules</button>
+      <button id="btn-house-rules" disabled>Regole casalinghe</button>
       <div id="players-list">
 
       </div>
     </div>
-    <div id="play-screen" class="d-none">
-
+    <div id="play-screen" class="d-none container-fluid min-vh-100 d-flex flex-column">
+      <div class="row flex-grow-1 align-items-start">
+        <div class="col d-flex justify-content-start m-4">
+          <!-- Lotteria, Stipendio e Iniziativa / Casino, Probabilita -->
+        </div>
+        <div class="col d-flex justify-content-center m-4">
+          <!-- Case e auto -->
+        </div>
+        <div class="col d-flex justify-content-end m-4">
+          <!-- Spazi sul tabellone -->
+        </div>
+      </div>
+      <div class="row flex-grow-1 align-items-center">
+        <div class="col d-flex flex-column align-items-center m-4">
+          <div id="player-name"></div>
+          <div class="d-flex align-items-center gap-2">
+            <div id="player-money"></div>
+            <button id="btn-add-money" aria-label="Aggiungi denaro">+</button>
+            <button id="btn-remove-money" aria-label="Sottrai denaro">−</button>
+            <input id="input-money" type="text" inputmode="numeric" pattern="[0-9]*" class="d-none" aria-label="Valore denaro"><button id="btn-confirm-money" aria-label="Conferma operazione" class="d-none">✓</button>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <div id="player-life-points"></div>
+            <button id="btn-add-life-points" aria-label="Aggiungi punti vita">+</button>
+            <button id="btn-remove-life-points" aria-label="Sottrai punti vita">−</button>
+            <input id="input-life-points" type="text" inputmode="numeric" pattern="[0-9]*" class="d-none" aria-label="Valore punti vita"><button id="btn-confirm-life-points" aria-label="Conferma operazione" class="d-none">✓</button>
+          </div>
+        </div>
+      </div>
+      <div class="row flex-grow-1 align-items-end">
+        <div class="col d-flex justify-content-start m-4">
+          <!-- Volume -->
+        </div>
+        <div class="col d-flex justify-content-center m-4">
+          <button id="btn-go">VIA!</button>
+        </div>
+        <div class="col d-flex flex-column align-items-end m-4">
+          <div id="years-left">Anni: </div>
+          <button id="btn-end-turn">Termina turno</button>
+        </div>
+      </div>
     </div>
   </div>
 

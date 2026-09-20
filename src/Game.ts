@@ -27,21 +27,21 @@ export class Game {
     }
 
     /**
-     * Ends the current player's turn and returns the next player
+     * Ends the current player's turn if has pressed go
      */
-    public static endTurn(): Player {
+    public static endTurn() {
+        let currentPlayer: Player = Game.getCurrentPlayerTurn();
+        if (!currentPlayer.hasPressedGo)
+            throw new Error("Can't end turn: player hasn't pressed go");
+        currentPlayer.endTurn();
         Game.currentPlayerTurn++;
         if (Game.currentPlayerTurn >= Game.players.length) {
             Game.currentPlayerTurn = 0;
             Game.years--;
             Game.playedRounds++;
-            if (Game.years <= 0) {
+            if (Game.years <= 0)
                 this.endGame();
-                return Game.getCurrentPlayerTurn();
-            }
         }
-        Game.getCurrentPlayerTurn().onNewTurn();
-        return Game.getCurrentPlayerTurn();
     }
 
     public static endGame() {
@@ -52,6 +52,7 @@ export class Game {
         Game.winner = Game.players.reduce((best, player) =>
             player.lifePoints > best.lifePoints ? player : best
         );
+        Game.currentPlayerTurn = Game.players.indexOf(Game.winner);
     }
 
     public static getCurrentPlayerTurn(): Player {

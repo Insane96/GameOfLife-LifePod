@@ -1,6 +1,7 @@
 import {DOMPlayer} from "./DOMPlayer.js";
 import {ALL_PLAYER_COLORS, PlayerColor} from "../PlayerColor.js";
 import {Game} from "../Game.js";
+import {PlayScreenUI} from "./PlayScreenUI.js";
 
 export class MainMenuUI {
     static startScreen = document.getElementById("start-screen");
@@ -53,6 +54,7 @@ export class MainMenuUI {
             Game.init(years);
             MainMenuUI.startScreen?.classList.add("d-none");
             MainMenuUI.playScreen?.classList.remove("d-none");
+            PlayScreenUI.render();
         });
         MainMenuUI.btnAddPlayer?.addEventListener("click", () => {
             if (MainMenuUI.playersCount < 6)
