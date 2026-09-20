@@ -59,6 +59,26 @@ cards" originali).
     resta mai con una partita inizializzata a metà.
 - **Lotteria**: pannello a parte, separato dalle categorie di eventi
   principali (Carriera / Famiglia / Casa e auto / Eventi).
+- **Schermata di gioco (implementata in parte)**: griglia Bootstrap a 3 righe
+  (`container-fluid`, `min-vh-100`, `d-flex flex-column`, righe con
+  `flex-grow-1`), con il contenuto di ogni cella ancorato alla sua posizione
+  (alto-sinistra, alto-centro, alto-destra, ecc.).
+  - In alto: lotteria/stipendio/iniziativa, case e auto, spazi del tabellone
+    (celle ancora vuote).
+  - Al centro: nome del giocatore di turno, denaro e punti vita, ciascuno con
+    i pulsanti `+` / `−` che aprono un campo numerico (`inputmode="numeric"`)
+    con conferma ✓. Un solo campo aperto alla volta, gestito da
+    `PlayScreenUI._operation` (enum `Operation`).
+  - In basso: volume (vuoto), "VIA!" al centro, anni rimanenti e "Termina
+    turno" a destra.
+  - **Flusso del turno**: "VIA!" (`Player.onGo()`) accredita stipendio e
+    bonus e sblocca "Termina turno"; "Termina turno" (`Game.endTurn()`) lancia
+    un errore se VIA! non è stato premuto. "VIA!" si può premere una volta per
+    turno. Cambiando turno si chiude l'operazione aperta e si svuotano i
+    campi.
+  - **Fine partita**: a `Game.years <= 0` `endGame` imposta
+    `currentPlayerTurn` sul vincitore, `render()` mostra "Vincitore: nome" e
+    disattiva/nasconde VIA! e i pulsanti +/−.
 
 ## Persistenza (localStorage) — requisito critico
 
@@ -93,6 +113,25 @@ concordato. Sovrascrivere le CSS variable di Bootstrap (`--bs-border-radius`,
   callback dal contenitore invece di importarlo (niente import circolari).
   Lo stato dipendente da più elementi (es. colori disabilitati) si ricalcola
   da zero in un'unica funzione, non con aggiornamenti incrementali.
+- **Rendering**: un'unica funzione `render()` per schermata rilegge lo stato
+  e riscrive tutto il DOM (testi, bottoni attivi/disattivati, elementi
+  nascosti con `classList.toggle("d-none", condizione)`). Ogni handler fa:
+  azione sul modello, poi `render()`. Gli handler racchiudono le chiamate al
+  modello in `try/catch` con `alert` (i setter lanciano fuori dal range).
+- **Callback a metodi del modello**: passare arrow function
+  (`(v) => Game.getCurrentPlayerTurn().addMoney(v)`), mai il metodo nudo
+  (`player.addMoney`, perde il `this`). L'arrow risolve il giocatore di turno
+  al momento della chiamata.
+- **Testo utente nel DOM**: sempre `textContent`, mai `innerHTML` (i nomi li
+  scrive l'utente).
+- **Accessibilità**: i bottoni con solo un simbolo (`+`, `−`, `✓`, `X`) e gli
+  input senza `<label>` visibile hanno `aria-label` in italiano ("punti vita"
+  nell'interfaccia; "Life Points" resta solo nel codice e in questa
+  documentazione).
+- **Input numerici**: `type="text" inputmode="numeric" pattern="[0-9]*"`;
+  `parseInt` + `Number.isNaN` prima di chiamare il modello. Il backend
+  rifiuta comunque `NaN` e i valori fuori range.
+- **Export**: solo nominali (`export class X`), niente `export default`.
 - **Modelli vs UI**: il backend (`Game`, `Player`, ...) non conosce mai il DOM.
 - **Moduli ES nativi, senza bundler**: gli import relativi vogliono
   l'estensione `.js` (`import {X} from "./X.js"`); `package.json` ha
@@ -123,6 +162,17 @@ concordato. Sovrascrivere le CSS variable di Bootstrap (`--bs-border-radius`,
   rimandata a dopo (bassa priorità), da sistemare dove si attivano
   nell'interfaccia e se sono modificabili a partita in corso.
 - Fine partita: la logica backend c'è (`Game.endGame`: vende gli asset,
-  converte il denaro in Life Points tramite `conversionRatio` e calcola il
-  vincitore); la schermata di fine partita/punteggio finale non è ancora
-  stata disegnata.
+  converte il denaro in Life Points arrotondati tramite `conversionRatio` e
+  calcola il vincitore). Per ora la UI mostra il vincitore riusando
+  `currentPlayerTurn`, che `endGame` sovrascrive (scorciatoia: perde
+  l'informazione di chi era di turno); manca la schermata di fine
+  partita/classifica, che dovrà leggere `Game.winner` e i punteggi.
+- Toast dei delta ("+50.000 €") non ancora implementati: previsto un confronto
+  tra i valori prima/dopo l'azione (snapshot) in `PlayScreenUI`, senza eventi
+  nel modello.
+- Celle della schermata di gioco ancora vuote (lotteria, case e auto, spazi
+  del tabellone, volume) e `Player` senza getter per `assets`/`qualification`
+  (`marry` andrebbe rinominato `married`).
+- Nome giocatore fatto di soli spazi: `DOMPlayer.getName()` ora lo sostituisce
+  col placeholder (`trim() || placeholder`), mentre la regola di creazione
+  partita lo dichiara invalido: decidere quale dei due vale.
