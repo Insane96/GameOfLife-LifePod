@@ -6,8 +6,8 @@ import {playScreenUI} from "./PlayScreenUI.js";
 class MainMenuUI {
     private startScreen = document.getElementById("start-screen");
     private playScreen = document.getElementById("play-screen");
-    private btnStartGame = document.getElementById("btn-start");
-    private btnAddPlayer = document.getElementById("btn-add-player");
+    private btnStartGame = document.getElementById("btn-start") as HTMLButtonElement;
+    private btnAddPlayer = document.getElementById("btn-add-player") as HTMLButtonElement;
     private playersList = document.getElementById("players-list");
     private inputYears = document.getElementById("input-years") as HTMLInputElement;
 
@@ -23,7 +23,7 @@ class MainMenuUI {
     };
 
     constructor() {
-        this.btnStartGame?.addEventListener("click", () => {
+        this.btnStartGame.addEventListener("click", () => {
             let years = parseInt(!this.inputYears.value ? this.inputYears.placeholder : this.inputYears.value);
             if (years < 1 || years > 99) {
                 alert("Years must be between 1 and 99");
@@ -56,7 +56,7 @@ class MainMenuUI {
             this.playScreen?.classList.remove("d-none");
             playScreenUI.render();
         });
-        this.btnAddPlayer?.addEventListener("click", () => {
+        this.btnAddPlayer.addEventListener("click", () => {
             if (this.playersCount < 6)
                 this.addPlayer();
             else
