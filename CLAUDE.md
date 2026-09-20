@@ -94,6 +94,23 @@ Se la pagina si ricarica per sbaglio, la partita non deve andare persa.
   (impostazioni o angolo dello schermo) per azzerare deliberatamente lo
   storage a fine partita.
 
+## Deploy (GitHub Pages)
+
+- Il sito è statico e viene pubblicato su GitHub Pages dal workflow
+  `.github/workflows/deploy.yml`, a ogni push su `master` (o manualmente da
+  Actions). In *Settings → Pages* la sorgente deve essere "GitHub Actions".
+- Il workflow esegue `npm ci` e `npm run build`, poi assembla `_site/` con
+  solo `index.html`, `dist/` e `bootstrap.bundle.min.js`. Quest'ultimo è
+  copiato in `node_modules/bootstrap/dist/js/` (stesso percorso dell'HTML) così
+  `index.html` funziona uguale in locale e online. Se si sposta Bootstrap,
+  aggiornare HTML e workflow insieme.
+- `dist/` e `node_modules/` restano nel `.gitignore`: non vanno committati.
+- I percorsi in `index.html` devono restare **relativi** (il sito vive sotto
+  `/GameOfLife-LifePod/`, non alla radice del dominio).
+- `localStorage` è condiviso per origine (`insane96.github.io`), quindi tutte
+  le chiavi usano un prefisso (`lifepod.`), per non collidere con altri
+  progetti pubblicati dallo stesso account.
+
 ## Nota su Bootstrap
 
 Il look di default è troppo generico per l'obiettivo moderno/minimal
@@ -157,6 +174,9 @@ concordato. Sovrascrivere le CSS variable di Bootstrap (`--bs-border-radius`,
 - Traduzioni: rimandate. Quando servirà: IT + EN, helper `t(key)` fatto a
   mano con dizionari TS (il tipo dell'inglese vincolato alle chiavi
   dell'italiano), nessuna libreria esterna.
+- PWA (futuro): il Lifepod si userà sul telefono al tavolo da gioco. Con un
+  Service Worker e un `manifest.json` potrebbe funzionare offline e
+  installarsi come app.
 - Regole opzionali (house rules) nel backend (`HouseRules`: figli illimitati,
   tiro bilanciato, bonus jackpot lotteria senza vincitore): decisione
   rimandata a dopo (bassa priorità), da sistemare dove si attivano
