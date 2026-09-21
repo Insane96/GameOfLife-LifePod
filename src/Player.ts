@@ -119,13 +119,14 @@ export class Player {
     }
 
     public getMarried() {
+        this.addLifePoints(3000);
+        let moneyGift: number = !this._married ? 1000 : 500;
         this._married = true;
-        this.addLifePoints(3500);
         for (const player of game.players) {
             if (player === this)
                 continue;
-            player.removeMoney(1000);
-            this.addMoney(1000);
+            player.removeMoney(moneyGift);
+            this.addMoney(moneyGift);
         }
     }
 

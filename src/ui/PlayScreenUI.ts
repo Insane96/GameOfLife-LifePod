@@ -73,7 +73,8 @@ class PlayScreenUI {
             this.confirmOperationInput(this.inputLifePoints, Operation.AddLifePoints, Operation.RemoveLifePoints, (v) => game.getCurrentPlayerTurn().addLifePoints(v), (v) => game.getCurrentPlayerTurn().removeLifePoints(v));
         });
         this.btnWedding.addEventListener("click", () => {
-            game.getCurrentPlayerTurn().getMarried();
+            if (confirm("Confirm Wedding/Anniversary?"))
+                game.getCurrentPlayerTurn().getMarried();
             this.render();
         });
     }
@@ -118,13 +119,14 @@ class PlayScreenUI {
         this.inputLifePoints.classList.toggle("d-none", !lifePointsOpen);
         this.btnConfirmLifePoints.classList.toggle("d-none", !lifePointsOpen);
 
+        this.btnWedding.textContent = !currentPlayer.married ? "Wedding" : "Anniversary";
+        this.btnWedding.classList.toggle("green", currentPlayer.married);
+        this.btnWedding.disabled = !currentPlayer.hasPressedSpin;
+
         this.btnSpin.disabled = currentPlayer.hasPressedSpin;
 
         this.yearsLeft.textContent = `Years left: ${game.years}`;
         this.btnEndTurn.disabled = !currentPlayer.hasPressedSpin;
-
-        this.btnWedding.classList.toggle("green", currentPlayer.married);
-        this.btnWedding.disabled = currentPlayer.married || !currentPlayer.hasPressedSpin;
 
         if (game.years <= 0) {
             this.btnSpin.disabled = true;
@@ -136,6 +138,7 @@ class PlayScreenUI {
             this.btnRemoveMoney.classList.add("d-none");
             this.btnAddLifePoints.classList.add("d-none");
             this.btnRemoveLifePoints.classList.add("d-none");
+            this.btnWedding.disabled = true;
         }
     }
 
