@@ -114,7 +114,7 @@ export class Player {
         this._lifePoints = Math.round(this._lifePoints);
     }
 
-    public get marry() {
+    public get married() {
         return this._married;
     }
 

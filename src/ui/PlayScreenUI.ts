@@ -25,6 +25,8 @@ class PlayScreenUI {
 
     private _operation: Operation = Operation.None;
 
+    private btnWedding = document.getElementById("btn-wedding") as HTMLButtonElement;
+
     constructor() {
         this.btnSpin.addEventListener("click", () => {
             try {
@@ -69,6 +71,10 @@ class PlayScreenUI {
         });
         this.btnConfirmLifePoints.addEventListener("click", () => {
             this.confirmOperationInput(this.inputLifePoints, Operation.AddLifePoints, Operation.RemoveLifePoints, (v) => game.getCurrentPlayerTurn().addLifePoints(v), (v) => game.getCurrentPlayerTurn().removeLifePoints(v));
+        });
+        this.btnWedding.addEventListener("click", () => {
+            game.getCurrentPlayerTurn().getMarried();
+            this.render();
         });
     }
 
@@ -117,6 +123,8 @@ class PlayScreenUI {
         this.yearsLeft.textContent = `Years left: ${game.years}`;
         this.btnEndTurn.disabled = !currentPlayer.hasPressedSpin;
 
+        this.btnWedding.classList.toggle("green", currentPlayer.married);
+        this.btnWedding.disabled = currentPlayer.married || !currentPlayer.hasPressedSpin;
 
         if (game.years <= 0) {
             this.btnSpin.disabled = true;
