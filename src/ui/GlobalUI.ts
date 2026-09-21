@@ -3,7 +3,7 @@ import {game} from "../Game.js";
 class GlobalUI {
     private btnFullscreen = document.getElementById("btn-fullscreen") as HTMLButtonElement;
     private cellSettings = document.getElementById("cell-settings") as HTMLDivElement;
-    private startScreen = document.getElementById("start-screen") as HTMLDivElement;
+    private startScreenSettings = document.getElementById("start-screen-settings") as HTMLDivElement;
 
     constructor() {
         if (!document.documentElement.requestFullscreen)
@@ -31,7 +31,7 @@ class GlobalUI {
             this.cellSettings.appendChild(this.btnFullscreen);
         }
         else {
-            this.startScreen.appendChild(this.btnFullscreen);
+            this.startScreenSettings.appendChild(this.btnFullscreen);
         }
     }
 }

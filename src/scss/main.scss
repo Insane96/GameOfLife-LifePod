@@ -14,12 +14,19 @@
   width: 2rem;
   height: 2rem;
   margin: 0;
-  border: 4px solid transparent;
+  border: 0;
   border-radius: 50%;
   cursor: pointer;
+  transition: box-shadow 0.15s ease-in-out, transform 0.15s ease-in-out;
 
+  &:hover:not(:disabled) {
+    transform: scale(1.1);
+  }
+
+  // Selected: a gap in the page background followed by a light ring, so the
+  // ring stays visible on every color (including the white one)
   &:checked {
-    border-color: #89532a;
+    box-shadow: 0 0 0 2px var(--bs-body-bg), 0 0 0 4px var(--bs-body-color);
   }
 
   &:disabled {
@@ -27,9 +34,22 @@
     cursor: not-allowed;
   }
 
+  // Farther than the selection ring, so both can be visible together
   &:focus-visible {
     outline: 2px solid var(--bs-primary);
-    outline-offset: 2px;
+    outline-offset: 6px;
+  }
+
+  // box-shadow is dropped in forced colors mode: use an outline instead
+  @media (forced-colors: active) {
+    &:checked {
+      outline: 3px solid Highlight;
+      outline-offset: 3px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
   }
 }
 

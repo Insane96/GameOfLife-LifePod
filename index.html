@@ -9,14 +9,16 @@
 <body>
   <div id="app">
     <div id="start-screen" class="text-center">
-      <label>
-        Years <input id="input-years" type="number" min="1" max="99" placeholder="15">
+      <label class="d-inline-flex align-items-center gap-2 m-2">
+        Years <input id="input-years" class="form-control w-auto" type="number" min="1" max="99" placeholder="15">
       </label>
-      <button id="btn-start">Spin</button> or <button id="btn-continue" disabled>Continue game</button>
       <br/>
-      <button id="btn-add-player">Add player</button>
-      <button id="btn-house-rules" disabled>House rules</button>
-      <div id="players-list">
+      <button id="btn-start" class="btn btn-primary m-1">Spin</button> or <button id="btn-continue" class="btn btn-outline-secondary m-1" disabled>Continue game</button>
+      <br/>
+      <button id="btn-add-player" class="btn btn-outline-primary btn-sm m-1">Add player</button>
+      <button id="btn-house-rules" class="btn btn-outline-secondary btn-sm m-1" disabled>House rules</button>
+      <div id="start-screen-settings" class="position-fixed bottom-0 start-0 m-3"></div>
+      <div id="players-list" class="mt-3">
 
       </div>
     </div>
@@ -69,7 +71,7 @@
       </div>
     </div>
   </div>
-  <button id="btn-fullscreen" aria-label="Enter fullscreen">↔</button>
+  <button id="btn-fullscreen" class="btn btn-outline-secondary btn-sm m-1" aria-label="Enter fullscreen">↔</button>
 
   <div id="color-picker-template" class="d-none">
     <input type="radio" name="player-color-x" class="red color-picker-circle" id="red-color-picker-x" data-color="Red" aria-label="Red">

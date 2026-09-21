@@ -25,6 +25,8 @@ export class DOMPlayer {
         let textBox = document.createElement("input");
         textBox.id = `txt-player-${this.id}-name`;
         textBox.type = "text";
+        // w-auto: form-control is width: 100% by default, which would fill the whole row
+        textBox.classList.add("form-control", "w-auto");
         textBox.placeholder = "Player " + (this.id + 1);
         textBox.ariaLabel = "Player " + (this.id + 1) + " name";
         div.appendChild(textBox);
@@ -33,7 +35,7 @@ export class DOMPlayer {
         colorPicker.id = "player-color-picker-" + this.id;
         colorPicker.classList.remove("d-none");
         // flex-nowrap keeps the circles together: if they don't fit next to the name, the whole group wraps
-        colorPicker.classList.add("color-picker", "d-flex", "flex-nowrap", "gap-1");
+        colorPicker.classList.add("color-picker", "d-flex", "flex-nowrap", "gap-2");
         colorPicker.querySelectorAll<HTMLInputElement>(".color-picker-circle").forEach((circle: HTMLInputElement) => {
             circle.name = circle.name.replace("x", String(this.id));
             circle.id = circle.id.replace("x", String(this.id));
@@ -46,6 +48,7 @@ export class DOMPlayer {
 
         let removePlayer = document.createElement("button");
         removePlayer.id = "btn-remove-player-" + this.id;
+        removePlayer.classList.add("btn", "btn-outline-danger", "btn-sm");
         removePlayer.addEventListener("click", () => {
             if (!onTryRemove(this.id)) {
                 alert("At least two players are required");
