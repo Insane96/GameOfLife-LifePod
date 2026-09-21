@@ -20,6 +20,7 @@ export class DOMPlayer {
     public createDOMElement(updateColorGrid: () => void, onTryRemove: (id: number) => boolean): HTMLElement {
         let div = document.createElement("div");
         div.id = "player-" + this.id;
+        div.classList.add("d-flex", "flex-wrap", "justify-content-center", "align-items-center", "gap-2", "m-1");
 
         let textBox = document.createElement("input");
         textBox.id = `txt-player-${this.id}-name`;
@@ -30,9 +31,9 @@ export class DOMPlayer {
 
         let colorPicker = document.getElementById("color-picker-template")?.cloneNode(true) as HTMLElement;
         colorPicker.id = "player-color-picker-" + this.id;
-        colorPicker.classList.remove("color-picker-template");
-        colorPicker.classList.add("color-picker");
-        colorPicker.style.display = "initial";
+        colorPicker.classList.remove("d-none");
+        // flex-nowrap keeps the circles together: if they don't fit next to the name, the whole group wraps
+        colorPicker.classList.add("color-picker", "d-flex", "flex-nowrap", "gap-1");
         colorPicker.querySelectorAll<HTMLInputElement>(".color-picker-circle").forEach((circle: HTMLInputElement) => {
             circle.name = circle.name.replace("x", String(this.id));
             circle.id = circle.id.replace("x", String(this.id));
@@ -54,7 +55,8 @@ export class DOMPlayer {
         });
         removePlayer.textContent = "X";
         removePlayer.ariaLabel = "Remove player";
-        div.appendChild(removePlayer);
+        // Placed before the name, so it stays in the first row when the colors wrap
+        div.insertBefore(removePlayer, textBox);
 
         this._domElement = div;
         return div;
