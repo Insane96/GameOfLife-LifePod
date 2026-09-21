@@ -209,6 +209,30 @@ palette) instead of using the defaults as-is.
   Service Worker and a `manifest.json` it could work offline and be installed
   as an app, and it would also give fullscreen on iPhone (via the manifest
   `display` setting), where the Fullscreen API is not available.
+- Visual direction ("it must not look like a business app"): ideas, in
+  increasing cost. The game screen redesign (points 2-4) waits until the game
+  screen works functionally; the theme (point 1) also applies to the main menu.
+  1. Theme, only Sass variables: a game-like saturated palette (from the
+     player colors and the Game of Life look) with a colored dark background
+     instead of neutral gray; a font with character for title and numbers
+     (e.g. from Fontsource or Google Fonts) instead of `system-ui`; very
+     rounded corners and pill buttons (`$border-radius`, `$btn-border-radius`).
+  2. Numbers and buttons at the center of attention (game screen): money and
+     Life Points very large, like on the original Lifepod display, with a small
+     label below (today they are plain text next to `+`/`−`); Spin as a big
+     circular button with a shadow and a "press" effect (it is already the
+     primary action in the specs); icons (Bootstrap Icons or emoji) instead of
+     `+`, `−`, `↔` and small captions.
+  3. Player identity: tint the screen with the color of the player whose turn it
+     is (bar, borders, Spin button). It helps when the phone is handed over,
+     because whose turn it is can be recognized at a glance, and it makes the
+     "Visa card" of the original device concrete.
+  4. Life and feedback: a short number animation for the roll instead of an
+     `alert`, the delta toasts already planned ("+50,000 €") and maybe confetti
+     at the end of the game. This is what makes it look like a game instead of
+     a form.
+  5. Remove "business" signals: fewer `btn-sm` and `btn-outline-*`, no gray
+     uppercase labels, few borders.
 - Optional rules (house rules) in the backend (`HouseRules`: unlimited kids,
   balanced rolling, lottery jackpot bonus with no winner): decision postponed
   (low priority), to be settled where they are enabled in the interface and
@@ -225,6 +249,3 @@ palette) instead of using the defaults as-is.
 - Cells of the game screen still empty (lottery, houses and cars, board
   spaces, volume) and `Player` has no getters for `assets`/`qualification`
   (`marry` should be renamed `married`).
-- Player name made of spaces only: `DOMPlayer.getName()` now replaces it with
-  the placeholder (`trim() || placeholder`), while the game creation rule
-  declares it invalid: decide which of the two applies.

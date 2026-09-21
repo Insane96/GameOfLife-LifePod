@@ -38,9 +38,9 @@ class MainMenuUI {
                     alert("Some players haven't chosen a color");
                     return;
                 }
-                //Returns true for null, undefined and "". Since getName() trims the input, it also checks for spaces only names
-                if (!domPlayer.getName()) {
-                    alert("Detected empty names for some player(s)");
+                //Returns true for null, undefined, "" and spaces only names since getName() trims the input
+                if (!domPlayer.getName() || !domPlayer.getName().trim()) {
+                    alert("Detected empty or invalid names for some player(s)");
                     return;
                 }
                 if (playingPlayers.some(otherDomPlayer => otherDomPlayer.getName() === domPlayer.getName())) {

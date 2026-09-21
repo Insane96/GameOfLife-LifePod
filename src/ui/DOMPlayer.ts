@@ -20,7 +20,7 @@ export class DOMPlayer {
     public createDOMElement(updateColorGrid: () => void, onTryRemove: (id: number) => boolean): HTMLElement {
         let div = document.createElement("div");
         div.id = "player-" + this.id;
-        div.classList.add("d-flex", "flex-wrap", "justify-content-center", "align-items-center", "gap-2", "m-1");
+        div.classList.add("d-flex", "flex-wrap", "justify-content-center", "align-items-center", "gap-2", "rounded-4", "bg-body-secondary", "p-2");
 
         let textBox = document.createElement("input");
         textBox.id = `txt-player-${this.id}-name`;
@@ -67,6 +67,6 @@ export class DOMPlayer {
 
     public getName(): string {
         let txtPlayerName = document.getElementById(`txt-player-${this.id}-name`) as HTMLInputElement;
-        return txtPlayerName.value.trim();
+        return txtPlayerName.value || txtPlayerName.placeholder;
     }
 }
