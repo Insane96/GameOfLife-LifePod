@@ -2,7 +2,7 @@
 // one of the player colors), deep indigo dark theme, very rounded shapes.
 // The three "-bg-dark" values give three lightness steps: page < card < tile.
 @use "bootstrap/scss/bootstrap" with (
-  $primary: #ff8a1f,
+  $primary: #e8710a,
   $body-bg-dark: #1a1438,
   $body-tertiary-bg-dark: #261d55,
   $body-secondary-bg-dark: #342a72,
@@ -23,7 +23,7 @@
 
 // A warm glow at the top of the page instead of a flat background
 body {
-  background-image: radial-gradient(ellipse at 50% -10%, rgba(255, 138, 31, 0.2), transparent 55%);
+  background-image: radial-gradient(ellipse at 50% -10%, rgba(232, 113, 10, 0.2), transparent 55%);
   background-attachment: fixed;
 }
 

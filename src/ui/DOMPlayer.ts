@@ -50,10 +50,8 @@ export class DOMPlayer {
         removePlayer.id = "btn-remove-player-" + this.id;
         removePlayer.classList.add("btn", "btn-outline-danger", "btn-sm");
         removePlayer.addEventListener("click", () => {
-            if (!onTryRemove(this.id)) {
-                alert("At least two players are required");
+            if (!onTryRemove(this.id))
                 return;
-            }
             div.remove();
         });
         removePlayer.textContent = "X";

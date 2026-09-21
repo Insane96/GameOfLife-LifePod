@@ -11,6 +11,7 @@ class MainMenuUI {
     private btnAddPlayer = document.getElementById("btn-add-player") as HTMLButtonElement;
     private playersList = document.getElementById("players-list");
     private inputYears = document.getElementById("input-years") as HTMLInputElement;
+    private menuError = document.getElementById("menu-error") as HTMLDivElement;
 
     private domPlayers: (DOMPlayer | null)[] = new Array(6).fill(null);
 
@@ -25,9 +26,10 @@ class MainMenuUI {
 
     constructor() {
         this.btnStartGame.addEventListener("click", () => {
+            this.clearError();
             let years = parseInt(!this.inputYears.value ? this.inputYears.placeholder : this.inputYears.value);
             if (years < 1 || years > 99) {
-                alert("Years must be between 1 and 99");
+                this.showError("Years must be between 1 and 99");
                 return;
             }
             let playingPlayers: DOMPlayer[] = [];
@@ -35,16 +37,16 @@ class MainMenuUI {
                 if (domPlayer === null)
                     continue;
                 if (domPlayer.color === null) {
-                    alert("Some players haven't chosen a color");
+                    this.showError("Some players haven't chosen a color");
                     return;
                 }
-                //Returns true for null, undefined, "" and spaces only names since getName() trims the input
-                if (!domPlayer.getName() || !domPlayer.getName().trim()) {
-                    alert("Detected empty or invalid names for some player(s)");
+                //Spaces only names aren't valid
+                if (!domPlayer.getName().trim()) {
+                    this.showError("Detected empty or invalid names for some player(s)");
                     return;
                 }
                 if (playingPlayers.some(otherDomPlayer => otherDomPlayer.getName() === domPlayer.getName())) {
-                    alert("Detected equal names for some player(s)");
+                    this.showError("Detected equal names for some player(s)");
                     return;
                 }
                 playingPlayers.push(domPlayer);
@@ -59,10 +61,11 @@ class MainMenuUI {
             globalUI.render();
         });
         this.btnAddPlayer.addEventListener("click", () => {
+            this.clearError();
             if (this.playersCount < 6)
                 this.addPlayer();
             else
-                alert("Player limit reached");
+                this.showError("Player limit reached");
         });
         this.addPlayer();
         this.addPlayer();
@@ -86,11 +89,23 @@ class MainMenuUI {
     }
 
     private tryRemovePlayer(id: number): boolean {
-        if (this.playersCount <= 2)
+        this.clearError();
+        if (this.playersCount <= 2) {
+            this.showError("At least two players are required");
             return false;
+        }
         this.domPlayers[id] = null;
         this.updateColorGrid();
         return true;
+    }
+
+    private showError(message: string) {
+        this.menuError.textContent = message;
+        this.menuError.classList.remove("d-none");
+    }
+
+    private clearError() {
+        this.menuError.classList.add("d-none");
     }
 
     private updateColorGrid() {
