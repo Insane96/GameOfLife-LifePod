@@ -56,6 +56,8 @@ cards").
   - Color: mandatory and unique. Selector made of radio buttons styled as
     circles; colors already chosen by other players are disabled.
   - Years: integer between 1 and 99, default 15 (empty field → default).
+  - Validation errors appear in the card (see "Error messages" in the code
+    conventions), not in `alert` dialogs.
   - All validations happen before touching `game`, so we never end up with a
     half-initialized game.
 - **Lottery**: a separate panel, apart from the main event categories
@@ -149,7 +151,15 @@ palette) instead of using the defaults as-is.
   and rewrites the whole DOM (texts, enabled/disabled buttons, elements hidden
   with `classList.toggle("d-none", condition)`). Every handler does: action on
   the model, then `render()`. Handlers wrap calls to the model in `try/catch`
-  with `alert` (the setters throw when out of range).
+  (the setters throw when out of range).
+- **Error messages**: in the main menu, errors are shown inside the card in a
+  single Bootstrap alert (`#menu-error`, `alert alert-danger`, `role="alert"`,
+  hidden with `d-none`) through `showError(message)` / `clearError()` in
+  `MainMenuUI`; the message is cleared at the start of the next user action.
+  The rule about the number of players lives in `MainMenuUI` (`DOMPlayer` only
+  asks it through a callback). The game screen still uses `alert` for now (a
+  placeholder, to be replaced when it is redesigned). Per-field messages
+  (`is-invalid` + `invalid-feedback`) are a possible later improvement.
 - **Callbacks to model methods**: pass arrow functions
   (`(v) => game.getCurrentPlayerTurn().addMoney(v)`), never the bare method
   (`player.addMoney`, it loses `this`). The arrow resolves the current player

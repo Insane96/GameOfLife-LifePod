@@ -84,6 +84,10 @@ class Game {
             return 1;
         return 2;
     }
+
+    public getRanking(): Player[] {
+        return [...this.players].sort((a, b) => b.lifePoints - a.lifePoints);
+    }
 }
 
 // Singleton: the module is executed only once, so this is the only instance.

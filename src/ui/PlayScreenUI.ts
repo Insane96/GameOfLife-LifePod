@@ -8,6 +8,7 @@ class PlayScreenUI {
     private btnEndTurn = document.getElementById("btn-end-turn") as HTMLButtonElement;
     private yearsLeft = document.getElementById("years-left") as HTMLDivElement;
     private playerName = document.getElementById("player-name") as HTMLDivElement;
+    private playerScoreboard = document.getElementById("player-scoreboard") as HTMLDivElement;
 
     private playerMoney = document.getElementById("player-money") as HTMLDivElement;
     private btnAddMoney = document.getElementById("btn-add-money") as HTMLButtonElement;
@@ -73,16 +74,24 @@ class PlayScreenUI {
     public render() {
         const currentPlayer: Player = game.getCurrentPlayerTurn();
 
-        if (game.years <= 0)
-            this.playerName.textContent = `Winner: ${game.getCurrentPlayerTurn().name}`;
+        if (game.years <= 0) {
+            this.playerName.textContent = "";
+            this.playerScoreboard.innerHTML = `Scoreboard: `;
+            for (const player of game.getRanking()) {
+                this.playerScoreboard.innerHTML += `<br>${player.name}<br>♥ ${player.lifePoints}`;
+            }
+        }
         else
             this.playerName.textContent = currentPlayer.name;
 
-        if (game.years <= 0)
+        if (game.years <= 0) {
             this.playerMoney.textContent = "";
-        else
+            this.playerLifePoints.textContent = "";
+        }
+        else {
             this.playerMoney.textContent = `€ ${currentPlayer.money}`;
-        this.playerLifePoints.textContent = `♥ ${currentPlayer.lifePoints}`;
+            this.playerLifePoints.textContent = `♥ ${currentPlayer.lifePoints}`;
+        }
 
         const moneyOpen: boolean = this._operation === Operation.AddMoney || this._operation === Operation.RemoveMoney;
         const lifePointsOpen: boolean = this._operation === Operation.AddLifePoints || this._operation === Operation.RemoveLifePoints;
