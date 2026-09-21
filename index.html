@@ -57,7 +57,20 @@
       <div class="row flex-grow-1 align-items-center">
         <div class="col d-flex flex-column align-items-center m-4">
           <div id="player-name"></div>
-          <div id="player-scoreboard"></div>
+          <div class="table-responsive">
+            <table class="table">
+              <thead id="player-scoreboard-header">
+              <tr>
+                <th scope="col">Rank</th>
+                <th scope="col">Player</th>
+                <th scope="col">Life Points</th>
+              </tr>
+              </thead>
+              <tbody id="player-scoreboard">
+
+              </tbody>
+            </table>
+          </div>
           <div class="d-flex align-items-center gap-2">
             <div id="player-money"></div>
             <button id="btn-add-money" aria-label="Add money">+</button>

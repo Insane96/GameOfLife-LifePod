@@ -84,9 +84,13 @@ cards").
     `Player.onSpin()`). The roll result (`game.rolledNumber`) is shown for now
     with a placeholder `alert("Rolled N")`; a proper display is still to be
     designed.
-  - **End of game**: at `game.years <= 0`, `endGame` sets `currentPlayerTurn`
-    to the winner, `render()` shows "Winner: name" and disables/hides Spin and
-    the +/− buttons.
+  - **End of game**: at `game.years <= 0`, `endGame` sells the assets and
+    converts money into Life Points. `render()` hides the player name, money
+    and Life Points, shows a scoreboard table (Rank / Player / Life Points,
+    built from `game.getRanking()`; the first row, the winner, is highlighted
+    with `table-warning`) and disables/hides Spin and the +/− buttons. There is
+    no `game.winner`: the winner is the first entry of the ranking. Ties keep
+    the turn order (the sort is stable).
   - The bottom-left cell (`cell-settings`) is reserved for settings (volume,
     fullscreen).
 - **Fullscreen button**: a single `btn-fullscreen` element, handled by
@@ -247,12 +251,11 @@ palette) instead of using the defaults as-is.
   balanced rolling, lottery jackpot bonus with no winner): decision postponed
   (low priority), to be settled where they are enabled in the interface and
   whether they can be changed mid-game.
-- End of game: the backend logic exists (`game.endGame`: sells the assets,
-  converts money into rounded Life Points through `conversionRatio` and
-  computes the winner). For now the UI shows the winner by reusing
-  `currentPlayerTurn`, which `endGame` overwrites (shortcut: it loses the
-  information about whose turn it was); the end-of-game/leaderboard screen is
-  missing, and it will need to read `game.winner` and the scores.
+- End of game: `game.endGame` sells the assets and converts money into
+  rounded Life Points through `conversionRatio`; `game.getRanking()` returns a
+  sorted copy of the players. The scoreboard is a plain table inside the game
+  screen; a dedicated end-of-game screen (new game, back to the menu) is still
+  missing, and so is a rule for ties (same rank or not).
 - Delta toasts ("+50,000 €") not implemented yet: planned as a before/after
   comparison of values (snapshot) in `PlayScreenUI`, without events in the
   model.

@@ -8,7 +8,8 @@ class PlayScreenUI {
     private btnEndTurn = document.getElementById("btn-end-turn") as HTMLButtonElement;
     private yearsLeft = document.getElementById("years-left") as HTMLDivElement;
     private playerName = document.getElementById("player-name") as HTMLDivElement;
-    private playerScoreboard = document.getElementById("player-scoreboard") as HTMLDivElement;
+    private playerScoreboard = document.getElementById("player-scoreboard") as HTMLTableSectionElement;
+    private playerScoreboardHeader = document.getElementById("player-scoreboard-header") as HTMLTableSectionElement;
 
     private playerMoney = document.getElementById("player-money") as HTMLDivElement;
     private btnAddMoney = document.getElementById("btn-add-money") as HTMLButtonElement;
@@ -74,12 +75,23 @@ class PlayScreenUI {
     public render() {
         const currentPlayer: Player = game.getCurrentPlayerTurn();
 
+        this.playerScoreboardHeader.classList.toggle("d-none", game.years > 0);
         if (game.years <= 0) {
             this.playerName.textContent = "";
-            this.playerScoreboard.innerHTML = `Scoreboard: `;
-            for (const player of game.getRanking()) {
-                this.playerScoreboard.innerHTML += `<br>${player.name}<br>♥ ${player.lifePoints}`;
-            }
+            const rows: HTMLTableRowElement[] = [];
+            game.getRanking().forEach((player, index) => {
+                const row = document.createElement("tr");
+                if (index === 0)
+                    row.classList.add("table-warning");
+                let cell = row.insertCell();
+                cell.textContent = String(index + 1);
+                cell = row.insertCell();
+                cell.textContent = player.name;
+                cell = row.insertCell();
+                cell.textContent = `♥ ${player.lifePoints}`;
+                rows.push(row);
+            });
+            this.playerScoreboard.replaceChildren(...rows);
         }
         else
             this.playerName.textContent = currentPlayer.name;

@@ -15,9 +15,6 @@ class Game {
 
     private _gameStarted: boolean = false;
 
-    // Set by endGame()
-    public winner!: Player;
-
     public get gameStarted(): boolean {
         return this._gameStarted;
     }
@@ -60,10 +57,6 @@ class Game {
             player.sellAllAssets();
             player.convertMoneyToLifePoints();
         }
-        this.winner = this.players.reduce((best, player) =>
-            player.lifePoints > best.lifePoints ? player : best
-        );
-        this.currentPlayerTurn = this.players.indexOf(this.winner);
     }
 
     public getCurrentPlayerTurn(): Player {
