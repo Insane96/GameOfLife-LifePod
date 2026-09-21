@@ -47,7 +47,7 @@ cards").
   More important than in the original because the device changes hands more
   often.
 - **Game creation**: players are entered first (name + color), then "New
-  game" is pressed, which calls the backend (`Game.init` with the number of
+  game" is pressed, which calls the backend (`game.init` with the number of
   years) and starts the game.
   - From 2 to 6 players (start with 2 rows; "Add player" / "X" to add and
     remove, never below 2).
@@ -56,7 +56,7 @@ cards").
   - Color: mandatory and unique. Selector made of radio buttons styled as
     circles; colors already chosen by other players are disabled.
   - Years: integer between 1 and 99, default 15 (empty field → default).
-  - All validations happen before touching `Game`, so we never end up with a
+  - All validations happen before touching `game`, so we never end up with a
     half-initialized game.
 - **Lottery**: a separate panel, apart from the main event categories
   (Career / Family / Home and car / Events).
@@ -75,14 +75,14 @@ cards").
   - **Turn flow**: the button is called "Spin" as on the original Lifepod (it
     is the same primary Spin button described in the layouts above, not a
     separate "Go!" button). Pressing it (`Player.onSpin()`) credits salary and
-    bonuses and unlocks "End turn"; "End turn" (`Game.endTurn()`) throws an
+    bonuses and unlocks "End turn"; "End turn" (`game.endTurn()`) throws an
     error if Spin was not pressed. Spin can be pressed once per turn. When the
     turn changes, the open operation is closed and the fields are cleared.
     The code uses the same naming (`btn-spin`, `btnSpin`, `hasPressedSpin`,
-    `Player.onSpin()`). The roll result (`Game.rolledNumber`) is shown for now
+    `Player.onSpin()`). The roll result (`game.rolledNumber`) is shown for now
     with a placeholder `alert("Rolled N")`; a proper display is still to be
     designed.
-  - **End of game**: at `Game.years <= 0`, `endGame` sets `currentPlayerTurn`
+  - **End of game**: at `game.years <= 0`, `endGame` sets `currentPlayerTurn`
     to the winner, `render()` shows "Winner: name" and disables/hides Spin and
     the +/− buttons.
   - The bottom-left cell (`cell-settings`) is reserved for settings (volume,
@@ -90,7 +90,7 @@ cards").
 - **Fullscreen button**: a single `btn-fullscreen` element, handled by
   `GlobalUI`, shared by all screens. `GlobalUI.render()` moves it (with
   `appendChild`, which moves the node instead of copying it) into the start
-  screen or into `cell-settings`, depending on `Game.gameStarted`. Its
+  screen or into `cell-settings`, depending on `game.gameStarted`. Its
   `aria-label` is updated from the `fullscreenchange` event, not from the
   click, because the user can also leave fullscreen with Esc or a system
   gesture. It is hidden when `requestFullscreen` is not available (iPhone
@@ -151,7 +151,7 @@ palette) instead of using the defaults as-is.
   the model, then `render()`. Handlers wrap calls to the model in `try/catch`
   with `alert` (the setters throw when out of range).
 - **Callbacks to model methods**: pass arrow functions
-  (`(v) => Game.getCurrentPlayerTurn().addMoney(v)`), never the bare method
+  (`(v) => game.getCurrentPlayerTurn().addMoney(v)`), never the bare method
   (`player.addMoney`, it loses `this`). The arrow resolves the current player
   at call time.
 - **User text in the DOM**: always `textContent`, never `innerHTML` (names are
@@ -171,6 +171,12 @@ palette) instead of using the defaults as-is.
   otherwise it loses `this`.
 - **Export**: named only (`export class X`, `export const x`), no
   `export default`.
+- **Game as a singleton**: `Game` is a **non-exported** class with instance
+  members; the module exports the only instance (`export const game = new
+  Game();`), used everywhere as `game.years`, `game.endTurn()`, etc. Same
+  pattern as the UI screens. `Player` and `Game` import each other, which is
+  fine as long as neither uses the other at module load time (only inside
+  methods). Lowercase `game` is the instance, never `Game.`.
 - **Models vs UI**: the backend (`Game`, `Player`, ...) never knows the DOM.
 - **Language**: this file, code comments (also in SCSS, scripts and workflows)
   and identifiers are in English. Conversation with the user is in Italian.
@@ -193,9 +199,9 @@ palette) instead of using the defaults as-is.
 - Undo: limited to the last action or a stack of several actions within the
   turn?
 - localStorage persistence: not implemented yet (the "Continue game" button is
-  a placeholder). `Game` is entirely static with no reset for a new game;
+  a placeholder). `game` (the singleton) has no reset for a new game;
   `Asset`s contain functions, so they must be saved by name and rebuilt, not
-  serialized. `Game.gameStarted` also has no reset.
+  serialized. `game.gameStarted` also has no reset.
 - Translations: postponed. When needed: IT + EN, a hand-made `t(key)` helper
   with TS dictionaries (the English type constrained to the Italian keys), no
   external library.
@@ -207,12 +213,12 @@ palette) instead of using the defaults as-is.
   balanced rolling, lottery jackpot bonus with no winner): decision postponed
   (low priority), to be settled where they are enabled in the interface and
   whether they can be changed mid-game.
-- End of game: the backend logic exists (`Game.endGame`: sells the assets,
+- End of game: the backend logic exists (`game.endGame`: sells the assets,
   converts money into rounded Life Points through `conversionRatio` and
   computes the winner). For now the UI shows the winner by reusing
   `currentPlayerTurn`, which `endGame` overwrites (shortcut: it loses the
   information about whose turn it was); the end-of-game/leaderboard screen is
-  missing, and it will need to read `Game.winner` and the scores.
+  missing, and it will need to read `game.winner` and the scores.
 - Delta toasts ("+50,000 €") not implemented yet: planned as a before/after
   comparison of values (snapshot) in `PlayScreenUI`, without events in the
   model.

@@ -1,6 +1,6 @@
 import {Player} from "./Player.js";
 import {Mth} from "./Mth.js";
-import {Game} from "./Game.js";
+import {game} from "./Game.js";
 import {HouseRules} from "./HouseRules.js";
 
 export class Lottery {
@@ -9,7 +9,7 @@ export class Lottery {
     public static playedRoundsBonus: number = 0;
 
     public static newLottery() {
-        Lottery.playedRoundsBonus = 1 + Math.floor(Game.playedRounds / 5);
+        Lottery.playedRoundsBonus = 1 + Math.floor(game.playedRounds / 5);
         Lottery.pot = Mth.triangleInt(20, 120, 120) * Lottery.playedRoundsBonus;
     }
 

@@ -1,4 +1,4 @@
-import {Game} from "../Game.js";
+import {game} from "../Game.js";
 import {Player} from "../Player.js";
 import {Operation} from "./Operation.js";
 
@@ -26,8 +26,8 @@ class PlayScreenUI {
     constructor() {
         this.btnSpin.addEventListener("click", () => {
             try {
-                Game.getCurrentPlayerTurn().onSpin();
-                alert(`Rolled ${Game.rolledNumber}`);
+                game.getCurrentPlayerTurn().onSpin();
+                alert(`Rolled ${game.rolledNumber}`);
             }
             catch (e) {
                 alert(`Error: ${e}`);
@@ -36,7 +36,7 @@ class PlayScreenUI {
         });
         this.btnEndTurn.addEventListener("click", () => {
             try {
-                Game.endTurn();
+                game.endTurn();
             }
             catch (e) {
                 alert(`Error: ${e}`);
@@ -63,22 +63,22 @@ class PlayScreenUI {
             this.render();
         });
         this.btnConfirmMoney.addEventListener("click", () => {
-            this.confirmOperationInput(this.inputMoney, Operation.AddMoney, Operation.RemoveMoney, (v) => Game.getCurrentPlayerTurn().addMoney(v), (v) => Game.getCurrentPlayerTurn().removeMoney(v));
+            this.confirmOperationInput(this.inputMoney, Operation.AddMoney, Operation.RemoveMoney, (v) => game.getCurrentPlayerTurn().addMoney(v), (v) => game.getCurrentPlayerTurn().removeMoney(v));
         });
         this.btnConfirmLifePoints.addEventListener("click", () => {
-            this.confirmOperationInput(this.inputLifePoints, Operation.AddLifePoints, Operation.RemoveLifePoints, (v) => Game.getCurrentPlayerTurn().addLifePoints(v), (v) => Game.getCurrentPlayerTurn().removeLifePoints(v));
+            this.confirmOperationInput(this.inputLifePoints, Operation.AddLifePoints, Operation.RemoveLifePoints, (v) => game.getCurrentPlayerTurn().addLifePoints(v), (v) => game.getCurrentPlayerTurn().removeLifePoints(v));
         });
     }
 
     public render() {
-        const currentPlayer: Player = Game.getCurrentPlayerTurn();
+        const currentPlayer: Player = game.getCurrentPlayerTurn();
 
-        if (Game.years <= 0)
-            this.playerName.textContent = `Winner: ${Game.getCurrentPlayerTurn().name}`;
+        if (game.years <= 0)
+            this.playerName.textContent = `Winner: ${game.getCurrentPlayerTurn().name}`;
         else
             this.playerName.textContent = currentPlayer.name;
 
-        if (Game.years <= 0)
+        if (game.years <= 0)
             this.playerMoney.textContent = "";
         else
             this.playerMoney.textContent = `€ ${currentPlayer.money}`;
@@ -93,11 +93,11 @@ class PlayScreenUI {
 
         this.btnSpin.disabled = currentPlayer.hasPressedSpin;
 
-        this.yearsLeft.textContent = `Years left: ${Game.years}`;
+        this.yearsLeft.textContent = `Years left: ${game.years}`;
         this.btnEndTurn.disabled = !currentPlayer.hasPressedSpin;
 
 
-        if (Game.years <= 0) {
+        if (game.years <= 0) {
             this.btnSpin.disabled = true;
             this.btnAddMoney.disabled = true;
             this.btnRemoveMoney.disabled = true;

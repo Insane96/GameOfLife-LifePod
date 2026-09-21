@@ -3,78 +3,80 @@ import {Mth} from "./Mth.js";
 import {PlayerColor} from "./PlayerColor.js";
 import {HouseRules} from "./HouseRules.js";
 
-export class Game {
-    public static conversionRatio: number;
-    public static years: number;
-    public static playedRounds: number = 0;
-    public static players: Array<Player> = [];
-    public static currentPlayerTurn: number = 0;
+class Game {
+    // Set by init()
+    public conversionRatio!: number;
+    public years!: number;
+    public playedRounds: number = 0;
+    public players: Array<Player> = [];
+    public currentPlayerTurn: number = 0;
 
-    public static rolledNumber: number = 0;
+    public rolledNumber: number = 0;
 
-    private static _gameStarted: boolean = false;
+    private _gameStarted: boolean = false;
 
-    public static winner: Player;
+    // Set by endGame()
+    public winner!: Player;
 
-    public static get gameStarted(): boolean {
-        return Game._gameStarted;
+    public get gameStarted(): boolean {
+        return this._gameStarted;
     }
 
-    public static init(years: number) {
-        Game.conversionRatio = Mth.randomDouble(80, 100);
-        Game.years = years;
-        Game._gameStarted = true;
+    public init(years: number) {
+        this.conversionRatio = Mth.randomDouble(80, 100);
+        this.years = years;
+        this._gameStarted = true;
     }
 
-    public static addPlayer(name: string, color: PlayerColor): Player {
-        if (Game.players.some(player => player.name === name)
-                || (Game.players.some(player => player.color === color)))
+    public addPlayer(name: string, color: PlayerColor): Player {
+        if (this.players.some(player => player.name === name)
+                || (this.players.some(player => player.color === color)))
                 throw new Error(`Player ${name} already has ${color}`);
         let player = new Player(name, color);
-        Game.players.push(player);
+        this.players.push(player);
         return player;
     }
 
     /**
      * Ends the current player's turn if has pressed spin
      */
-    public static endTurn() {
-        let currentPlayer: Player = Game.getCurrentPlayerTurn();
+    public endTurn() {
+        let currentPlayer: Player = this.getCurrentPlayerTurn();
         if (!currentPlayer.hasPressedSpin)
             throw new Error("Can't end turn: player hasn't pressed Spin");
         currentPlayer.endTurn();
-        Game.currentPlayerTurn++;
-        if (Game.currentPlayerTurn >= Game.players.length) {
-            Game.currentPlayerTurn = 0;
-            Game.years--;
-            Game.playedRounds++;
-            if (Game.years <= 0)
+        this.currentPlayerTurn++;
+        if (this.currentPlayerTurn >= this.players.length) {
+            this.currentPlayerTurn = 0;
+            this.years--;
+            this.playedRounds++;
+            if (this.years <= 0)
                 this.endGame();
         }
     }
 
-    public static endGame() {
-        for (const player of Game.players) {
+    public endGame() {
+        for (const player of this.players) {
             player.sellAllAssets();
             player.convertMoneyToLifePoints();
         }
-        Game.winner = Game.players.reduce((best, player) =>
+        this.winner = this.players.reduce((best, player) =>
             player.lifePoints > best.lifePoints ? player : best
         );
-        Game.currentPlayerTurn = Game.players.indexOf(Game.winner);
+        this.currentPlayerTurn = this.players.indexOf(this.winner);
     }
 
-    public static getCurrentPlayerTurn(): Player {
-        return Game.players[Game.currentPlayerTurn];
+    public getCurrentPlayerTurn(): Player {
+        return this.players[this.currentPlayerTurn];
     }
 
-    public static roll() {
-        Game.rolledNumber = HouseRules.BalancedRolling ?
-            Game.getCurrentPlayerTurn().modifyRollByCar(Mth.triangleInt(1, 10)) :
-            Game.getCurrentPlayerTurn().modifyRollByCar(Mth.randomInt(1, 10));
+    public roll() {
+        this.rolledNumber = HouseRules.BalancedRolling ?
+            this.getCurrentPlayerTurn().modifyRollByCar(Mth.triangleInt(1, 10)) :
+            this.getCurrentPlayerTurn().modifyRollByCar(Mth.randomInt(1, 10));
     }
 
-    public static probability(): number {
+    public probability(): number {
         const r = Math.random();
         if (r < 0.5)
             return 0;
@@ -83,3 +85,6 @@ export class Game {
         return 2;
     }
 }
+
+// Singleton: the module is executed only once, so this is the only instance.
+export const game = new Game();

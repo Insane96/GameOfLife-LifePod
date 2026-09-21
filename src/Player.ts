@@ -2,7 +2,7 @@ import {PlayerColor} from "./PlayerColor.js";
 import {Asset} from "./Asset.js";
 import {OwnedAsset} from "./OwnedAsset.js";
 import {HouseRules} from "./HouseRules.js";
-import {Game} from "./Game.js";
+import {game} from "./Game.js";
 
 export class Player {
     private _money: number = 0;
@@ -28,7 +28,7 @@ export class Player {
         if (this._hasPressedSpin)
             throw new Error("Player has already pressed Spin");
         let salaryPenalty: number = 0;
-        if (Game.playedRounds >= 3 && !this._assets.some(ownedAsset => ownedAsset.asset.isHouse()))
+        if (game.playedRounds >= 3 && !this._assets.some(ownedAsset => ownedAsset.asset.isHouse()))
             salaryPenalty += 0.15;
         if (this._kids > 0) {
             //TODO Track age so they will no longer cost anything @ 18 years
@@ -51,7 +51,7 @@ export class Player {
         if (this._kids > 0) {
             this.addLifePoints(this._kids * 350);
         }
-        Game.roll();
+        game.roll();
         this._hasPressedSpin = true;
     }
 
@@ -121,7 +121,7 @@ export class Player {
     public getMarried() {
         this._married = true;
         this.addLifePoints(3500);
-        for (const player of Game.players) {
+        for (const player of game.players) {
             if (player === this)
                 continue;
             player.removeMoney(1000);
@@ -143,7 +143,7 @@ export class Player {
     }
 
     public tryForAKid() {
-        let kids = Game.probability();
+        let kids = game.probability();
         if (kids > 0)
             this.addKids(kids);
     }
@@ -196,7 +196,7 @@ export class Player {
     }
 
     public bid(amount: number) {
-        let result = Game.probability();
+        let result = game.probability();
         //TODO House rule to win with 1 and 2
         if (result == 0)
             this.removeMoney(amount);
@@ -220,7 +220,7 @@ export class Player {
     }
 
     public convertMoneyToLifePoints() {
-        this._lifePoints += this._money / Game.conversionRatio;
+        this._lifePoints += this._money / game.conversionRatio;
         this._lifePoints = Math.round(this._lifePoints);
         this._money = 0;
     }

@@ -1,6 +1,6 @@
 import {DOMPlayer} from "./DOMPlayer.js";
 import {ALL_PLAYER_COLORS, PlayerColor} from "../PlayerColor.js";
-import {Game} from "../Game.js";
+import {game} from "../Game.js";
 import {playScreenUI} from "./PlayScreenUI.js";
 import {globalUI} from "./GlobalUI.js";
 
@@ -50,9 +50,9 @@ class MainMenuUI {
                 playingPlayers.push(domPlayer);
             }
             for (const domPlayer of playingPlayers) {
-                domPlayer.player = Game.addPlayer(domPlayer.getName(), domPlayer.color!);
+                domPlayer.player = game.addPlayer(domPlayer.getName(), domPlayer.color!);
             }
-            Game.init(years);
+            game.init(years);
             this.startScreen?.classList.add("d-none");
             this.playScreen?.classList.remove("d-none");
             playScreenUI.render();

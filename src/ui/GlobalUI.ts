@@ -1,4 +1,4 @@
-import {Game} from "../Game.js";
+import {game} from "../Game.js";
 
 class GlobalUI {
     private btnFullscreen = document.getElementById("btn-fullscreen") as HTMLButtonElement;
@@ -27,7 +27,7 @@ class GlobalUI {
     }
 
     public render() {
-        if (Game.gameStarted) {
+        if (game.gameStarted) {
             this.cellSettings.appendChild(this.btnFullscreen);
         }
         else {
