@@ -12,11 +12,18 @@ export class Game {
 
     public static rolledNumber: number = 0;
 
+    private static _gameStarted: boolean = false;
+
     public static winner: Player;
+
+    public static get gameStarted(): boolean {
+        return Game._gameStarted;
+    }
 
     public static init(years: number) {
         Game.conversionRatio = Mth.randomDouble(80, 100);
         Game.years = years;
+        Game._gameStarted = true;
     }
 
     public static addPlayer(name: string, color: PlayerColor): Player {

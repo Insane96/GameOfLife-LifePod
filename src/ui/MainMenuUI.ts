@@ -2,6 +2,7 @@ import {DOMPlayer} from "./DOMPlayer.js";
 import {ALL_PLAYER_COLORS, PlayerColor} from "../PlayerColor.js";
 import {Game} from "../Game.js";
 import {playScreenUI} from "./PlayScreenUI.js";
+import {globalUI} from "./GlobalUI.js";
 
 class MainMenuUI {
     private startScreen = document.getElementById("start-screen");
@@ -55,6 +56,7 @@ class MainMenuUI {
             this.startScreen?.classList.add("d-none");
             this.playScreen?.classList.remove("d-none");
             playScreenUI.render();
+            globalUI.render();
         });
         this.btnAddPlayer.addEventListener("click", () => {
             if (this.playersCount < 6)

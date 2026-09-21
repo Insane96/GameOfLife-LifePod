@@ -23,7 +23,8 @@ cards").
 ## Interface decisions made
 
 - **Orientation**: landscape first, but it must stay usable in portrait.
-  Reflow through the `orientation` media query, not just width breakpoints.
+  Native Bootstrap only (grid, responsive breakpoints and utility classes): no
+  custom CSS or media queries for portrait/landscape.
 - **Players**: up to 6 (the original hardware supported 4 through the colored
   Visa cards: red, blue, green, yellow). In the digital version we extend the
   palette with magenta and black for the two extra players (see `PlayerColor`
@@ -78,11 +79,23 @@ cards").
     error if Spin was not pressed. Spin can be pressed once per turn. When the
     turn changes, the open operation is closed and the fields are cleared.
     The code uses the same naming (`btn-spin`, `btnSpin`, `hasPressedSpin`,
-    `Player.onSpin()`). The button does not show the roll result yet
-    (`Game.roll()` exists in the backend but is not wired to the UI).
+    `Player.onSpin()`). The roll result (`Game.rolledNumber`) is shown for now
+    with a placeholder `alert("Rolled N")`; a proper display is still to be
+    designed.
   - **End of game**: at `Game.years <= 0`, `endGame` sets `currentPlayerTurn`
     to the winner, `render()` shows "Winner: name" and disables/hides Spin and
     the +/− buttons.
+  - The bottom-left cell (`cell-settings`) is reserved for settings (volume,
+    fullscreen).
+- **Fullscreen button**: a single `btn-fullscreen` element, handled by
+  `GlobalUI`, shared by all screens. `GlobalUI.render()` moves it (with
+  `appendChild`, which moves the node instead of copying it) into the start
+  screen or into `cell-settings`, depending on `Game.gameStarted`. Its
+  `aria-label` is updated from the `fullscreenchange` event, not from the
+  click, because the user can also leave fullscreen with Esc or a system
+  gesture. It is hidden when `requestFullscreen` is not available (iPhone
+  Safari does not support it on regular pages; the PWA is the way to get
+  fullscreen there, see "Open").
 
 ## Persistence (localStorage) — critical requirement
 
@@ -148,8 +161,8 @@ palette) instead of using the defaults as-is.
 - **Numeric inputs**: `type="text" inputmode="numeric" pattern="[0-9]*"`;
   `parseInt` + `Number.isNaN` before calling the model. The backend rejects
   `NaN` and out-of-range values anyway.
-- **Screens as singletons**: `MainMenuUI` and `PlayScreenUI` are **non-exported**
-  classes with instance fields and methods (`this.` is used); listeners are
+- **Screens as singletons**: `MainMenuUI`, `PlayScreenUI` and `GlobalUI` are
+  **non-exported** classes with instance fields and methods (`this.` is used); listeners are
   attached in the constructor. The module exports the single instance
   (`export const playScreenUI = new PlayScreenUI();`), which other files import
   by name. An ES module is executed only once, so `getInstance()` is not
@@ -182,13 +195,14 @@ palette) instead of using the defaults as-is.
 - localStorage persistence: not implemented yet (the "Continue game" button is
   a placeholder). `Game` is entirely static with no reset for a new game;
   `Asset`s contain functions, so they must be saved by name and rebuilt, not
-  serialized.
+  serialized. `Game.gameStarted` also has no reset.
 - Translations: postponed. When needed: IT + EN, a hand-made `t(key)` helper
   with TS dictionaries (the English type constrained to the Italian keys), no
   external library.
 - PWA (future): the Lifepod will be used on a phone at the game table. With a
   Service Worker and a `manifest.json` it could work offline and be installed
-  as an app.
+  as an app, and it would also give fullscreen on iPhone (via the manifest
+  `display` setting), where the Fullscreen API is not available.
 - Optional rules (house rules) in the backend (`HouseRules`: unlimited kids,
   balanced rolling, lottery jackpot bonus with no winner): decision postponed
   (low priority), to be settled where they are enabled in the interface and
