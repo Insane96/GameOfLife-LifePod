@@ -12,6 +12,7 @@ class Game {
     public currentPlayerTurn: number = 0;
 
     public rolledNumber: number = 0;
+    public rolledChance: number = 0;
 
     private _gameStarted: boolean = false;
 
@@ -70,7 +71,7 @@ class Game {
             this.getCurrentPlayerTurn().modifyRollByCar(Mth.randomInt(1, 10));
     }
 
-    public probability(): number {
+    public chance(): number {
         const r = Math.random();
         if (r < 0.5)
             return 0;

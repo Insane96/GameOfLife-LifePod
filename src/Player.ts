@@ -144,7 +144,7 @@ export class Player {
     }
 
     public tryForAKid() {
-        let kids = game.probability();
+        let kids = game.chance();
         if (kids > 0)
             this.addKids(kids);
     }
@@ -197,7 +197,7 @@ export class Player {
     }
 
     public bid(amount: number) {
-        let result = game.probability();
+        let result = game.chance();
         //TODO House rule to win with 1 and 2
         if (result == 0)
             this.removeMoney(amount);
