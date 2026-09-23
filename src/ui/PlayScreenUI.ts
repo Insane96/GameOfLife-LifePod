@@ -25,13 +25,13 @@ class PlayScreenUI {
 
     private _operation: Operation = Operation.None;
 
+    private playerRoll = document.getElementById("player-roll") as HTMLDivElement;
     private btnWedding = document.getElementById("btn-wedding") as HTMLButtonElement;
 
     constructor() {
         this.btnSpin.addEventListener("click", () => {
             try {
                 game.getCurrentPlayerTurn().onSpin();
-                alert(`Rolled ${game.rolledNumber}`);
             }
             catch (e) {
                 alert(`Error: ${e}`);
@@ -124,6 +124,10 @@ class PlayScreenUI {
         this.btnWedding.disabled = !currentPlayer.hasPressedSpin;
 
         this.btnSpin.disabled = currentPlayer.hasPressedSpin;
+        if (game.rolledNumber > 0)
+            this.playerRoll.textContent = `Rolled: ${game.rolledNumber}`;
+        else
+            this.playerRoll.textContent = "";
 
         this.yearsLeft.textContent = `Years left: ${game.years}`;
         this.btnEndTurn.disabled = !currentPlayer.hasPressedSpin;

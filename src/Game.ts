@@ -42,6 +42,7 @@ class Game {
         if (!currentPlayer.hasPressedSpin)
             throw new Error("Can't end turn: player hasn't pressed Spin");
         currentPlayer.endTurn();
+        this.rolledNumber = 0;
         this.currentPlayerTurn++;
         if (this.currentPlayerTurn >= this.players.length) {
             this.currentPlayerTurn = 0;
