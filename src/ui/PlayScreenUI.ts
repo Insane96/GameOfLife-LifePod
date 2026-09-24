@@ -54,7 +54,7 @@ class PlayScreenUI {
                 game.getCurrentPlayerTurn().onSpin();
             }
             catch (e) {
-                alert(`Error: ${e}`);
+                this.onError(e);
             }
             this.render();
         });
@@ -63,7 +63,7 @@ class PlayScreenUI {
                 game.endTurn();
             }
             catch (e) {
-                alert(`Error: ${e}`);
+                this.onError(e);
             }
             this._operation = Operation.None;
             this.inputSalary.value = String(game.getCurrentPlayerTurn().salary);
@@ -108,7 +108,7 @@ class PlayScreenUI {
                 game.getCurrentPlayerTurn().salary = input;
             }
             catch (e) {
-                alert(`Error: ${e}`);
+                this.onError(e);
                 return;
             }
             this._operation = Operation.None;
@@ -127,7 +127,7 @@ class PlayScreenUI {
                 game.getCurrentPlayerTurn().bid(input);
             }
             catch (e) {
-                alert(`Error: ${e}`);
+                this.onError(e);
                 return;
             }
             this._operation = Operation.None;
@@ -152,7 +152,7 @@ class PlayScreenUI {
                         player.buyAsset(asset);
                 }
                 catch (e) {
-                    alert(`Error: ${e}`);
+                    this.onError(e);
                 }
                 this.render();
             });
@@ -287,10 +287,15 @@ class PlayScreenUI {
                 inputElement.value = "";
             }
             catch (e) {
-                alert(`Error: ${e}`);
+                this.onError(e);
             }
         }
         this.render();
+    }
+
+    public onError(exception: any) {
+        alert(`Error: ${exception}`);
+        console.log(exception);
     }
 }
 

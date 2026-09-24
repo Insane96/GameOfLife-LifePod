@@ -42,7 +42,7 @@ export class Player {
         let calculatedSalary: number = this._salary * (1 - salaryPenalty);
         this.addMoney(calculatedSalary);
         if (this._money < 0)
-            this.removeMoney(this._money * 0.10);
+            this.removeMoney(-this._money * 0.10);
         for (const asset of this._assets) {
             asset.onNewTurn(this);
         }
