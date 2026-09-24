@@ -44,8 +44,17 @@
     </div>
     <div id="play-screen" class="d-none container-fluid min-vh-100 d-flex flex-column fs-5">
       <div class="row flex-grow-1 align-items-start">
-        <div class="col d-flex justify-content-start m-4">
-          <!-- Lottery, Salary e Business / Auction, Chance -->
+        <div class="col d-flex flex-column justify-content-start m-4">
+          <div class="d-flex align-items-center gap-2">
+            <button id="btn-salary">Salary</button>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <input id="input-salary" type="text" inputmode="numeric" pattern="[0-9]*" class="d-none" aria-label="Salary input"><button id="btn-confirm-salary" aria-label="Confirm salary" class="d-none">✓</button>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <button id="btn-chance">Chance</button>
+          </div>
+          <!-- Lottery, Salary e Business / Auction -->
         </div>
         <div class="col d-flex justify-content-center m-4">
           <!-- Houses and cars -->
@@ -89,6 +98,7 @@
             <input id="input-life-points" type="text" inputmode="numeric" pattern="[0-9]*" class="d-none" aria-label="Life points input"><button id="btn-confirm-life-points" aria-label="Confirm operation" class="d-none">✓</button>
           </div>
           <div id="player-roll"></div>
+          <div id="chance-result"></div>
         </div>
       </div>
       <div class="row flex-grow-1 align-items-end">

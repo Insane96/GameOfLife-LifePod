@@ -12,7 +12,7 @@ class Game {
     public currentPlayerTurn: number = 0;
 
     public rolledNumber: number = 0;
-    public rolledChance: number = 0;
+    public rolledChance: -1 | 0 | 1 | 2 = -1;
 
     private _gameStarted: boolean = false;
 
@@ -44,6 +44,7 @@ class Game {
             throw new Error("Can't end turn: player hasn't pressed Spin");
         currentPlayer.endTurn();
         this.rolledNumber = 0;
+        this.rolledChance = -1;
         this.currentPlayerTurn++;
         if (this.currentPlayerTurn >= this.players.length) {
             this.currentPlayerTurn = 0;
@@ -71,7 +72,13 @@ class Game {
             this.getCurrentPlayerTurn().modifyRollByCar(Mth.randomInt(1, 10));
     }
 
-    public chance(): number {
+    public rollAndSetChance(): 0 | 1 | 2 {
+        this.rolledChance = this.rollChance();
+        return this.rolledChance;
+    }
+
+    public rollChance(): 0 | 1 | 2 {
+        //TODO house rules: random chance weights (default is 2x0, 1x1, 1x2)
         const r = Math.random();
         if (r < 0.5)
             return 0;

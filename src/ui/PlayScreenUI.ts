@@ -25,7 +25,14 @@ class PlayScreenUI {
 
     private _operation: Operation = Operation.None;
 
+    private btnSalary = document.getElementById("btn-salary") as HTMLButtonElement;
+    private inputSalary = document.getElementById("input-salary") as HTMLInputElement;
+    private btnConfirmSalary = document.getElementById("btn-confirm-salary") as HTMLButtonElement;
+
     private playerRoll = document.getElementById("player-roll") as HTMLDivElement;
+    private btnChance = document.getElementById("btn-chance") as HTMLButtonElement;
+    private chanceResult = document.getElementById("chance-result") as HTMLDivElement;
+
     private btnWedding = document.getElementById("btn-wedding") as HTMLButtonElement;
 
     constructor() {
@@ -46,6 +53,7 @@ class PlayScreenUI {
                 alert(`Error: ${e}`);
             }
             this._operation = Operation.None;
+            this.inputSalary.value = String(game.getCurrentPlayerTurn().salary);
             this.inputMoney.value = "";
             this.inputLifePoints.value = "";
             this.render();
@@ -58,6 +66,9 @@ class PlayScreenUI {
             this._operation = this._operation === Operation.RemoveMoney ? Operation.None : Operation.RemoveMoney;
             this.render();
         });
+        this.btnConfirmMoney.addEventListener("click", () => {
+            this.confirmOperationInput(this.inputMoney, Operation.AddMoney, Operation.RemoveMoney, (v) => game.getCurrentPlayerTurn().addMoney(v), (v) => game.getCurrentPlayerTurn().removeMoney(v));
+        });
         this.btnAddLifePoints.addEventListener("click", () => {
             this._operation = this._operation === Operation.AddLifePoints ? Operation.None : Operation.AddLifePoints;
             this.render();
@@ -66,11 +77,33 @@ class PlayScreenUI {
             this._operation = this._operation === Operation.RemoveLifePoints ? Operation.None : Operation.RemoveLifePoints;
             this.render();
         });
-        this.btnConfirmMoney.addEventListener("click", () => {
-            this.confirmOperationInput(this.inputMoney, Operation.AddMoney, Operation.RemoveMoney, (v) => game.getCurrentPlayerTurn().addMoney(v), (v) => game.getCurrentPlayerTurn().removeMoney(v));
-        });
         this.btnConfirmLifePoints.addEventListener("click", () => {
             this.confirmOperationInput(this.inputLifePoints, Operation.AddLifePoints, Operation.RemoveLifePoints, (v) => game.getCurrentPlayerTurn().addLifePoints(v), (v) => game.getCurrentPlayerTurn().removeLifePoints(v));
+        });
+        this.btnChance.addEventListener("click", () => {
+            game.rollAndSetChance();
+            this.render();
+        });
+        this.btnSalary.addEventListener("click", () => {
+            this.inputSalary.value = String(game.getCurrentPlayerTurn().salary);
+            this._operation = this._operation === Operation.Salary ? Operation.None : Operation.Salary;
+            this.render();
+        });
+        this.btnConfirmSalary.addEventListener("click", () => {
+            let input = parseInt(this.inputSalary.value);
+            if (Number.isNaN(input)) {
+                alert("Invalid input");
+                return;
+            }
+            try {
+                game.getCurrentPlayerTurn().salary = input;
+            }
+            catch (e) {
+                alert(`Error: ${e}`);
+                return;
+            }
+            this._operation = Operation.None;
+            this.render();
         });
         this.btnWedding.addEventListener("click", () => {
             if (confirm("Confirm Wedding/Anniversary?"))
@@ -129,6 +162,14 @@ class PlayScreenUI {
         else
             this.playerRoll.textContent = "";
 
+        this.inputSalary.classList.toggle("d-none", this._operation !== Operation.Salary);
+        this.btnConfirmSalary.classList.toggle("d-none", this._operation !== Operation.Salary);
+
+        if (game.rolledChance >= 0)
+            this.chanceResult.textContent = `Chance: ${game.rolledChance}`;
+        else
+            this.chanceResult.textContent = "";
+
         this.yearsLeft.textContent = `Years left: ${game.years}`;
         this.btnEndTurn.disabled = !currentPlayer.hasPressedSpin;
 
@@ -142,6 +183,7 @@ class PlayScreenUI {
             this.btnRemoveMoney.classList.add("d-none");
             this.btnAddLifePoints.classList.add("d-none");
             this.btnRemoveLifePoints.classList.add("d-none");
+            this.btnSalary.disabled = true;
             this.btnWedding.disabled = true;
         }
     }
