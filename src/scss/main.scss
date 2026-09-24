@@ -21,8 +21,11 @@
   $font-family-base: ("Fredoka", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif)
 );
 
-// A warm glow at the top of the page instead of a flat background
-body {
+// A warm glow at the top of the page instead of a flat background. The sticky
+// row repeats it: with a fixed attachment it shows the same pixels as the body,
+// so its opaque bg-body does not cut the glow.
+body,
+.sticky-top {
   background-image: radial-gradient(ellipse at 50% -10%, rgba(232, 113, 10, 0.2), transparent 55%);
   background-attachment: fixed;
 }

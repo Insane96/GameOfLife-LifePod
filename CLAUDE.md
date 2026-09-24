@@ -41,6 +41,8 @@ cards").
   Events) with a grid of icon + label buttons.
 - **Portrait layout**: vertical stack (player bar on top, summary, spin,
   categories, actions), same information hierarchy as the landscape layout.
+  Money, Life Points and Spin stay fixed at the top (sticky) while the rest
+  scrolls; details in "Game screen" → "Responsive behavior".
 - **Value change feedback**: toasts (e.g. "+50,000 €", "+2 Life Points")
   instead of a silent number update only.
 - **Undo**: an "Undo last action" button always visible next to "End turn".
@@ -70,20 +72,29 @@ cards").
     empty).
   - Middle: name of the player whose turn it is, money and life points, each
     with `+` / `−` buttons that open a numeric field (`inputmode="numeric"`)
-    with a ✓ confirm button. Only one field open at a time, managed by
-    `PlayScreenUI._operation` (`Operation` enum).
-  - Bottom: volume (empty), "Spin" in the center, years left and "End turn" on
-    the right.
+    with a ✓ confirm button, then the roll/chance results and the "Spin"
+    button right below. Only one field open at a time, managed by
+    `PlayScreenUI._operation` (`Operation` enum). Spin lives in this row, not
+    in the bottom one, so it is always visible next to the numbers (see
+    "Responsive behavior" below).
+  - Bottom: settings on the left (`cell-settings`), in the center the
+    "Wedding" button (Kids and Degree/PhD buttons still to be added, so the cell
+    will not stay with a single button), years left and "End turn" on the
+    right.
   - **Turn flow**: the button is called "Spin" as on the original Lifepod (it
     is the same primary Spin button described in the layouts above, not a
     separate "Go!" button). Pressing it (`Player.onSpin()`) credits salary and
     bonuses and unlocks "End turn"; "End turn" (`game.endTurn()`) throws an
-    error if Spin was not pressed. Spin can be pressed once per turn. When the
-    turn changes, the open operation is closed and the fields are cleared.
+    error if Spin was not pressed. Spin can be pressed once per turn: it
+    disappears after being pressed (`d-none` toggled from
+    `currentPlayer.hasPressedSpin` in `render()`) and comes back when the turn
+    changes. When the turn changes, the open operation is closed and the fields
+    are cleared.
     The code uses the same naming (`btn-spin`, `btnSpin`, `hasPressedSpin`,
-    `Player.onSpin()`). The roll result (`game.rolledNumber`) is shown for now
-    with a placeholder `alert("Rolled N")`; a proper display is still to be
-    designed.
+    `Player.onSpin()`). The roll result (`game.rolledNumber`) is shown as text
+    ("Rolled: N") in `#player-roll`, and the chance result in `#chance-result`,
+    both in the middle row under money and Life Points; a proper display
+    (animation) is still to be designed.
   - **End of game**: at `game.years <= 0`, `endGame` sells the assets and
     converts money into Life Points. `render()` hides the player name, money
     and Life Points, shows a scoreboard table (Rank / Player / Life Points,
@@ -93,6 +104,28 @@ cards").
     the turn order (the sort is stable).
   - The bottom-left cell (`cell-settings`) is reserved for settings (volume,
     fullscreen).
+  - **Responsive behavior** (Bootstrap classes only, breakpoint `sm` = 576px:
+    below it the layout is "portrait", from `sm` up it is "landscape"; it is
+    based on width, not on the real orientation):
+    - The three rows of `#play-screen` are flex items in a column. The middle
+      row has `order-first order-sm-0` to go on top in portrait, and
+      `sticky-top bg-body` so it stays fixed while the rest scrolls. It also has
+      `flex-grow-0 flex-sm-grow-1` so it does not stretch in portrait.
+    - The cells of the top and bottom rows use `col-sm-*` (3 / 6 / 3) without a
+      base `col-*`: below `sm` a child of `.row` is 100% wide, so they stack by
+      themselves. Use `p-*` inside the cells, never `m-*`, otherwise margins add
+      to the percentage widths and the last cell wraps.
+    - Bottom row in portrait: the Wedding cell is `col-12 order-first`, then
+      `cell-settings` and `cell-years-end-turn` are `col-6` and share a line
+      (fullscreen bottom-left, End turn bottom-right).
+    - The top-left cell (Salary, Chance, Business / Auction) centers its
+      buttons in portrait (`align-items-center`) and keeps them left-aligned
+      from `sm` up (`align-items-sm-stretch`).
+    - The house/car buttons are stacked (`flex-column`) in portrait and side by
+      side (`flex-sm-row flex-sm-wrap`) from `sm` up.
+    - The warm glow in `main.scss` is a `background-attachment: fixed` gradient
+      on `body`; `.sticky-top` repeats it so that the opaque `bg-body` of the
+      sticky row does not cut the glow.
 - **Fullscreen button**: a single `btn-fullscreen` element, handled by
   `GlobalUI`, shared by all screens. `GlobalUI.render()` moves it (with
   `appendChild`, which moves the node instead of copying it) into the start

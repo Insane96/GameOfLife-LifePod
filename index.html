@@ -44,7 +44,7 @@
     </div>
     <div id="play-screen" class="d-none container-fluid min-vh-100 d-flex flex-column fs-5">
       <div class="row flex-grow-1 align-items-start">
-        <div class="col-md-3 d-flex flex-column justify-content-start p-4">
+        <div class="col-sm-3 d-flex flex-column align-items-center align-items-sm-stretch justify-content-start gap-2 p-2">
           <div class="d-flex align-items-center gap-2">
             <button id="btn-salary">Salary</button>
           </div>
@@ -62,19 +62,19 @@
           </div>
           <!-- Lottery -->
         </div>
-        <div class="col-md-6 d-flex justify-content-center p-4">
-          <button class="fs-6" id="btn-house-small">Modest House</button>
-          <button class="fs-6" id="btn-house-medium">Mid-sized House</button>
-          <button class="fs-6" id="btn-house-large">Mansion</button>
-          <button class="fs-6" id="btn-car-economy">Economy Car</button>
-          <button class="fs-6" id="btn-car-luxury">Luxury Car</button>
+        <div class="col-sm-6 d-flex flex-column flex-sm-row flex-sm-wrap justify-content-center gap-2 p-2">
+          <button id="btn-house-small">Modest House</button>
+          <button id="btn-house-medium">Mid-sized House</button>
+          <button id="btn-house-large">Mansion</button>
+          <button id="btn-car-economy">Economy Car</button>
+          <button id="btn-car-luxury">Luxury Car</button>
         </div>
-        <div class="col-md-3 d-flex justify-content-end p-4">
+        <div class="col-sm-3 d-flex justify-content-end p-2">
           <!-- Board spaces -->
         </div>
       </div>
-      <div class="row flex-grow-1 align-items-center">
-        <div class="col d-flex flex-column align-items-center m-4">
+      <div class="row sticky-top bg-body order-first order-sm-0 flex-grow-0 flex-sm-grow-1 align-items-center">
+        <div class="col d-flex flex-column align-items-center p-2">
           <div id="player-name"></div>
           <div class="table-responsive">
             <table class="table">
@@ -109,18 +109,18 @@
           </div>
           <div id="player-roll"></div>
           <div id="chance-result"></div>
+          <button id="btn-spin">Spin</button>
         </div>
       </div>
       <div class="row flex-grow-1 align-items-end">
-        <div id="cell-settings" class="col d-flex justify-content-start m-4">
+        <div id="cell-settings" class="col-6 col-sm-3 d-flex justify-content-start p-2">
           <!-- Volume -->
         </div>
-        <div id="cell-life-learn-spin" class="col d-flex justify-content-center m-4">
+        <div id="cell-life-learn-spin" class="col-12 col-sm-6 order-first order-sm-0 d-flex justify-content-center p-2">
           <button id="btn-wedding">Wedding</button>
           <!-- Kids and Degree/PhD -->
-          <button id="btn-spin">Spin</button>
         </div>
-        <div id="cell-years-end-turn" class="col d-flex flex-column align-items-end m-4">
+        <div id="cell-years-end-turn" class="col-6 col-sm-3 d-flex flex-column align-items-end p-2">
           <div id="years-left">Years: </div>
           <button id="btn-end-turn">End turn</button>
         </div>
