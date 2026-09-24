@@ -36,8 +36,10 @@ export class Asset {
     }
 
     public onNewTurn(ownedAsset: OwnedAsset, player: Player) {
-        player.addLifePoints(this.lifePointsPerTurn);
-        player.removeMoney(this.costPerTurn);
+        if (this.lifePointsPerTurn > 0)
+            player.addLifePoints(this.lifePointsPerTurn);
+        if (this.costPerTurn > 0)
+            player.removeMoney(this.costPerTurn);
         this.onNewTurnExtra(ownedAsset, player);
     }
 
