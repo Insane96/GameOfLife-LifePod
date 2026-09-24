@@ -197,8 +197,12 @@ export class Player {
     }
 
     public bid(amount: number) {
-        let result = game.rollChance();
-        //TODO House rule to win with 1 and 2
+        if (Number.isNaN(amount))
+            throw new Error("bid must be a number.");
+        if (amount < 10000 || amount > 100000)
+            throw new Error("bid must be between 10.000 and 100.000 (inclusive)");
+        let result = game.rollAndSetChance();
+        //TODO House rule: balanced bid: to win with 1 and 2
         if (result == 0)
             this.removeMoney(amount);
         else if (result == 2)

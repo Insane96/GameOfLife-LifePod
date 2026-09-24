@@ -29,7 +29,11 @@ class PlayScreenUI {
     private inputSalary = document.getElementById("input-salary") as HTMLInputElement;
     private btnConfirmSalary = document.getElementById("btn-confirm-salary") as HTMLButtonElement;
 
-    private playerRoll = document.getElementById("player-roll") as HTMLDivElement;
+    private btnAuction = document.getElementById("btn-auction") as HTMLButtonElement;
+    private inputAuction = document.getElementById("input-auction") as HTMLInputElement;
+    private btnConfirmAuction = document.getElementById("btn-confirm-auction") as HTMLButtonElement;
+
+    private playerRoll =document.getElementById("player-roll") as HTMLDivElement;
     private btnChance = document.getElementById("btn-chance") as HTMLButtonElement;
     private chanceResult = document.getElementById("chance-result") as HTMLDivElement;
 
@@ -56,6 +60,7 @@ class PlayScreenUI {
             this.inputSalary.value = String(game.getCurrentPlayerTurn().salary);
             this.inputMoney.value = "";
             this.inputLifePoints.value = "";
+            this.inputAuction.value = "";
             this.render();
         });
         this.btnAddMoney.addEventListener("click", () => {
@@ -103,6 +108,27 @@ class PlayScreenUI {
                 return;
             }
             this._operation = Operation.None;
+            this.render();
+        });
+        this.btnAuction.addEventListener("click", () => {
+            this._operation = this._operation === Operation.Auction ? Operation.None : Operation.Auction;
+            this.render();
+        });
+        this.btnConfirmAuction.addEventListener("click", () => {
+            let input = parseInt(this.inputAuction.value);
+            if (Number.isNaN(input)) {
+                alert("Invalid input");
+                return;
+            }
+            try {
+                game.getCurrentPlayerTurn().bid(input);
+            }
+            catch (e) {
+                alert(`Error: ${e}`);
+                return;
+            }
+            this._operation = Operation.None;
+            this.inputAuction.value = "";
             this.render();
         });
         this.btnWedding.addEventListener("click", () => {
@@ -165,6 +191,9 @@ class PlayScreenUI {
         this.inputSalary.classList.toggle("d-none", this._operation !== Operation.Salary);
         this.btnConfirmSalary.classList.toggle("d-none", this._operation !== Operation.Salary);
 
+        this.inputAuction.classList.toggle("d-none", this._operation !== Operation.Auction);
+        this.btnConfirmAuction.classList.toggle("d-none", this._operation !== Operation.Auction);
+
         if (game.rolledChance >= 0)
             this.chanceResult.textContent = `Chance: ${game.rolledChance}`;
         else
@@ -184,6 +213,7 @@ class PlayScreenUI {
             this.btnAddLifePoints.classList.add("d-none");
             this.btnRemoveLifePoints.classList.add("d-none");
             this.btnSalary.disabled = true;
+            this.btnAuction.disabled = true;
             this.btnWedding.disabled = true;
         }
     }
