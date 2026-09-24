@@ -44,7 +44,7 @@
     </div>
     <div id="play-screen" class="d-none container-fluid min-vh-100 d-flex flex-column fs-5">
       <div class="row flex-grow-1 align-items-start">
-        <div class="col d-flex flex-column justify-content-start m-4">
+        <div class="col-md-3 d-flex flex-column justify-content-start p-4">
           <div class="d-flex align-items-center gap-2">
             <button id="btn-salary">Salary</button>
           </div>
@@ -60,12 +60,16 @@
           <div class="d-flex align-items-center gap-2">
             <input id="input-auction" type="text" inputmode="numeric" pattern="[0-9]*" class="d-none" aria-label="Auction input" placeholder="10000~100000"><button id="btn-confirm-auction" aria-label="Confirm auction" class="d-none">✓</button>
           </div>
-          <!-- Lottery and Business / Auction -->
+          <!-- Lottery -->
         </div>
-        <div class="col d-flex justify-content-center m-4">
-          <!-- Houses and cars -->
+        <div class="col-md-6 d-flex justify-content-center p-4">
+          <button class="fs-6" id="btn-house-small">Modest House</button>
+          <button class="fs-6" id="btn-house-medium">Mid-sized House</button>
+          <button class="fs-6" id="btn-house-large">Mansion</button>
+          <button class="fs-6" id="btn-car-economy">Economy Car</button>
+          <button class="fs-6" id="btn-car-luxury">Luxury Car</button>
         </div>
-        <div class="col d-flex justify-content-end m-4">
+        <div class="col-md-3 d-flex justify-content-end p-4">
           <!-- Board spaces -->
         </div>
       </div>

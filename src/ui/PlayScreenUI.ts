@@ -1,5 +1,6 @@
 import {game} from "../Game.js";
 import {Player} from "../Player.js";
+import {Asset} from "../Asset.js";
 import {Operation} from "./Operation.js";
 
 class PlayScreenUI {
@@ -38,6 +39,14 @@ class PlayScreenUI {
     private chanceResult = document.getElementById("chance-result") as HTMLDivElement;
 
     private btnWedding = document.getElementById("btn-wedding") as HTMLButtonElement;
+
+    private assetButtons: {button: HTMLButtonElement, asset: Asset, name: string}[] = [
+        {button: document.getElementById("btn-house-small") as HTMLButtonElement, asset: Asset.SmallHouse, name: "Modest House"},
+        {button: document.getElementById("btn-house-medium") as HTMLButtonElement, asset: Asset.MediumHouse, name: "Mid-sized House"},
+        {button: document.getElementById("btn-house-large") as HTMLButtonElement, asset: Asset.BigHouse, name: "Mansion"},
+        {button: document.getElementById("btn-car-economy") as HTMLButtonElement, asset: Asset.EconomyCar, name: "Economy Car"},
+        {button: document.getElementById("btn-car-luxury") as HTMLButtonElement, asset: Asset.LuxuryCar, name: "Luxury Car"},
+    ];
 
     constructor() {
         this.btnSpin.addEventListener("click", () => {
@@ -130,6 +139,24 @@ class PlayScreenUI {
                 game.getCurrentPlayerTurn().getMarried();
             this.render();
         });
+        for (const {button, asset, name} of this.assetButtons) {
+            button.addEventListener("click", () => {
+                const player = game.getCurrentPlayerTurn();
+                const price = this.formatNumber(this.getAssetPrice(player, asset));
+                try {
+                    if (player.hasAsset(asset)) {
+                        if (confirm(`Sell ${name} for € ${price}?`))
+                            player.sellAsset(asset);
+                    }
+                    else if (confirm(`Buy ${name} for € ${price}?`))
+                        player.buyAsset(asset);
+                }
+                catch (e) {
+                    alert(`Error: ${e}`);
+                }
+                this.render();
+            });
+        }
     }
 
     public render() {
@@ -148,7 +175,7 @@ class PlayScreenUI {
                 cell = row.insertCell();
                 cell.textContent = player.name;
                 cell = row.insertCell();
-                cell.textContent = `♥ ${player.lifePoints}`;
+                cell.textContent = `♥ ${this.formatNumber(player.lifePoints)}`;
                 rows.push(row);
             });
             this.playerScoreboard.replaceChildren(...rows);
@@ -161,8 +188,8 @@ class PlayScreenUI {
             this.playerLifePoints.textContent = "";
         }
         else {
-            this.playerMoney.textContent = `€ ${currentPlayer.money}`;
-            this.playerLifePoints.textContent = `♥ ${currentPlayer.lifePoints}`;
+            this.playerMoney.textContent = `€ ${this.formatNumber(currentPlayer.money)}`;
+            this.playerLifePoints.textContent = `♥ ${this.formatNumber(currentPlayer.lifePoints)}`;
         }
 
         const moneyOpen: boolean = this._operation === Operation.AddMoney || this._operation === Operation.RemoveMoney;
@@ -175,6 +202,14 @@ class PlayScreenUI {
         this.btnWedding.textContent = !currentPlayer.married ? "Wedding" : "Anniversary";
         this.btnWedding.classList.toggle("green", currentPlayer.married);
         this.btnWedding.disabled = !currentPlayer.hasPressedSpin;
+
+        for (const {button, asset, name} of this.assetButtons) {
+            const ownedAsset = currentPlayer.getOwnedAsset(asset);
+            const label = ownedAsset !== undefined ? `Sell ${name}` : `Buy ${name}`;
+            button.replaceChildren(label, document.createElement("br"), `€ ${this.formatNumber(this.getAssetPrice(currentPlayer, asset))}`);
+            button.classList.toggle("green", ownedAsset !== undefined);
+            button.disabled = !currentPlayer.hasPressedSpin || game.years <= 0;
+        }
 
         this.btnSpin.disabled = currentPlayer.hasPressedSpin;
         if (game.rolledNumber > 0)
