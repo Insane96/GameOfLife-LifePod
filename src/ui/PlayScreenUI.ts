@@ -64,23 +64,19 @@ class PlayScreenUI {
             this.render();
         });
         this.btnAddMoney.addEventListener("click", () => {
-            this._operation = this._operation === Operation.AddMoney ? Operation.None : Operation.AddMoney;
-            this.render();
+            this.toggleOperation(Operation.AddMoney, this.inputMoney);
         });
         this.btnRemoveMoney.addEventListener("click", () => {
-            this._operation = this._operation === Operation.RemoveMoney ? Operation.None : Operation.RemoveMoney;
-            this.render();
+            this.toggleOperation(Operation.RemoveMoney, this.inputMoney);
         });
         this.btnConfirmMoney.addEventListener("click", () => {
             this.confirmOperationInput(this.inputMoney, Operation.AddMoney, Operation.RemoveMoney, (v) => game.getCurrentPlayerTurn().addMoney(v), (v) => game.getCurrentPlayerTurn().removeMoney(v));
         });
         this.btnAddLifePoints.addEventListener("click", () => {
-            this._operation = this._operation === Operation.AddLifePoints ? Operation.None : Operation.AddLifePoints;
-            this.render();
+            this.toggleOperation(Operation.AddLifePoints, this.inputLifePoints);
         });
         this.btnRemoveLifePoints.addEventListener("click", () => {
-            this._operation = this._operation === Operation.RemoveLifePoints ? Operation.None : Operation.RemoveLifePoints;
-            this.render();
+            this.toggleOperation(Operation.RemoveLifePoints, this.inputLifePoints);
         });
         this.btnConfirmLifePoints.addEventListener("click", () => {
             this.confirmOperationInput(this.inputLifePoints, Operation.AddLifePoints, Operation.RemoveLifePoints, (v) => game.getCurrentPlayerTurn().addLifePoints(v), (v) => game.getCurrentPlayerTurn().removeLifePoints(v));
@@ -91,8 +87,7 @@ class PlayScreenUI {
         });
         this.btnSalary.addEventListener("click", () => {
             this.inputSalary.value = String(game.getCurrentPlayerTurn().salary);
-            this._operation = this._operation === Operation.Salary ? Operation.None : Operation.Salary;
-            this.render();
+            this.toggleOperation(Operation.Salary, this.inputSalary);
         });
         this.btnConfirmSalary.addEventListener("click", () => {
             let input = parseInt(this.inputSalary.value);
@@ -111,8 +106,7 @@ class PlayScreenUI {
             this.render();
         });
         this.btnAuction.addEventListener("click", () => {
-            this._operation = this._operation === Operation.Auction ? Operation.None : Operation.Auction;
-            this.render();
+            this.toggleOperation(Operation.Auction, this.inputAuction);
         });
         this.btnConfirmAuction.addEventListener("click", () => {
             let input = parseInt(this.inputAuction.value);
@@ -215,6 +209,30 @@ class PlayScreenUI {
             this.btnSalary.disabled = true;
             this.btnAuction.disabled = true;
             this.btnWedding.disabled = true;
+        }
+    }
+
+    /**
+     * Current value if the player owns the asset (what selling would pay), otherwise its buy cost.
+     */
+    private getAssetPrice(player: Player, asset: Asset): number {
+        const ownedAsset = player.getOwnedAsset(asset);
+        return ownedAsset !== undefined ? Math.round(ownedAsset._value) : asset.buyCost;
+    }
+
+    private formatNumber(value: number): string {
+        return value.toLocaleString("en-US");
+    }
+
+    /**
+     * Opens the given operation (or closes it if already open) and moves the focus to its input.
+     */
+    private toggleOperation(operation: Operation, inputElement: HTMLInputElement) {
+        this._operation = this._operation === operation ? Operation.None : operation;
+        this.render();
+        if (this._operation === operation) {
+            inputElement.focus();
+            inputElement.select();
         }
     }
 
