@@ -265,7 +265,7 @@ class PlayScreenUI {
         this.btnCars.disabled = !currentPlayer.hasPressedSpin || game.years <= 0;
 
         this.btnSpin.classList.toggle("d-none", currentPlayer.hasPressedSpin);
-        if (game.rolledNumber > 0)
+        if (game.rolledNumber > 0 && this.rollingAnimation === null)
             this.playerRoll.textContent = `Rolled: ${game.rolledNumber}`;
         else
             this.playerRoll.textContent = "";

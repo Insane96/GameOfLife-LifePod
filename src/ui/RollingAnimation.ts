@@ -44,19 +44,19 @@ export class RollingAnimation {
             this.currentElement = 0;
             this.currentSpin++;
         }
-        if (this.currentSpin >= this.spins - 1 && !this.slowdown && (Mth.randomInt(0, 8) == 0 || this.currentSpin >= this.spins)) {
+        if (this.currentSpin >= this.spins - 1 && !this.slowdown && (Mth.randomInt(0, 20) == 0 || this.currentSpin >= this.spins)) {
             this.slowdown = true;
         }
         if (this.slowdown)
             timeout = 250;
         const currentNumber = parseInt(this.usedElements[this.currentElement].id.split("-")[2]);
         if (this.rolledNumber == currentNumber && this.currentSpin >= this.spins) {
-            sounds.successTune();
+            sounds.spinEnd();
             this.usedElements[this.currentElement].classList.add("roll-result-blink");
             this.onEnd();
         }
         else {
-            sounds.goodBeep();
+            sounds.spinBeep();
             setTimeout(() => this.spin(), timeout);
         }
 

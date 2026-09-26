@@ -1,8 +1,13 @@
-export class Sounds {
+class Sounds {
     // Created on first use: browsers only allow audio after a user gesture
     private ctx: AudioContext | null = null;
     private master: GainNode | null = null;
     private volume = 1;
+
+    constructor() {
+        // The first click anywhere (New game, Resume game...) creates and unlocks the context
+        document.addEventListener("click", () => this.getContext(), {once: true});
+    }
 
     /** Master volume, from 0 (muted) to 1 */
     setVolume(value: number) {
@@ -43,6 +48,21 @@ export class Sounds {
     goodBeep() {
         const ctx = this.getContext();
         this.playTone(ctx, 1000, ctx.currentTime, 0.1);
+    }
+
+    spinBeep() {
+        const ctx = this.getContext();
+        this.playTone(ctx, 1000, ctx.currentTime, 0.075, "square");
+    }
+
+    spinEnd() {
+        const ctx = this.getContext();
+        const noteLength = 0.12;
+        const gap = 0.0;
+        const now = ctx.currentTime;
+        for (let i = 0; i < 4; i++) {
+            this.playTone(ctx, 800, now + i * (noteLength + gap), noteLength, "square");
+        }
     }
 
     /** Short success “tune” (C–E–G–C) */
