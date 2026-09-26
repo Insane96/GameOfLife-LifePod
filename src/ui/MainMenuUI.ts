@@ -85,6 +85,9 @@ class MainMenuUI {
         this.domPlayers[firstAvailableSlot] = player;
         // Arrow functions: passing this.updateColorGrid directly would make the method lose its this
         this.playersList?.appendChild(player.createDOMElement(() => this.updateColorGrid(), (id) => this.tryRemovePlayer(id)));
+        const firstFreeColor = ALL_PLAYER_COLORS.find(color => !this.domPlayers.some(domPlayer => domPlayer?.color === color));
+        if (firstFreeColor !== undefined)
+            player.selectColor(firstFreeColor);
         this.updateColorGrid();
     }
 

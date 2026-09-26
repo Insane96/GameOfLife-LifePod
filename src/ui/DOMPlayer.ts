@@ -40,7 +40,7 @@ export class DOMPlayer {
             circle.name = circle.name.replace("x", String(this.id));
             circle.id = circle.id.replace("x", String(this.id));
             circle.addEventListener("click", () => {
-                this.color = PlayerColor[circle.dataset.color as keyof typeof PlayerColor];
+                this.selectColor(PlayerColor[circle.dataset.color as keyof typeof PlayerColor]);
                 updateColorGrid();
             })
         });
@@ -61,6 +61,13 @@ export class DOMPlayer {
 
         this._domElement = div;
         return div;
+    }
+
+    public selectColor(color: PlayerColor) {
+        this.color = color;
+        this._domElement?.querySelectorAll<HTMLInputElement>(".color-picker-circle").forEach((circle: HTMLInputElement) => {
+            circle.checked = circle.dataset.color === PlayerColor[color];
+        });
     }
 
     public getName(): string {
