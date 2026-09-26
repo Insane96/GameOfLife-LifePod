@@ -68,8 +68,13 @@ cards").
   (`container-fluid`, `min-vh-100`, `d-flex flex-column`, rows with
   `flex-grow-1`), with the content of each cell anchored to its position
   (top-left, top-center, top-right, etc.).
-  - Top: lottery/salary/initiative, houses and cars, board spaces (cells still
-    empty).
+  - Top: lottery/salary/initiative, "Houses" and "Cars" buttons, board spaces
+    (cells still empty). Each of the two buttons opens a modal
+    (`houses-modal`, `cars-modal`, see "Modals" below) with the buy/sell button
+    of each asset. Buying happens with a single click, with no confirmation;
+    selling still asks `confirm()`. `btn-houses` and `btn-cars` are disabled
+    with the same condition as the asset buttons (Spin not pressed, or game
+    over).
   - Middle: name of the player whose turn it is, money and life points, each
     with `+` / `−` buttons that open a numeric field (`inputmode="numeric"`)
     with a ✓ confirm button, then the roll/chance results and the "Spin"
@@ -78,9 +83,11 @@ cards").
     in the bottom one, so it is always visible next to the numbers (see
     "Responsive behavior" below).
   - Bottom: settings on the left (`cell-settings`), in the center the
-    "Wedding" button (Kids and Degree/PhD buttons still to be added, so the cell
-    will not stay with a single button), years left and "End turn" on the
-    right.
+    "Wedding" and "Kids" buttons (Degree/PhD still to be added), years left and
+    "End turn" on the right. "Kids" is enabled only if the player is married and
+    opens `kids-modal` with three buttons: 1 kid (`addKids(1)`), 2 kids
+    (`addKids(2)`), and "Try for a kid" (`tryForAKid()`, which rolls the
+    chance).
   - **Turn flow**: the button is called "Spin" as on the original Lifepod (it
     is the same primary Spin button described in the layouts above, not a
     separate "Go!" button). Pressing it (`Player.onSpin()`) credits salary and
@@ -121,8 +128,20 @@ cards").
     - The top-left cell (Salary, Chance, Business / Auction) centers its
       buttons in portrait (`align-items-center`) and keeps them left-aligned
       from `sm` up (`align-items-sm-stretch`).
-    - The house/car buttons are stacked (`flex-column`) in portrait and side by
-      side (`flex-sm-row flex-sm-wrap`) from `sm` up.
+    - The "Houses" / "Cars" buttons are stacked (`flex-column`) in portrait and
+      side by side (`flex-sm-row flex-sm-wrap`) from `sm` up.
+    - **Modals** (`kids-modal`, `houses-modal`, `cars-modal`): native Bootstrap
+      modals, written by hand in `index.html` outside `#play-screen`, with
+      `modal fade` + `tabindex="-1"` + `aria-label`, and the three nested levels
+      `.modal-dialog.modal-dialog-centered` > `.modal-content` > `.modal-body`
+      (never on the same element). They are opened with `data-bs-toggle="modal"`
+      and `data-bs-target` on the opener button, and closed by clicking outside,
+      Esc, or `data-bs-dismiss="modal"` on the buttons inside; the click
+      listeners of those buttons are still attached from `PlayScreenUI`. Inside,
+      the buttons are stacked in portrait and in a row from `sm` up
+      (`d-flex flex-column flex-sm-row justify-content-center gap-2`, buttons
+      with `flex-sm-fill`). Do not use `modal-sm` when the buttons are in a row:
+      300px are not enough.
     - The warm glow in `main.scss` is a `background-attachment: fixed` gradient
       on `body`; `.sticky-top` repeats it so that the opaque `bg-body` of the
       sticky row does not cut the glow.
@@ -292,6 +311,5 @@ palette) instead of using the defaults as-is.
 - Delta toasts ("+50,000 €") not implemented yet: planned as a before/after
   comparison of values (snapshot) in `PlayScreenUI`, without events in the
   model.
-- Cells of the game screen still empty (lottery, houses and cars, board
-  spaces, volume) and `Player` has no getters for `assets`/`qualification`
+- Cells of the game screen still empty (lottery, board spaces, volume) and `Player` has no getters for `assets`/`qualification`
   (`marry` should be renamed `married`).

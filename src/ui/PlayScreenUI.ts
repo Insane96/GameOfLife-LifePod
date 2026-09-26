@@ -39,7 +39,13 @@ class PlayScreenUI {
     private chanceResult = document.getElementById("chance-result") as HTMLDivElement;
 
     private btnWedding = document.getElementById("btn-wedding") as HTMLButtonElement;
+    private btnKids = document.getElementById("btn-kids") as HTMLButtonElement;
+    private btn1Kid = document.getElementById("btn-1-kid") as HTMLButtonElement;
+    private btn2Kids = document.getElementById("btn-2-kids") as HTMLButtonElement;
+    private btnTryKid = document.getElementById("btn-try-kid") as HTMLButtonElement;
 
+    private btnHouses = document.getElementById("btn-houses") as HTMLButtonElement;
+    private btnCars = document.getElementById("btn-cars") as HTMLButtonElement;
     private assetButtons: {button: HTMLButtonElement, asset: Asset, name: string}[] = [
         {button: document.getElementById("btn-house-small") as HTMLButtonElement, asset: Asset.SmallHouse, name: "Modest House"},
         {button: document.getElementById("btn-house-medium") as HTMLButtonElement, asset: Asset.MediumHouse, name: "Mid-sized House"},
@@ -139,6 +145,36 @@ class PlayScreenUI {
                 game.getCurrentPlayerTurn().getMarried();
             this.render();
         });
+        this.btnKids.addEventListener("click", () => {
+
+        });
+        this.btn1Kid.addEventListener("click", () => {
+            try {
+                game.getCurrentPlayerTurn().addKids(1);
+            }
+            catch (e) {
+                this.onError(e);
+            }
+            this.render();
+        });
+        this.btn2Kids.addEventListener("click", () => {
+            try {
+                game.getCurrentPlayerTurn().addKids(2);
+            }
+            catch (e) {
+                this.onError(e);
+            }
+            this.render();
+        });
+        this.btnTryKid.addEventListener("click", () => {
+            try {
+                game.getCurrentPlayerTurn().tryForAKid();
+            }
+            catch (e) {
+                this.onError(e);
+            }
+            this.render();
+        });
         for (const {button, asset, name} of this.assetButtons) {
             button.addEventListener("click", () => {
                 const player = game.getCurrentPlayerTurn();
@@ -148,7 +184,7 @@ class PlayScreenUI {
                         if (confirm(`Sell ${name} for € ${price}?`))
                             player.sellAsset(asset);
                     }
-                    else if (confirm(`Buy ${name} for € ${price}?`))
+                    else
                         player.buyAsset(asset);
                 }
                 catch (e) {
@@ -199,10 +235,6 @@ class PlayScreenUI {
         this.inputLifePoints.classList.toggle("d-none", !lifePointsOpen);
         this.btnConfirmLifePoints.classList.toggle("d-none", !lifePointsOpen);
 
-        this.btnWedding.textContent = !currentPlayer.married ? "Wedding" : "Anniversary";
-        this.btnWedding.classList.toggle("green", currentPlayer.married);
-        this.btnWedding.disabled = !currentPlayer.hasPressedSpin;
-
         for (const {button, asset, name} of this.assetButtons) {
             const ownedAsset = currentPlayer.getOwnedAsset(asset);
             const label = ownedAsset !== undefined ? `Sell ${name}` : `Buy ${name}`;
@@ -210,6 +242,9 @@ class PlayScreenUI {
             button.classList.toggle("green", ownedAsset !== undefined);
             button.disabled = !currentPlayer.hasPressedSpin || game.years <= 0;
         }
+        // Same condition as the asset buttons: their modals would open with everything disabled
+        this.btnHouses.disabled = !currentPlayer.hasPressedSpin || game.years <= 0;
+        this.btnCars.disabled = !currentPlayer.hasPressedSpin || game.years <= 0;
 
         this.btnSpin.classList.toggle("d-none", currentPlayer.hasPressedSpin);
         if (game.rolledNumber > 0)
@@ -230,6 +265,14 @@ class PlayScreenUI {
 
         this.yearsLeft.textContent = `Years left: ${game.years}`;
         this.btnEndTurn.disabled = !currentPlayer.hasPressedSpin;
+
+        this.btnWedding.textContent = !currentPlayer.married ? "Wedding" : "Anniversary";
+        this.btnWedding.classList.toggle("green", currentPlayer.married);
+        this.btnWedding.disabled = !currentPlayer.hasPressedSpin;
+
+        this.btnKids.disabled = !currentPlayer.married;
+        if (!this.btnKids.disabled)
+            this.btnKids.textContent = `${currentPlayer.kids} kids`;
 
         if (game.years <= 0) {
             this.btnSpin.disabled = true;

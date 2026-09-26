@@ -63,11 +63,8 @@
           <!-- Lottery -->
         </div>
         <div class="col-sm-6 d-flex flex-column flex-sm-row flex-sm-wrap justify-content-center gap-2 p-2">
-          <button id="btn-house-small">Modest House</button>
-          <button id="btn-house-medium">Mid-sized House</button>
-          <button id="btn-house-large">Mansion</button>
-          <button id="btn-car-economy">Economy Car</button>
-          <button id="btn-car-luxury">Luxury Car</button>
+          <button id="btn-houses" data-bs-toggle="modal" data-bs-target="#houses-modal">Houses</button>
+          <button id="btn-cars" data-bs-toggle="modal" data-bs-target="#cars-modal">Cars</button>
         </div>
         <div class="col-sm-3 d-flex justify-content-end p-2">
           <!-- Board spaces -->
@@ -118,6 +115,7 @@
         </div>
         <div id="cell-life-learn-spin" class="col-12 col-sm-6 order-first order-sm-0 d-flex justify-content-center p-2">
           <button id="btn-wedding">Wedding</button>
+          <button id="btn-kids" data-bs-toggle="modal" data-bs-target="#kids-modal">Kids</button>
           <!-- Kids and Degree/PhD -->
         </div>
         <div id="cell-years-end-turn" class="col-6 col-sm-3 d-flex flex-column align-items-end p-2">
@@ -128,6 +126,41 @@
     </div>
   </div>
   <button id="btn-fullscreen" class="btn btn-outline-secondary btn-sm m-1" aria-label="Enter fullscreen">↔</button>
+
+  <div id="kids-modal" class="modal fade" tabindex="-1" aria-label="Kids">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-body d-flex flex-column flex-sm-row justify-content-center gap-2">
+          <button id="btn-1-kid" class="flex-sm-fill" data-bs-dismiss="modal">1 kid</button>
+          <button id="btn-2-kids" class="flex-sm-fill" data-bs-dismiss="modal">2 kids</button>
+          <button id="btn-try-kid" class="flex-sm-fill" data-bs-dismiss="modal">Try for a kid</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="houses-modal" class="modal fade" tabindex="-1" aria-label="Houses">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-body d-flex flex-column flex-sm-row justify-content-center gap-2">
+          <button id="btn-house-small" class="flex-sm-fill" data-bs-dismiss="modal">Modest House</button>
+          <button id="btn-house-medium" class="flex-sm-fill" data-bs-dismiss="modal">Mid-sized House</button>
+          <button id="btn-house-large" class="flex-sm-fill" data-bs-dismiss="modal">Mansion</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="cars-modal" class="modal fade" tabindex="-1" aria-label="Cars">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-body d-flex flex-column flex-sm-row justify-content-center gap-2">
+          <button id="btn-car-economy" class="flex-sm-fill" data-bs-dismiss="modal">Economy Car</button>
+          <button id="btn-car-luxury" class="flex-sm-fill" data-bs-dismiss="modal">Luxury Car</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div id="color-picker-template" class="d-none">
     <input type="radio" name="player-color-x" class="red color-picker-circle" id="red-color-picker-x" data-color="Red" aria-label="Red">
