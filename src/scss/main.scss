@@ -89,3 +89,44 @@ body,
 // In code the color stays "Black" (PlayerColor.Black), but on the dark theme
 // it is displayed as white, otherwise it would vanish into the background.
 .black { background-color: #f2f2f2; }
+
+// Roll modal: numbers on a circle, the first at the top, clockwise. Everything derives from
+// --roll-size, capped so the circle fits in a portrait phone (modal margins and padding = 3rem).
+// The cell is a fifth of the size: 11 numbers still have room between them.
+.roll-circle {
+  --roll-size: min(18rem, 100vw - 4rem);
+  --roll-cell-size: calc(var(--roll-size) / 5);
+  --roll-radius: calc((var(--roll-size) - var(--roll-cell-size)) / 2);
+  position: relative;
+  width: var(--roll-size);
+  height: var(--roll-size);
+}
+
+.roll-number {
+  position: absolute;
+  top: calc(50% - var(--roll-cell-size) / 2);
+  left: calc(50% - var(--roll-cell-size) / 2);
+  width: var(--roll-cell-size);
+  height: var(--roll-cell-size);
+}
+
+// --roll-index (position among the visible numbers) and --roll-count (how many are visible)
+// are set by RollingAnimation, so the circle adapts to any range of numbers.
+// Rotate to the slot, move out by the radius, rotate back so the digits stay upright.
+.roll-number {
+  --roll-angle: calc(var(--roll-index, 0) * 360deg / var(--roll-count, 1));
+  transform: rotate(var(--roll-angle)) translateY(calc(-1 * var(--roll-radius))) rotate(calc(-1 * var(--roll-angle)));
+}
+
+// The rolled number keeps fading in and out until the modal is closed
+@keyframes roll-result-blink {
+  50% { opacity: 0.2; }
+}
+
+.roll-result-blink {
+  animation: roll-result-blink 0.8s ease-in-out infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}

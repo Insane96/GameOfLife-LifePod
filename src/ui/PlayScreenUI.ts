@@ -2,6 +2,12 @@ import {game} from "../Game.js";
 import {Player} from "../Player.js";
 import {Asset} from "../Asset.js";
 import {Operation} from "./Operation.js";
+import {RollingAnimation} from "./RollingAnimation.js";
+
+// Minimal typing for the Bootstrap bundle loaded with a <script> tag (no @types/bootstrap)
+declare const bootstrap: {
+    Modal: { getOrCreateInstance(element: Element): { show(): void } };
+};
 
 class PlayScreenUI {
     private playScreen = document.getElementById("play-screen") as HTMLDivElement;
@@ -35,6 +41,9 @@ class PlayScreenUI {
     private btnConfirmAuction = document.getElementById("btn-confirm-auction") as HTMLButtonElement;
 
     private playerRoll =document.getElementById("player-roll") as HTMLDivElement;
+    private rollModal = document.getElementById("roll-modal") as HTMLDivElement;
+    private rollingAnimation: RollingAnimation | null = null;
+
     private btnChance = document.getElementById("btn-chance") as HTMLButtonElement;
     private chanceResult = document.getElementById("chance-result") as HTMLDivElement;
 
@@ -56,13 +65,22 @@ class PlayScreenUI {
 
     constructor() {
         this.btnSpin.addEventListener("click", () => {
+            let spun: boolean = false;
             try {
                 game.getCurrentPlayerTurn().onSpin();
+                spun = true;
             }
             catch (e) {
                 this.onError(e);
             }
             this.render();
+            if (spun)
+                this.playRollAnimation();
+        });
+        // Blocks closing (click outside, Esc) until the animation is over
+        this.rollModal.addEventListener("hide.bs.modal", (event) => {
+            if (this.rollingAnimation !== null)
+                event.preventDefault();
         });
         this.btnEndTurn.addEventListener("click", () => {
             try {
@@ -287,6 +305,21 @@ class PlayScreenUI {
             this.btnSalary.disabled = true;
             this.btnAuction.disabled = true;
             this.btnWedding.disabled = true;
+        }
+    }
+
+    /**
+     * Opens the roll modal
+     */
+    private playRollAnimation() {
+        try {
+            bootstrap.Modal.getOrCreateInstance(this.rollModal).show();
+            this.rollingAnimation = new RollingAnimation(game.getCurrentPlayerTurn().modifyRollByCar(1), game.getCurrentPlayerTurn().modifyRollByCar(10), 4, game.rolledNumber, () => {
+                this.rollingAnimation = null;
+            });
+        }
+        catch (e) {
+            this.onError(e);
         }
     }
 
