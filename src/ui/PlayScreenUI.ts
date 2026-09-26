@@ -9,6 +9,12 @@ declare const bootstrap: {
     Modal: { getOrCreateInstance(element: Element): { show(): void } };
 };
 
+enum RollingAnimationType {
+    Spin,
+    TryForAKid,
+    BusinessAuction
+}
+
 class PlayScreenUI {
     private playScreen = document.getElementById("play-screen") as HTMLDivElement;
     private btnSpin = document.getElementById("btn-spin") as HTMLButtonElement;
@@ -43,6 +49,7 @@ class PlayScreenUI {
     private playerRoll =document.getElementById("player-roll") as HTMLDivElement;
     private rollModal = document.getElementById("roll-modal") as HTMLDivElement;
     private rollingAnimation: RollingAnimation | null = null;
+    private rollingAnimationType: RollingAnimationType | null = null;
 
     private btnChance = document.getElementById("btn-chance") as HTMLButtonElement;
     private chanceResult = document.getElementById("chance-result") as HTMLDivElement;
@@ -185,12 +192,16 @@ class PlayScreenUI {
             this.render();
         });
         this.btnTryKid.addEventListener("click", () => {
+            let failed = false;
             try {
                 game.getCurrentPlayerTurn().tryForAKid();
             }
             catch (e) {
                 this.onError(e);
+                failed = true;
             }
+            if (!failed)
+                this.playChanceAnimation();
             this.render();
         });
         for (const {button, asset, name} of this.assetButtons) {
@@ -265,7 +276,7 @@ class PlayScreenUI {
         this.btnCars.disabled = !currentPlayer.hasPressedSpin || game.years <= 0;
 
         this.btnSpin.classList.toggle("d-none", currentPlayer.hasPressedSpin);
-        if (game.rolledNumber > 0 && this.rollingAnimation === null)
+        if (game.rolledNumber > 0 && this.rollingAnimationType !== RollingAnimationType.Spin)
             this.playerRoll.textContent = `Rolled: ${game.rolledNumber}`;
         else
             this.playerRoll.textContent = "";
@@ -276,7 +287,7 @@ class PlayScreenUI {
         this.inputAuction.classList.toggle("d-none", this._operation !== Operation.Auction);
         this.btnConfirmAuction.classList.toggle("d-none", this._operation !== Operation.Auction);
 
-        if (game.rolledChance >= 0)
+        if (game.rolledChance >= 0 && this.rollingAnimationType !== RollingAnimationType.TryForAKid)
             this.chanceResult.textContent = `Chance: ${game.rolledChance}`;
         else
             this.chanceResult.textContent = "";
@@ -289,8 +300,12 @@ class PlayScreenUI {
         this.btnWedding.disabled = !currentPlayer.hasPressedSpin;
 
         this.btnKids.disabled = !currentPlayer.married;
-        if (!this.btnKids.disabled)
-            this.btnKids.textContent = `${currentPlayer.kids} kids`;
+        if (!this.btnKids.disabled) {
+            if (this.rollingAnimationType !== RollingAnimationType.TryForAKid)
+                this.btnKids.textContent = `${currentPlayer.kids} kids`;
+            else
+                this.btnKids.textContent = `? kids`;
+        }
 
         if (game.years <= 0) {
             this.btnSpin.disabled = true;
@@ -309,19 +324,51 @@ class PlayScreenUI {
     }
 
     /**
-     * Opens the roll modal
+     * Opens the roll modal to spin
      */
     private playRollAnimation() {
         try {
+            this.rollingAnimationType = RollingAnimationType.Spin;
             bootstrap.Modal.getOrCreateInstance(this.rollModal).show();
-            this.rollingAnimation = new RollingAnimation(game.getCurrentPlayerTurn().modifyRollByCar(1), game.getCurrentPlayerTurn().modifyRollByCar(10), 4, game.rolledNumber, () => {
-                this.rollingAnimation = null;
-                this.render();
-            });
+            this.rollingAnimation = new RollingAnimation(
+                game.getCurrentPlayerTurn().modifyRollByCar(1),
+                game.getCurrentPlayerTurn().modifyRollByCar(10),
+                4,
+                game.rolledNumber,
+                () => this.onSpinnerEnd()
+            );
         }
         catch (e) {
             this.onError(e);
+            this.onSpinnerEnd();
         }
+    }
+
+    /**
+     * Opens the roll modal to try for a chance (also try for a kid, business / auction)
+     */
+    private playChanceAnimation() {
+        try {
+            this.rollingAnimationType = RollingAnimationType.TryForAKid;
+            bootstrap.Modal.getOrCreateInstance(this.rollModal).show();
+            this.rollingAnimation = new RollingAnimation(
+                0,
+                2,
+                10,
+                game.rolledChance,
+                () => this.onSpinnerEnd()
+            );
+        }
+        catch (e) {
+            this.onError(e);
+            this.onSpinnerEnd();
+        }
+    }
+
+    private onSpinnerEnd() {
+        this.rollingAnimation = null;
+        this.rollingAnimationType = null;
+        this.render();
     }
 
     /**

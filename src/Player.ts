@@ -144,9 +144,15 @@ export class Player {
     }
 
     public tryForAKid() {
-        let kids = game.rollChance();
-        if (kids > 0)
-            this.addKids(kids);
+        if (!HouseRules.UnlimitedKids && this._kids >= 9)
+            throw new Error("Maximum number of kids reached");
+        let newBorn = game.rollAndSetChance();
+        if (newBorn > 0 && !HouseRules.UnlimitedKids && this._kids + newBorn > 9) {
+            newBorn = 1;
+            game.rolledChance = 1;
+        }
+        if (newBorn > 0)
+            this.addKids(newBorn);
     }
 
     public buyAsset(asset: Asset) {
