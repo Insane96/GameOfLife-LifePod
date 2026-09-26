@@ -73,9 +73,9 @@ class PlayScreenUI {
             catch (e) {
                 this.onError(e);
             }
-            this.render();
             if (spun)
                 this.playRollAnimation();
+            this.render();
         });
         // Blocks closing (click outside, Esc) until the animation is over
         this.rollModal.addEventListener("hide.bs.modal", (event) => {
@@ -316,6 +316,7 @@ class PlayScreenUI {
             bootstrap.Modal.getOrCreateInstance(this.rollModal).show();
             this.rollingAnimation = new RollingAnimation(game.getCurrentPlayerTurn().modifyRollByCar(1), game.getCurrentPlayerTurn().modifyRollByCar(10), 4, game.rolledNumber, () => {
                 this.rollingAnimation = null;
+                this.render();
             });
         }
         catch (e) {
