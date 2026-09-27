@@ -118,15 +118,17 @@ body,
   transform: rotate(var(--roll-angle)) translateY(calc(-1 * var(--roll-radius))) rotate(calc(-1 * var(--roll-angle)));
 }
 
-// The turn's roll indicator reuses .roll-number's circle size outside the
-// roll-modal's circle, so it needs the same --roll-cell-size but displayed
+// The turn's roll and chance indicators reuse .roll-number's circle size outside
+// the roll-modal's circle, so they need the same --roll-cell-size but displayed
 // inline instead of positioned absolutely on the circle.
-#player-roll {
+#player-roll,
+#chance-result {
   --roll-size: min(18rem, 100vw - 4rem);
   --roll-cell-size: calc(var(--roll-size) / 5);
 }
 
-#player-roll-number {
+#player-roll-number,
+#chance-result-number {
   position: static;
   top: auto;
   left: auto;
