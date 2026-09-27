@@ -47,12 +47,14 @@ class PlayScreenUI {
     private btnConfirmAuction = document.getElementById("btn-confirm-auction") as HTMLButtonElement;
 
     private playerRoll =document.getElementById("player-roll") as HTMLDivElement;
+    private playerRollNumber = document.getElementById("player-roll-number") as HTMLDivElement;
     private rollModal = document.getElementById("roll-modal") as HTMLDivElement;
     private rollingAnimation: RollingAnimation | null = null;
     private rollingAnimationType: RollingAnimationType | null = null;
 
     private btnChance = document.getElementById("btn-chance") as HTMLButtonElement;
     private chanceResult = document.getElementById("chance-result") as HTMLDivElement;
+    private chanceResultNumber = document.getElementById("chance-result-number") as HTMLDivElement;
 
     private btnWedding = document.getElementById("btn-wedding") as HTMLButtonElement;
     private btnKids = document.getElementById("btn-kids") as HTMLButtonElement;
@@ -123,6 +125,7 @@ class PlayScreenUI {
         });
         this.btnChance.addEventListener("click", () => {
             game.rollAndSetChance();
+            this.playChanceAnimation();
             this.render();
         });
         this.btnSalary.addEventListener("click", () => {
@@ -163,6 +166,7 @@ class PlayScreenUI {
             }
             this._operation = Operation.None;
             this.inputAuction.value = "";
+            this.playChanceAnimation();
             this.render();
         });
         this.btnWedding.addEventListener("click", () => {
@@ -276,10 +280,9 @@ class PlayScreenUI {
         this.btnCars.disabled = !currentPlayer.hasPressedSpin || game.years <= 0;
 
         this.btnSpin.classList.toggle("d-none", currentPlayer.hasPressedSpin);
-        if (game.rolledNumber > 0 && this.rollingAnimationType !== RollingAnimationType.Spin)
-            this.playerRoll.textContent = `Rolled: ${game.rolledNumber}`;
-        else
-            this.playerRoll.textContent = "";
+        const showRoll = game.rolledNumber > 0 && this.rollingAnimationType !== RollingAnimationType.Spin;
+        this.playerRoll.classList.toggle("d-none", !showRoll);
+        this.playerRollNumber.textContent = showRoll ? `${game.rolledNumber}` : "";
 
         this.inputSalary.classList.toggle("d-none", this._operation !== Operation.Salary);
         this.btnConfirmSalary.classList.toggle("d-none", this._operation !== Operation.Salary);
@@ -287,10 +290,9 @@ class PlayScreenUI {
         this.inputAuction.classList.toggle("d-none", this._operation !== Operation.Auction);
         this.btnConfirmAuction.classList.toggle("d-none", this._operation !== Operation.Auction);
 
-        if (game.rolledChance >= 0 && this.rollingAnimationType !== RollingAnimationType.TryForAKid)
-            this.chanceResult.textContent = `Chance: ${game.rolledChance}`;
-        else
-            this.chanceResult.textContent = "";
+        const showChance = game.rolledChance >= 0 && this.rollingAnimationType !== RollingAnimationType.TryForAKid;
+        this.chanceResult.classList.toggle("d-none", !showChance);
+        this.chanceResultNumber.textContent = showChance ? `${game.rolledChance}` : "";
 
         this.yearsLeft.textContent = `Years left: ${game.years}`;
         this.btnEndTurn.disabled = !currentPlayer.hasPressedSpin;

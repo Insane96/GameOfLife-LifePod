@@ -40,16 +40,15 @@ export class RollingAnimation {
     private spin() {
         let timeout = 100;
         this.currentElement++;
-        if (this.currentElement >= this.usedElements.length) {
+        if (this.currentElement >= this.usedElements.length)
             this.currentElement = 0;
+        const currentNumber = parseInt(this.usedElements[this.currentElement].id.split("-")[2]);
+        if (this.rolledNumber == currentNumber)
             this.currentSpin++;
-        }
-        if (this.currentSpin >= this.spins - 1 && !this.slowdown && (Mth.randomInt(0, 20) == 0 || this.currentSpin >= this.spins)) {
+        if (!this.slowdown && this.currentSpin >= this.spins / 2 && (Mth.randomInt(0, 20) == 0 || this.currentSpin >= this.spins))
             this.slowdown = true;
-        }
         if (this.slowdown)
             timeout = 250;
-        const currentNumber = parseInt(this.usedElements[this.currentElement].id.split("-")[2]);
         if (this.rolledNumber == currentNumber && this.currentSpin >= this.spins) {
             sounds.spinEnd();
             this.usedElements[this.currentElement].classList.add("roll-result-blink");
