@@ -147,3 +147,22 @@ body,
     animation: none;
   }
 }
+
+// Marks the numbers chosen by lottery players (roll circle and lottery-modal list) with the
+// owner's color. Bootstrap's ".border" utility sets border-color with !important, so this needs
+// !important too to actually show.
+.roll-number-chosen {
+  border-width: 3px !important;
+}
+
+// A lottery number tried and not chosen by anyone, dimmed while the draw keeps going
+.roll-number-missed {
+  opacity: 0.3;
+}
+
+.border-red { border-color: #d6423f !important; }
+.border-blue { border-color: #2f6fed !important; }
+.border-green { border-color: #2e9e5b !important; }
+.border-yellow { border-color: #e0b023 !important; }
+.border-magenta { border-color: #c23b9c !important; }
+.border-black { border-color: #f2f2f2 !important; }

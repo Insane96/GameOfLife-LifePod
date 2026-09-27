@@ -1,13 +1,17 @@
 import {game} from "../Game.js";
+import {sounds} from "./Sounds.js";
 
 class GlobalUI {
     private btnFullscreen = document.getElementById("btn-fullscreen") as HTMLButtonElement;
     private cellSettings = document.getElementById("cell-settings") as HTMLDivElement;
     private startScreenSettings = document.getElementById("start-screen-settings") as HTMLDivElement;
+    private inputVolume = document.getElementById("input-volume") as HTMLInputElement;
 
     constructor() {
         if (!document.documentElement.requestFullscreen)
             this.btnFullscreen.classList.add("d-none");
+
+        this.inputVolume.addEventListener("input", () => sounds.setVolume(parseFloat(this.inputVolume.value)));
 
         this.btnFullscreen.addEventListener("click", () => {
             if (document.fullscreenElement)

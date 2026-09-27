@@ -60,7 +60,9 @@
           <div class="d-flex align-items-center gap-2">
             <input id="input-auction" type="text" inputmode="numeric" pattern="[0-9]*" class="d-none" aria-label="Auction input" placeholder="10000~100000"><button id="btn-confirm-auction" aria-label="Confirm auction" class="d-none">✓</button>
           </div>
-          <!-- Lottery -->
+          <div class="d-flex align-items-center gap-2">
+            <button id="btn-lottery" data-bs-toggle="modal" data-bs-target="#lottery-modal">Lottery</button>
+          </div>
         </div>
         <div class="col-sm-6 d-flex flex-column flex-sm-row flex-sm-wrap justify-content-center gap-2 p-2">
           <button id="btn-houses" data-bs-toggle="modal" data-bs-target="#houses-modal">Houses</button>
@@ -113,7 +115,7 @@
       </div>
       <div class="row flex-grow-1 align-items-end">
         <div id="cell-settings" class="col-6 col-sm-3 d-flex justify-content-start p-2">
-          <input id="input-volume" type="range" min="0" max="1" value="0.01" class="form-range" aria-label="Volume">
+          <input id="input-volume" type="range" min="0" max="1" value="1" step="0.01" class="form-range" aria-label="Volume">
         </div>
         <div id="cell-life-learn-spin" class="col-12 col-sm-6 order-first order-sm-0 d-flex justify-content-center p-2">
           <button id="btn-wedding">Wedding</button>
@@ -136,6 +138,18 @@
           <button id="btn-1-kid" class="flex-sm-fill" data-bs-dismiss="modal">1 kid</button>
           <button id="btn-2-kids" class="flex-sm-fill" data-bs-dismiss="modal">2 kids</button>
           <button id="btn-try-kid" class="flex-sm-fill" data-bs-dismiss="modal">Try for a kid</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="lottery-modal" class="modal fade" tabindex="-1" aria-label="Lottery">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-body d-flex flex-column flex-sm-row justify-content-center gap-2">
+          <div id="lottery-pot" class="d-flex flex-column align-items-center"></div>
+          <div id="lottery-player-list" class="d-flex flex-column align-items-center"></div>
+          <button id="btn-lottery-spin" class="d-flex align-items-center">Spin</button>
         </div>
       </div>
     </div>
