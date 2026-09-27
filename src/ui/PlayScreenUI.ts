@@ -3,6 +3,7 @@ import {Player} from "../Player.js";
 import {Asset} from "../Asset.js";
 import {Operation} from "./Operation.js";
 import {RollingAnimation} from "./RollingAnimation.js";
+import {sounds} from "./Sounds.js";
 
 // Minimal typing for the Bootstrap bundle loaded with a <script> tag (no @types/bootstrap)
 declare const bootstrap: {
@@ -71,6 +72,8 @@ class PlayScreenUI {
         {button: document.getElementById("btn-car-economy") as HTMLButtonElement, asset: Asset.EconomyCar, name: "Economy Car"},
         {button: document.getElementById("btn-car-luxury") as HTMLButtonElement, asset: Asset.LuxuryCar, name: "Luxury Car"},
     ];
+
+    private inputVolume: HTMLInputElement = document.getElementById("input-volume") as HTMLInputElement;
 
     constructor() {
         this.btnSpin.addEventListener("click", () => {
@@ -224,6 +227,9 @@ class PlayScreenUI {
                 this.render();
             });
         }
+        this.inputVolume.addEventListener("input", () => {
+            sounds.setVolume(this.inputVolume.valueAsNumber);
+        });
     }
 
     public render() {
