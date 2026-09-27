@@ -167,7 +167,6 @@ class PlayScreenUI {
             this._operation = Operation.None;
             this.inputAuction.value = "";
             this.playChanceAnimation();
-            this.render();
         });
         this.btnWedding.addEventListener("click", () => {
             if (confirm("Confirm Wedding/Anniversary?"))
@@ -206,7 +205,6 @@ class PlayScreenUI {
             }
             if (!failed)
                 this.playChanceAnimation();
-            this.render();
         });
         for (const {button, asset, name} of this.assetButtons) {
             button.addEventListener("click", () => {
@@ -302,12 +300,8 @@ class PlayScreenUI {
         this.btnWedding.disabled = !currentPlayer.hasPressedSpin;
 
         this.btnKids.disabled = !currentPlayer.married;
-        if (!this.btnKids.disabled) {
-            if (this.rollingAnimationType !== RollingAnimationType.TryForAKid)
-                this.btnKids.textContent = `${currentPlayer.kids} kids`;
-            else
-                this.btnKids.textContent = `? kids`;
-        }
+        if (!this.btnKids.disabled)
+            this.btnKids.textContent = `${currentPlayer.kids} kids`;
 
         if (game.years <= 0) {
             this.btnSpin.disabled = true;
