@@ -127,6 +127,10 @@ class PlayScreenUI {
         this.btnConfirmMoney.addEventListener("click", () => {
             this.confirmOperationInput(this.inputMoney, Operation.AddMoney, Operation.RemoveMoney, (v) => game.getCurrentPlayerTurn().addMoney(v), (v) => game.getCurrentPlayerTurn().removeMoney(v));
         });
+        this.inputMoney.addEventListener("keydown", (event) => {
+            if (event.key === "Enter")
+                this.btnConfirmMoney.click();
+        });
         this.btnAddLifePoints.addEventListener("click", () => {
             this.toggleOperation(Operation.AddLifePoints, this.inputLifePoints);
         });
@@ -135,6 +139,10 @@ class PlayScreenUI {
         });
         this.btnConfirmLifePoints.addEventListener("click", () => {
             this.confirmOperationInput(this.inputLifePoints, Operation.AddLifePoints, Operation.RemoveLifePoints, (v) => game.getCurrentPlayerTurn().addLifePoints(v), (v) => game.getCurrentPlayerTurn().removeLifePoints(v));
+        });
+        this.inputLifePoints.addEventListener("keydown", (event) => {
+            if (event.key === "Enter")
+                this.btnConfirmLifePoints.click();
         });
         this.btnChance.addEventListener("click", () => {
             game.rollAndSetChance();
@@ -162,6 +170,10 @@ class PlayScreenUI {
             this._operation = Operation.None;
             this.render();
         });
+        this.inputSalary.addEventListener("keydown", (event) => {
+            if (event.key === "Enter")
+                this.btnConfirmSalary.click();
+        });
         this.btnAuction.addEventListener("click", () => {
             this.toggleOperation(Operation.Auction, this.inputAuction);
         });
@@ -182,6 +194,10 @@ class PlayScreenUI {
             this._operation = Operation.None;
             this.inputAuction.value = "";
             this.playChanceAnimation();
+        });
+        this.inputAuction.addEventListener("keydown", (event) => {
+            if (event.key === "Enter")
+                this.btnConfirmAuction.click();
         });
         this.btnWedding.addEventListener("click", () => {
             this.confirmAction("Confirm Wedding/Anniversary?", () => {
