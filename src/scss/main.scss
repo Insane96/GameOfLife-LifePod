@@ -166,3 +166,91 @@ body,
 .border-yellow { border-color: #e0b023 !important; }
 .border-magenta { border-color: #c23b9c !important; }
 .border-black { border-color: #f2f2f2 !important; }
+
+// Player-color accent: PlayScreenUI sets data-player-color on #play-screen to the current
+// player's PlayerColor name, so the "Visa card" of the original device is recognizable at a
+// glance (player name, sticky row and Spin ring) when the phone changes hands between turns.
+$player-accent-colors: (
+  "Red": #d6423f,
+  "Blue": #2f6fed,
+  "Green": #2e9e5b,
+  "Yellow": #e0b023,
+  "Magenta": #c23b9c,
+  "Black": #f2f2f2
+);
+
+#play-screen {
+  --player-accent: var(--bs-primary);
+
+  @each $name, $color in $player-accent-colors {
+    &[data-player-color="#{$name}"] {
+      --player-accent: #{$color};
+    }
+  }
+}
+
+#player-name {
+  color: var(--player-accent);
+}
+
+.sticky-top {
+  border-bottom: 3px solid var(--player-accent);
+}
+
+// Money and Life Points: big, Lifepod-display style numbers with a small caption below,
+// instead of plain text next to the +/- buttons.
+.stat-value {
+  font-size: clamp(1.5rem, 6vw, 2.5rem);
+  font-weight: 600;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  opacity: 0.75;
+}
+
+// Small circular buttons for the +/-/checkmark controls and the "remove player" X
+.btn-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Spin: the primary action, big and circular, with a press effect and a ring in the current
+// player's color standing in for the original device's physical button.
+.btn-spin {
+  width: 6rem;
+  height: 6rem;
+  padding: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  box-shadow: 0 0 0 4px var(--player-accent), 0 6px 16px rgba(0, 0, 0, 0.35);
+  transition: transform 0.08s ease-in-out, box-shadow 0.08s ease-in-out;
+
+  &:active {
+    transform: scale(0.94);
+    box-shadow: 0 0 0 4px var(--player-accent), 0 2px 6px rgba(0, 0, 0, 0.35);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+// Delta toasts ("+50.000 €", "-2 Life Points"): a colored edge shows the sign at a glance
+.toast-stack {
+  z-index: 1080;
+}
+
+.toast-positive {
+  border-left: 4px solid var(--bs-success);
+}
+
+.toast-negative {
+  border-left: 4px solid var(--bs-danger);
+}

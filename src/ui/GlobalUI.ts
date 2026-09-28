@@ -3,6 +3,7 @@ import {sounds} from "./Sounds.js";
 
 class GlobalUI {
     private btnFullscreen = document.getElementById("btn-fullscreen") as HTMLButtonElement;
+    private iconFullscreen = document.getElementById("icon-fullscreen") as HTMLElement;
     private cellSettings = document.getElementById("cell-settings") as HTMLDivElement;
     private startScreenSettings = document.getElementById("start-screen-settings") as HTMLDivElement;
     private inputVolume = document.getElementById("input-volume") as HTMLInputElement;
@@ -22,9 +23,11 @@ class GlobalUI {
         document.addEventListener("fullscreenchange", () => {
             if (document.fullscreenElement) {
                 this.btnFullscreen.ariaLabel = "Exit fullscreen";
+                this.iconFullscreen.classList.replace("bi-arrows-fullscreen", "bi-fullscreen-exit");
             }
             else {
                 this.btnFullscreen.ariaLabel = "Enter fullscreen";
+                this.iconFullscreen.classList.replace("bi-fullscreen-exit", "bi-arrows-fullscreen");
             }
         });
         this.render();

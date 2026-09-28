@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="dist/css/main.css">
 </head>
 <body>
@@ -23,19 +24,19 @@
                   <label class="input-group-text" for="input-years">Years</label>
                   <input id="input-years" class="form-control" type="number" min="1" max="99" placeholder="15">
                 </div>
-                <button id="btn-house-rules" class="btn btn-outline-secondary" disabled>House rules</button>
+                <button id="btn-house-rules" class="btn btn-outline-secondary" disabled><i class="bi bi-sliders me-2" aria-hidden="true"></i>House rules</button>
               </div>
 
               <div class="d-flex justify-content-between align-items-center mb-2">
                 <h2 class="h5 mb-0">Players</h2>
-                <button id="btn-add-player" class="btn btn-outline-primary">Add player</button>
+                <button id="btn-add-player" class="btn btn-outline-primary"><i class="bi bi-person-plus-fill me-2" aria-hidden="true"></i>Add player</button>
               </div>
               <div id="players-list" class="d-flex flex-column gap-2"></div>
               <div id="menu-error" class="alert alert-danger d-none mt-3 mb-0" role="alert"></div>
             </div>
             <div class="card-footer bg-transparent border-0 d-grid gap-2 d-sm-flex justify-content-sm-center p-3 pt-0">
-              <button id="btn-start" class="btn btn-primary btn-lg">Spin</button>
-              <button id="btn-continue" class="btn btn-outline-secondary btn-lg" disabled>Continue game</button>
+              <button id="btn-start" class="btn btn-primary btn-lg"><i class="bi bi-play-fill me-2" aria-hidden="true"></i>Spin</button>
+              <button id="btn-continue" class="btn btn-outline-secondary btn-lg" disabled><i class="bi bi-arrow-clockwise me-2" aria-hidden="true"></i>Continue game</button>
             </div>
           </div>
         </div>
@@ -46,27 +47,27 @@
       <div class="row flex-grow-1 align-items-start">
         <div class="col-sm-3 d-flex flex-column align-items-center align-items-sm-stretch justify-content-start gap-2 p-2">
           <div class="d-flex align-items-center gap-2">
-            <button id="btn-salary">Salary</button>
+            <button id="btn-salary" class="btn btn-outline-primary"><i class="bi bi-briefcase-fill me-2" aria-hidden="true"></i>Salary</button>
           </div>
           <div class="d-flex align-items-center gap-2">
-            <input id="input-salary" type="text" inputmode="numeric" pattern="[0-9]*" class="d-none" aria-label="Salary input"><button id="btn-confirm-salary" aria-label="Confirm salary" class="d-none">✓</button>
+            <input id="input-salary" type="text" inputmode="numeric" pattern="[0-9]*" class="form-control w-auto d-none" aria-label="Salary input"><button id="btn-confirm-salary" aria-label="Confirm salary" class="btn btn-primary btn-icon d-none"><i class="bi bi-check-lg" aria-hidden="true"></i></button>
           </div>
           <div class="d-flex align-items-center gap-2">
-            <button id="btn-chance">Chance</button>
+            <button id="btn-chance" class="btn btn-outline-primary"><i class="bi bi-question-circle-fill me-2" aria-hidden="true"></i>Chance</button>
           </div>
           <div class="d-flex align-items-center gap-2">
-            <button id="btn-auction">Business / Auction</button>
+            <button id="btn-auction" class="btn btn-outline-primary"><i class="bi bi-currency-exchange me-2" aria-hidden="true"></i>Business / Auction</button>
           </div>
           <div class="d-flex align-items-center gap-2">
-            <input id="input-auction" type="text" inputmode="numeric" pattern="[0-9]*" class="d-none" aria-label="Auction input" placeholder="10000~100000"><button id="btn-confirm-auction" aria-label="Confirm auction" class="d-none">✓</button>
+            <input id="input-auction" type="text" inputmode="numeric" pattern="[0-9]*" class="form-control w-auto d-none" aria-label="Auction input" placeholder="10000~100000"><button id="btn-confirm-auction" aria-label="Confirm auction" class="btn btn-primary btn-icon d-none"><i class="bi bi-check-lg" aria-hidden="true"></i></button>
           </div>
           <div class="d-flex align-items-center gap-2">
-            <button id="btn-lottery" data-bs-toggle="modal" data-bs-target="#lottery-modal">Lottery</button>
+            <button id="btn-lottery" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#lottery-modal"><i class="bi bi-ticket-perforated-fill me-2" aria-hidden="true"></i>Lottery</button>
           </div>
         </div>
         <div class="col-sm-6 d-flex flex-column flex-sm-row flex-sm-wrap justify-content-center gap-2 p-2">
-          <button id="btn-houses" data-bs-toggle="modal" data-bs-target="#houses-modal">Houses</button>
-          <button id="btn-cars" data-bs-toggle="modal" data-bs-target="#cars-modal">Cars</button>
+          <button id="btn-houses" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#houses-modal"><i class="bi bi-house-door-fill me-2" aria-hidden="true"></i>Houses</button>
+          <button id="btn-cars" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#cars-modal"><i class="bi bi-car-front-fill me-2" aria-hidden="true"></i>Cars</button>
         </div>
         <div class="col-sm-3 d-flex justify-content-end p-2">
           <!-- Board spaces -->
@@ -74,10 +75,10 @@
       </div>
       <div class="row sticky-top bg-body order-first order-sm-0 flex-grow-0 flex-sm-grow-1 align-items-center">
         <div class="col d-flex flex-column align-items-center p-2">
-          <div id="player-name"></div>
+          <div id="player-name" class="h4 mb-1 fw-semibold"></div>
           <div id="play-error" class="alert alert-danger d-none mb-2" role="alert"></div>
           <div class="table-responsive">
-            <table class="table">
+            <table class="table table-borderless">
               <thead id="player-scoreboard-header">
               <tr>
                 <th scope="col">Rank</th>
@@ -90,55 +91,69 @@
               </tbody>
             </table>
           </div>
-          <div class="d-flex align-items-center gap-2">
-            <div id="player-money"></div>
-            <button id="btn-add-money" aria-label="Add money">+</button>
-            <button id="btn-remove-money" aria-label="Subtract money">−</button>
-          </div>
-          <div class="d-flex align-items-center gap-2">
-            <input id="input-money" type="text" inputmode="numeric" pattern="[0-9]*" class="d-none" aria-label="Money input"><button id="btn-confirm-money" aria-label="Confirm operation" class="d-none">✓</button>
-          </div>
+          <div class="d-flex flex-wrap justify-content-center align-items-start gap-3 gap-sm-4">
+            <div class="d-flex flex-column align-items-center">
+              <div class="d-flex align-items-center gap-2">
+                <button id="btn-remove-money" class="btn btn-outline-secondary btn-icon" aria-label="Subtract money"><i class="bi bi-dash-lg" aria-hidden="true"></i></button>
+                <div class="d-flex flex-column align-items-center">
+                  <div id="player-money" class="stat-value"></div>
+                  <div class="stat-label">Money</div>
+                </div>
+                <button id="btn-add-money" class="btn btn-outline-secondary btn-icon" aria-label="Add money"><i class="bi bi-plus-lg" aria-hidden="true"></i></button>
+              </div>
+              <div class="d-flex align-items-center gap-2 mt-1">
+                <input id="input-money" type="text" inputmode="numeric" pattern="[0-9]*" class="form-control w-auto d-none" aria-label="Money input"><button id="btn-confirm-money" aria-label="Confirm operation" class="btn btn-primary btn-icon d-none"><i class="bi bi-check-lg" aria-hidden="true"></i></button>
+              </div>
+            </div>
 
-          <div class="d-flex align-items-center gap-2">
-            <div id="player-life-points"></div>
-            <button id="btn-add-life-points" aria-label="Add life points">+</button>
-            <button id="btn-remove-life-points" aria-label="Subtract life points">−</button>
+            <div class="d-flex flex-column align-items-center">
+              <div class="d-flex align-items-center gap-2">
+                <button id="btn-remove-life-points" class="btn btn-outline-secondary btn-icon" aria-label="Subtract life points"><i class="bi bi-dash-lg" aria-hidden="true"></i></button>
+                <div class="d-flex flex-column align-items-center">
+                  <div id="player-life-points" class="stat-value"></div>
+                  <div class="stat-label">Life Points</div>
+                </div>
+                <button id="btn-add-life-points" class="btn btn-outline-secondary btn-icon" aria-label="Add life points"><i class="bi bi-plus-lg" aria-hidden="true"></i></button>
+              </div>
+              <div class="d-flex align-items-center gap-2 mt-1">
+                <input id="input-life-points" type="text" inputmode="numeric" pattern="[0-9]*" class="form-control w-auto d-none" aria-label="Life points input"><button id="btn-confirm-life-points" aria-label="Confirm operation" class="btn btn-primary btn-icon d-none"><i class="bi bi-check-lg" aria-hidden="true"></i></button>
+              </div>
+            </div>
           </div>
-          <div class="d-flex align-items-center gap-2">
-            <input id="input-life-points" type="text" inputmode="numeric" pattern="[0-9]*" class="d-none" aria-label="Life points input"><button id="btn-confirm-life-points" aria-label="Confirm operation" class="d-none">✓</button>
-          </div>
-          <div class="d-flex align-items-center gap-2">
+          <div class="d-flex align-items-center gap-3 mt-2">
             <div id="player-roll" class="d-flex flex-column align-items-center p-2">Rolled<div id="player-roll-number" class="roll-number border rounded-circle d-flex align-items-center justify-content-center green p-2"></div></div>
             <div id="chance-result" class="d-flex flex-column align-items-center p-2">Chance<div id="chance-result-number" class="roll-number border rounded-circle d-flex align-items-center justify-content-center green p-2"></div></div>
           </div>
-          <button id="btn-spin">Spin</button>
+          <button id="btn-spin" class="btn btn-primary btn-spin rounded-circle mt-2">Spin</button>
         </div>
       </div>
       <div class="row flex-grow-1 align-items-end">
-        <div id="cell-settings" class="col-6 col-sm-3 d-flex justify-content-start p-2">
+        <div id="cell-settings" class="col-6 col-sm-3 d-flex align-items-center gap-2 justify-content-start p-2">
+          <i class="bi bi-volume-up-fill" aria-hidden="true"></i>
           <input id="input-volume" type="range" min="0" max="1" value="1" step="0.01" class="form-range" aria-label="Volume">
         </div>
-        <div id="cell-life-learn-spin" class="col-12 col-sm-6 order-first order-sm-0 d-flex justify-content-center p-2">
-          <button id="btn-wedding">Wedding</button>
-          <button id="btn-kids" data-bs-toggle="modal" data-bs-target="#kids-modal">Kids</button>
-          <!-- Kids and Degree/PhD -->
+        <div id="cell-life-learn-spin" class="col-12 col-sm-6 order-first order-sm-0 d-flex justify-content-center gap-2 p-2">
+          <button id="btn-wedding" class="btn btn-outline-primary"><i class="bi bi-heart-fill me-2" aria-hidden="true"></i><span id="btn-wedding-label">Wedding</span></button>
+          <button id="btn-kids" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#kids-modal"><i class="bi bi-people-fill me-2" aria-hidden="true"></i><span id="btn-kids-label">Kids</span></button>
+          <!-- Degree/PhD -->
         </div>
-        <div id="cell-years-end-turn" class="col-6 col-sm-3 d-flex flex-column align-items-end p-2">
-          <div id="years-left">Years: </div>
-          <button id="btn-end-turn">End turn</button>
+        <div id="cell-years-end-turn" class="col-6 col-sm-3 d-flex flex-column align-items-end gap-2 p-2">
+          <div id="years-left" class="small opacity-75"></div>
+          <button id="btn-end-turn" class="btn btn-primary"><i class="bi bi-arrow-right-circle-fill me-2" aria-hidden="true"></i>End turn</button>
         </div>
       </div>
     </div>
   </div>
-  <button id="btn-fullscreen" class="btn btn-outline-secondary btn-sm m-1" aria-label="Enter fullscreen">↔</button>
+  <button id="btn-fullscreen" class="btn btn-outline-secondary btn-icon m-1" aria-label="Enter fullscreen"><i id="icon-fullscreen" class="bi bi-arrows-fullscreen" aria-hidden="true"></i></button>
+  <div id="toast-container" class="toast-stack position-fixed top-0 start-50 translate-middle-x p-3" aria-live="polite" aria-atomic="true"></div>
 
   <div id="kids-modal" class="modal fade" tabindex="-1" aria-label="Kids">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-body d-flex flex-column flex-sm-row justify-content-center gap-2">
-          <button id="btn-1-kid" class="flex-sm-fill" data-bs-dismiss="modal">1 kid</button>
-          <button id="btn-2-kids" class="flex-sm-fill" data-bs-dismiss="modal">2 kids</button>
-          <button id="btn-try-kid" class="flex-sm-fill" data-bs-dismiss="modal">Try for a kid</button>
+          <button id="btn-1-kid" class="btn btn-outline-primary flex-sm-fill" data-bs-dismiss="modal"><i class="bi bi-person-fill me-2" aria-hidden="true"></i>1 kid</button>
+          <button id="btn-2-kids" class="btn btn-outline-primary flex-sm-fill" data-bs-dismiss="modal"><i class="bi bi-people-fill me-2" aria-hidden="true"></i>2 kids</button>
+          <button id="btn-try-kid" class="btn btn-outline-primary flex-sm-fill" data-bs-dismiss="modal"><i class="bi bi-question-circle-fill me-2" aria-hidden="true"></i>Try for a kid</button>
         </div>
       </div>
     </div>
@@ -148,9 +163,9 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-body d-flex flex-column flex-sm-row justify-content-center gap-2">
-          <div id="lottery-pot" class="d-flex flex-column align-items-center"></div>
-          <div id="lottery-player-list" class="d-flex flex-column align-items-center"></div>
-          <button id="btn-lottery-spin" class="d-flex align-items-center">Spin</button>
+          <div id="lottery-pot" class="d-flex flex-column align-items-center fw-semibold"></div>
+          <div id="lottery-player-list" class="d-flex flex-column align-items-center gap-2"></div>
+          <button id="btn-lottery-spin" class="btn btn-primary d-flex align-items-center"><i class="bi bi-ticket-perforated-fill me-2" aria-hidden="true"></i>Spin</button>
         </div>
       </div>
     </div>
@@ -160,9 +175,9 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-body d-flex flex-column flex-sm-row justify-content-center gap-2">
-          <button id="btn-house-small" class="flex-sm-fill" data-bs-dismiss="modal">Modest House</button>
-          <button id="btn-house-medium" class="flex-sm-fill" data-bs-dismiss="modal">Mid-sized House</button>
-          <button id="btn-house-large" class="flex-sm-fill" data-bs-dismiss="modal">Mansion</button>
+          <button id="btn-house-small" class="btn btn-outline-primary flex-sm-fill" data-bs-dismiss="modal">Modest House</button>
+          <button id="btn-house-medium" class="btn btn-outline-primary flex-sm-fill" data-bs-dismiss="modal">Mid-sized House</button>
+          <button id="btn-house-large" class="btn btn-outline-primary flex-sm-fill" data-bs-dismiss="modal">Mansion</button>
         </div>
       </div>
     </div>
@@ -172,8 +187,8 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-body d-flex flex-column flex-sm-row justify-content-center gap-2">
-          <button id="btn-car-economy" class="flex-sm-fill" data-bs-dismiss="modal">Economy Car</button>
-          <button id="btn-car-luxury" class="flex-sm-fill" data-bs-dismiss="modal">Luxury Car</button>
+          <button id="btn-car-economy" class="btn btn-outline-primary flex-sm-fill" data-bs-dismiss="modal">Economy Car</button>
+          <button id="btn-car-luxury" class="btn btn-outline-primary flex-sm-fill" data-bs-dismiss="modal">Luxury Car</button>
         </div>
       </div>
     </div>
@@ -185,8 +200,8 @@
         <div class="modal-body">
           <p id="confirm-message" class="text-center"></p>
           <div class="d-flex flex-column flex-sm-row justify-content-center gap-2">
-            <button id="btn-confirm-cancel" class="flex-sm-fill" data-bs-dismiss="modal">Cancel</button>
-            <button id="btn-confirm-ok" class="flex-sm-fill" data-bs-dismiss="modal">Confirm</button>
+            <button id="btn-confirm-cancel" class="btn btn-outline-secondary flex-sm-fill" data-bs-dismiss="modal">Cancel</button>
+            <button id="btn-confirm-ok" class="btn btn-primary flex-sm-fill" data-bs-dismiss="modal">Confirm</button>
           </div>
         </div>
       </div>

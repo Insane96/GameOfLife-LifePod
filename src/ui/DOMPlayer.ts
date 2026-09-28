@@ -48,13 +48,16 @@ export class DOMPlayer {
 
         let removePlayer = document.createElement("button");
         removePlayer.id = "btn-remove-player-" + this.id;
-        removePlayer.classList.add("btn", "btn-outline-danger", "btn-sm");
+        removePlayer.classList.add("btn", "btn-outline-danger", "btn-icon");
         removePlayer.addEventListener("click", () => {
             if (!onTryRemove(this.id))
                 return;
             div.remove();
         });
-        removePlayer.textContent = "X";
+        let removeIcon = document.createElement("i");
+        removeIcon.classList.add("bi", "bi-x-lg");
+        removeIcon.ariaHidden = "true";
+        removePlayer.appendChild(removeIcon);
         removePlayer.ariaLabel = "Remove player";
         // Placed before the name, so it stays in the first row when the colors wrap
         div.insertBefore(removePlayer, textBox);

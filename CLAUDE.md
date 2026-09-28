@@ -43,8 +43,17 @@ cards").
   categories, actions), same information hierarchy as the landscape layout.
   Money, Life Points and Spin stay fixed at the top (sticky) while the rest
   scrolls; details in "Game screen" → "Responsive behavior".
-- **Value change feedback**: toasts (e.g. "+50,000 €", "+2 Life Points")
-  instead of a silent number update only.
+- **Value change feedback**: toasts (e.g. "+ € 50,000", "+ ♥ 2") instead of a
+  silent number update only, implemented so far for money and Life Points.
+  `PlayScreenUI.render()` keeps a snapshot (`statsPlayer`/`lastMoney`/
+  `lastLifePoints`) of what was last shown for the current player; when the
+  model value differs from the snapshot for the *same* player (a turn change
+  is not a "change"), it counts the displayed number from the old to the new
+  value (`animateStatChange`, ease-out over 500ms) and shows a delta toast
+  (`showDeltaToast`, a dynamically created Bootstrap `.toast` appended to
+  `#toast-container`, colored via `.toast-positive`/`.toast-negative`). No
+  events in the model: the comparison happens entirely in the UI layer. Other
+  values (the roll, asset prices, ...) are not animated yet.
 - **Undo**: an "Undo last action" button always visible next to "End turn".
   More important than in the original because the device changes hands more
   often.
@@ -155,6 +164,21 @@ cards").
     - The warm glow in `main.scss` is a `background-attachment: fixed` gradient
       on `body`; `.sticky-top` repeats it so that the opaque `bg-body` of the
       sticky row does not cut the glow.
+    - **Player identity tint**: `PlayScreenUI.render()` sets
+      `data-player-color` on `#play-screen` to the current player's
+      `PlayerColor` name (removed at `game.years <= 0`); `main.scss` maps it to
+      a `--player-accent` custom property (falls back to `--bs-primary`), used
+      by `#player-name`, the sticky row's bottom border and the Spin ring
+      (`.btn-spin`'s `box-shadow`, not its fill, to keep the button's own
+      contrast regardless of player color). This is the "Visa card" cue from
+      the original device: whose turn it is is visible at a glance when the
+      phone changes hands.
+    - **Icons**: Bootstrap Icons (`bi bi-*`), loaded from the jsdelivr CDN in
+      `index.html` next to the Google Fonts link (not self-hosted, no build
+      step needed). Decorative icons next to a visible text label get
+      `aria-hidden="true"`; icon-only buttons (`+`/`−`/`✓`/remove
+      player/fullscreen) keep their existing `aria-label` and use the
+      `.btn-icon` class (fixed 2.5rem circle, centered icon).
 - **Fullscreen button**: a single `btn-fullscreen` element, handled by
   `GlobalUI`, shared by all screens. `GlobalUI.render()` moves it (with
   `appendChild`, which moves the node instead of copying it) into the start
@@ -292,29 +316,30 @@ palette) instead of using the defaults as-is.
   as an app, and it would also give fullscreen on iPhone (via the manifest
   `display` setting), where the Fullscreen API is not available.
 - Visual direction ("it must not look like a business app"): ideas, in
-  increasing cost. The game screen redesign (points 2-4) waits until the game
-  screen works functionally; the theme (point 1) also applies to the main menu.
-  1. Theme, only Sass variables: a game-like saturated palette (from the
-     player colors and the Game of Life look) with a colored dark background
-     instead of neutral gray; a font with character for title and numbers
-     (e.g. from Fontsource or Google Fonts) instead of `system-ui`; very
-     rounded corners and pill buttons (`$border-radius`, `$btn-border-radius`).
-  2. Numbers and buttons at the center of attention (game screen): money and
-     Life Points very large, like on the original Lifepod display, with a small
-     label below (today they are plain text next to `+`/`−`); Spin as a big
-     circular button with a shadow and a "press" effect (it is already the
-     primary action in the specs); icons (Bootstrap Icons or emoji) instead of
-     `+`, `−`, `↔` and small captions.
-  3. Player identity: tint the screen with the color of the player whose turn it
-     is (bar, borders, Spin button). It helps when the phone is handed over,
-     because whose turn it is can be recognized at a glance, and it makes the
-     "Visa card" of the original device concrete.
-  4. Life and feedback: a short number animation for the roll instead of an
-     `alert`, the delta toasts already planned ("+50,000 €") and maybe confetti
-     at the end of the game. This is what makes it look like a game instead of
-     a form.
-  5. Remove "business" signals: fewer `btn-sm` and `btn-outline-*`, no gray
-     uppercase labels, few borders.
+  increasing cost.
+  1. **Done.** Theme, only Sass variables: a game-like saturated palette (from
+     the player colors and the Game of Life look) with a colored dark
+     background instead of neutral gray; a font with character for title and
+     numbers (Fredoka, from Google Fonts) instead of `system-ui`; very rounded
+     corners and pill buttons (`$border-radius`, `$btn-border-radius`).
+     Applies to the main menu too.
+  2. **Done.** Numbers and buttons at the center of attention (game screen):
+     money and Life Points are large (`.stat-value`) with a small label below
+     (`.stat-label`); Spin is a big circular button (`.btn-spin`) with a
+     shadow and a press effect (`:active { transform: scale(...) }`); icons
+     (Bootstrap Icons) instead of `+`, `−`, `↔`, and the `X`/`✓` symbols.
+  3. **Done.** Player identity: the screen is tinted with the color of the
+     player whose turn it is (player name, sticky row border, Spin ring). See
+     "Player identity tint" under "Game screen" → "Responsive behavior".
+  4. **Partly done.** Life and feedback: the delta toasts and the count-up
+     animation are implemented for money and Life Points (see "Value change
+     feedback"). Still open: a short number animation for the roll/chance
+     result (`#player-roll`/`#chance-result` still just swap text), and
+     confetti at the end of the game.
+  5. **Done.** Remove "business" signals: the game screen's buttons (and the
+     `kids-modal`/`houses-modal`/`cars-modal`/`confirm-modal`/`lottery-modal`
+     buttons) went from unstyled plain `<button>`s to `btn`/`btn-outline-*`;
+     the scoreboard table lost its default borders (`table-borderless`).
 - Optional rules (house rules) in the backend (`HouseRules`: unlimited kids,
   balanced rolling, lottery jackpot bonus with no winner): decision postponed
   (low priority), to be settled where they are enabled in the interface and
@@ -324,8 +349,6 @@ palette) instead of using the defaults as-is.
   sorted copy of the players. The scoreboard is a plain table inside the game
   screen; a dedicated end-of-game screen (new game, back to the menu) is still
   missing, and so is a rule for ties (same rank or not).
-- Delta toasts ("+50,000 €") not implemented yet: planned as a before/after
-  comparison of values (snapshot) in `PlayScreenUI`, without events in the
-  model.
-- Cells of the game screen still empty (lottery, board spaces, volume) and `Player` has no getters for `assets`/`qualification`
+- Cells of the game screen still empty (lottery pot/pick display outside its
+  modal, board spaces) and `Player` has no getters for `assets`/`qualification`
   (`marry` should be renamed `married`).

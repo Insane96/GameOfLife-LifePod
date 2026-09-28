@@ -1,6 +1,7 @@
 import {game} from "../Game.js";
 import {Player} from "../Player.js";
 import {Asset} from "../Asset.js";
+import {PlayerColor} from "../PlayerColor.js";
 import {Operation} from "./Operation.js";
 import {RollingAnimation} from "./RollingAnimation.js";
 import {sounds} from "./Sounds.js";
@@ -8,6 +9,7 @@ import {sounds} from "./Sounds.js";
 // Minimal typing for the Bootstrap bundle loaded with a <script> tag (no @types/bootstrap)
 declare const bootstrap: {
     Modal: { getOrCreateInstance(element: Element): { show(): void } };
+    Toast: new (element: Element, options?: {delay?: number}) => { show(): void };
 };
 
 enum RollingAnimationType {
@@ -18,6 +20,7 @@ enum RollingAnimationType {
 
 class PlayScreenUI {
     private playScreen = document.getElementById("play-screen") as HTMLDivElement;
+    private toastContainer = document.getElementById("toast-container") as HTMLDivElement;
     private btnSpin = document.getElementById("btn-spin") as HTMLButtonElement;
     private btnEndTurn = document.getElementById("btn-end-turn") as HTMLButtonElement;
     private yearsLeft = document.getElementById("years-left") as HTMLDivElement;
@@ -59,7 +62,9 @@ class PlayScreenUI {
     private chanceResultNumber = document.getElementById("chance-result-number") as HTMLDivElement;
 
     private btnWedding = document.getElementById("btn-wedding") as HTMLButtonElement;
+    private btnWeddingLabel = document.getElementById("btn-wedding-label") as HTMLSpanElement;
     private btnKids = document.getElementById("btn-kids") as HTMLButtonElement;
+    private btnKidsLabel = document.getElementById("btn-kids-label") as HTMLSpanElement;
     private btn1Kid = document.getElementById("btn-1-kid") as HTMLButtonElement;
     private btn2Kids = document.getElementById("btn-2-kids") as HTMLButtonElement;
     private btnTryKid = document.getElementById("btn-try-kid") as HTMLButtonElement;
@@ -82,6 +87,13 @@ class PlayScreenUI {
     private confirmMessage = document.getElementById("confirm-message") as HTMLParagraphElement;
     private btnConfirmOk = document.getElementById("btn-confirm-ok") as HTMLButtonElement;
     private confirmCallback: (() => void) | null = null;
+
+    // Snapshot of the last money/Life Points shown for the current player, so render() can tell
+    // a real change (worth a count-up animation and a delta toast) from a turn change or a
+    // re-render triggered by something else (e.g. opening an operation).
+    private statsPlayer: Player | null = null;
+    private lastMoney: number = 0;
+    private lastLifePoints: number = 0;
 
     constructor() {
         this.btnSpin.addEventListener("click", () => {
@@ -304,10 +316,31 @@ class PlayScreenUI {
         if (game.years <= 0) {
             this.playerMoney.textContent = "";
             this.playerLifePoints.textContent = "";
+            this.playScreen.removeAttribute("data-player-color");
+            this.statsPlayer = null;
         }
         else {
-            this.playerMoney.textContent = `€ ${this.formatNumber(currentPlayer.money)}`;
-            this.playerLifePoints.textContent = `♥ ${this.formatNumber(currentPlayer.lifePoints)}`;
+            this.playScreen.dataset.playerColor = PlayerColor[currentPlayer.color];
+
+            const samePlayer = this.statsPlayer === currentPlayer;
+            const fromMoney = samePlayer ? this.lastMoney : currentPlayer.money;
+            const fromLifePoints = samePlayer ? this.lastLifePoints : currentPlayer.lifePoints;
+
+            this.animateStatChange(this.playerMoney, fromMoney, currentPlayer.money, (v) => `€ ${this.formatNumber(v)}`);
+            this.animateStatChange(this.playerLifePoints, fromLifePoints, currentPlayer.lifePoints, (v) => `♥ ${this.formatNumber(v)}`);
+
+            if (samePlayer && currentPlayer.money !== this.lastMoney) {
+                const delta = currentPlayer.money - this.lastMoney;
+                this.showDeltaToast(`${delta > 0 ? "+" : "−"} € ${this.formatNumber(Math.abs(delta))}`, delta > 0);
+            }
+            if (samePlayer && currentPlayer.lifePoints !== this.lastLifePoints) {
+                const delta = currentPlayer.lifePoints - this.lastLifePoints;
+                this.showDeltaToast(`${delta > 0 ? "+" : "−"} ♥ ${this.formatNumber(Math.abs(delta))}`, delta > 0);
+            }
+
+            this.statsPlayer = currentPlayer;
+            this.lastMoney = currentPlayer.money;
+            this.lastLifePoints = currentPlayer.lifePoints;
         }
 
         const moneyOpen: boolean = this._operation === Operation.AddMoney || this._operation === Operation.RemoveMoney;
@@ -320,7 +353,10 @@ class PlayScreenUI {
         for (const {button, asset, name} of this.assetButtons) {
             const ownedAsset = currentPlayer.getOwnedAsset(asset);
             const label = ownedAsset !== undefined ? `Sell ${name}` : `Buy ${name}`;
-            button.replaceChildren(label, document.createElement("br"), `€ ${this.formatNumber(this.getAssetPrice(currentPlayer, asset))}`);
+            const icon = document.createElement("i");
+            icon.classList.add("bi", asset.isHouse() ? "bi-house-door-fill" : "bi-car-front-fill", "d-block", "mb-1");
+            icon.ariaHidden = "true";
+            button.replaceChildren(icon, label, document.createElement("br"), `€ ${this.formatNumber(this.getAssetPrice(currentPlayer, asset))}`);
             button.classList.toggle("green", ownedAsset !== undefined);
             button.disabled = !currentPlayer.hasPressedSpin || game.years <= 0;
         }
@@ -348,12 +384,12 @@ class PlayScreenUI {
         this.yearsLeft.textContent = `Years left: ${game.years}`;
         this.btnEndTurn.disabled = !currentPlayer.hasPressedSpin;
 
-        this.btnWedding.textContent = !currentPlayer.married ? "Wedding" : "Anniversary";
+        this.btnWeddingLabel.textContent = !currentPlayer.married ? "Wedding" : "Anniversary";
         this.btnWedding.classList.toggle("green", currentPlayer.married);
         this.btnWedding.disabled = !currentPlayer.hasPressedSpin;
 
         this.btnKids.disabled = !currentPlayer.married || !currentPlayer.hasPressedSpin || game.years <= 0;
-        this.btnKids.textContent = currentPlayer.married ? `${currentPlayer.kids} kids` : "Kids";
+        this.btnKidsLabel.textContent = currentPlayer.married ? `${currentPlayer.kids} kids` : "Kids";
 
         if (game.years <= 0) {
             this.btnSpin.disabled = true;
@@ -429,6 +465,51 @@ class PlayScreenUI {
 
     private formatNumber(value: number): string {
         return value.toLocaleString("en-US");
+    }
+
+    /**
+     * Counts the displayed text from "from" to "to" instead of jumping straight to the new
+     * value, so an increase/decrease is felt, not just read. A no-op (sets the text directly)
+     * when the value hasn't actually changed.
+     */
+    private animateStatChange(element: HTMLElement, from: number, to: number, formatFn: (value: number) => string) {
+        if (from === to) {
+            element.textContent = formatFn(to);
+            return;
+        }
+        const duration = 2000;
+        const start = performance.now();
+        const step = (now: number) => {
+            const t = Math.min(1, (now - start) / duration);
+            const eased = 1 - Math.pow(1 - t, 3);
+            element.textContent = formatFn(Math.round(from + (to - from) * eased));
+            if (t < 1)
+                requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+    }
+
+    /**
+     * Delta toast for a value change (e.g. "+ € 50,000"), see #toast-container.
+     */
+    private showDeltaToast(message: string, positive: boolean) {
+        const toastElement = document.createElement("div");
+        toastElement.classList.add("toast", "align-items-center", "border-0", positive ? "toast-positive" : "toast-negative");
+        toastElement.setAttribute("role", "status");
+        toastElement.setAttribute("aria-live", "polite");
+        toastElement.setAttribute("aria-atomic", "true");
+
+        const flex = document.createElement("div");
+        flex.classList.add("d-flex");
+        const body = document.createElement("div");
+        body.classList.add("toast-body", "fw-semibold");
+        body.textContent = message;
+        flex.appendChild(body);
+        toastElement.appendChild(flex);
+
+        this.toastContainer.appendChild(toastElement);
+        toastElement.addEventListener("hidden.bs.toast", () => toastElement.remove());
+        new bootstrap.Toast(toastElement, {delay: 5000}).show();
     }
 
     /**
