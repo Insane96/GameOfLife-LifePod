@@ -72,9 +72,9 @@ cards").
     (cells still empty). Each of the two buttons opens a modal
     (`houses-modal`, `cars-modal`, see "Modals" below) with the buy/sell button
     of each asset. Buying happens with a single click, with no confirmation;
-    selling still asks `confirm()`. `btn-houses` and `btn-cars` are disabled
-    with the same condition as the asset buttons (Spin not pressed, or game
-    over).
+    selling opens the shared `confirm-modal` (see "Modals" below). `btn-houses`
+    and `btn-cars` are disabled with the same condition as the asset buttons
+    (Spin not pressed, or game over).
   - Middle: name of the player whose turn it is, money and life points, each
     with `+` / `−` buttons that open a numeric field (`inputmode="numeric"`)
     with a ✓ confirm button, then the roll/chance results and the "Spin"
@@ -130,9 +130,10 @@ cards").
       from `sm` up (`align-items-sm-stretch`).
     - The "Houses" / "Cars" buttons are stacked (`flex-column`) in portrait and
       side by side (`flex-sm-row flex-sm-wrap`) from `sm` up.
-    - **Modals** (`kids-modal`, `houses-modal`, `cars-modal`): native Bootstrap
-      modals, written by hand in `index.html` outside `#play-screen`, with
-      `modal fade` + `tabindex="-1"` + `aria-label`, and the three nested levels
+    - **Modals** (`kids-modal`, `houses-modal`, `cars-modal`, `confirm-modal`):
+      native Bootstrap modals, written by hand in `index.html` outside
+      `#play-screen`, with `modal fade` + `tabindex="-1"` + `aria-label`, and
+      the three nested levels
       `.modal-dialog.modal-dialog-centered` > `.modal-content` > `.modal-body`
       (never on the same element). They are opened with `data-bs-toggle="modal"`
       and `data-bs-target` on the opener button, and closed by clicking outside,
@@ -142,6 +143,15 @@ cards").
       (`d-flex flex-column flex-sm-row justify-content-center gap-2`, buttons
       with `flex-sm-fill`). Do not use `modal-sm` when the buttons are in a row:
       300px are not enough.
+      `confirm-modal` replaces the native `confirm()` for actions that need a
+      yes/no check (Wedding/Anniversary, selling an asset): it has no
+      `data-bs-target` opener of its own, because the message and the action to
+      run on confirm change every time. `PlayScreenUI.confirmAction(message,
+      onConfirm)` sets `#confirm-message`, stores `onConfirm` in
+      `confirmCallback`, and opens the modal; the single `btn-confirm-ok`
+      listener (attached once, in the constructor) runs `confirmCallback` and
+      clears it. `btn-confirm-cancel` and outside/Esc close the modal with no
+      callback (`data-bs-dismiss="modal"`, nothing else attached).
     - The warm glow in `main.scss` is a `background-attachment: fixed` gradient
       on `body`; `.sticky-top` repeats it so that the opaque `bg-body` of the
       sticky row does not cut the glow.
@@ -213,9 +223,15 @@ palette) instead of using the defaults as-is.
   hidden with `d-none`) through `showError(message)` / `clearError()` in
   `MainMenuUI`; the message is cleared at the start of the next user action.
   The rule about the number of players lives in `MainMenuUI` (`DOMPlayer` only
-  asks it through a callback). The game screen still uses `alert` for now (a
-  placeholder, to be replaced when it is redesigned). Per-field messages
-  (`is-invalid` + `invalid-feedback`) are a possible later improvement.
+  asks it through a callback). The game screen uses the same pattern
+  (`#play-error`, `showError(message)` / `clearError()` in `PlayScreenUI`,
+  cleared at the start of the next user action), in the sticky middle row so it
+  stays visible; `PlayScreenUI.onError(exception)` (used by `PlayScreenUI`
+  itself and by `LotteryUI`) writes into it instead of calling `alert`. Errors
+  raised while a modal (e.g. `lottery-modal`) is open still land in
+  `#play-error`, which sits behind the modal until it is closed. Per-field
+  messages (`is-invalid` + `invalid-feedback`) are a possible later
+  improvement.
 - **Callbacks to model methods**: pass arrow functions
   (`(v) => game.getCurrentPlayerTurn().addMoney(v)`), never the bare method
   (`player.addMoney`, it loses `this`). The arrow resolves the current player
