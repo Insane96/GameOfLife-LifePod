@@ -78,6 +78,11 @@ class PlayScreenUI {
 
     private inputVolume: HTMLInputElement = document.getElementById("input-volume") as HTMLInputElement;
 
+    private confirmModal = document.getElementById("confirm-modal") as HTMLDivElement;
+    private confirmMessage = document.getElementById("confirm-message") as HTMLParagraphElement;
+    private btnConfirmOk = document.getElementById("btn-confirm-ok") as HTMLButtonElement;
+    private confirmCallback: (() => void) | null = null;
+
     constructor() {
         this.btnSpin.addEventListener("click", () => {
             this.clearError();
@@ -179,9 +184,10 @@ class PlayScreenUI {
             this.playChanceAnimation();
         });
         this.btnWedding.addEventListener("click", () => {
-            if (confirm("Confirm Wedding/Anniversary?"))
+            this.confirmAction("Confirm Wedding/Anniversary?", () => {
                 game.getCurrentPlayerTurn().getMarried();
-            this.render();
+                this.render();
+            });
         });
         this.btnKids.addEventListener("click", () => {
 
@@ -224,22 +230,34 @@ class PlayScreenUI {
                 this.clearError();
                 const player = game.getCurrentPlayerTurn();
                 const price = this.formatNumber(this.getAssetPrice(player, asset));
-                try {
-                    if (player.hasAsset(asset)) {
-                        if (confirm(`Sell ${name} for € ${price}?`))
+                if (player.hasAsset(asset)) {
+                    this.confirmAction(`Sell ${name} for € ${price}?`, () => {
+                        try {
                             player.sellAsset(asset);
-                    }
-                    else
+                        }
+                        catch (e) {
+                            this.onError(e);
+                        }
+                        this.render();
+                    });
+                }
+                else {
+                    try {
                         player.buyAsset(asset);
+                    }
+                    catch (e) {
+                        this.onError(e);
+                    }
+                    this.render();
                 }
-                catch (e) {
-                    this.onError(e);
-                }
-                this.render();
             });
         }
         this.inputVolume.addEventListener("input", () => {
             sounds.setVolume(this.inputVolume.valueAsNumber);
+        });
+        this.btnConfirmOk.addEventListener("click", () => {
+            this.confirmCallback?.();
+            this.confirmCallback = null;
         });
     }
 
@@ -444,6 +462,15 @@ class PlayScreenUI {
 
     private clearError() {
         this.playError.classList.add("d-none");
+    }
+
+    /**
+     * Opens the confirm modal and runs onConfirm only if the user confirms.
+     */
+    private confirmAction(message: string, onConfirm: () => void) {
+        this.confirmMessage.textContent = message;
+        this.confirmCallback = onConfirm;
+        bootstrap.Modal.getOrCreateInstance(this.confirmModal).show();
     }
 }
 
