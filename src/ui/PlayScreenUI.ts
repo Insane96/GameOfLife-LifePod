@@ -310,8 +310,7 @@ class PlayScreenUI {
         this.btnWedding.disabled = !currentPlayer.hasPressedSpin;
 
         this.btnKids.disabled = !currentPlayer.married || !currentPlayer.hasPressedSpin || game.years <= 0;
-        if (!this.btnKids.disabled)
-            this.btnKids.textContent = `${currentPlayer.kids} kids`;
+        this.btnKids.textContent = currentPlayer.married ? `${currentPlayer.kids} kids` : "Kids";
 
         if (game.years <= 0) {
             this.btnSpin.disabled = true;
