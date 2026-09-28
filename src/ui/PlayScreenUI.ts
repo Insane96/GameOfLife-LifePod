@@ -63,6 +63,8 @@ class PlayScreenUI {
     private btn2Kids = document.getElementById("btn-2-kids") as HTMLButtonElement;
     private btnTryKid = document.getElementById("btn-try-kid") as HTMLButtonElement;
 
+    private btnLottery = document.getElementById("btn-lottery") as HTMLButtonElement;
+
     private btnHouses = document.getElementById("btn-houses") as HTMLButtonElement;
     private btnCars = document.getElementById("btn-cars") as HTMLButtonElement;
     private assetButtons: {button: HTMLButtonElement, asset: Asset, name: string}[] = [
@@ -282,6 +284,8 @@ class PlayScreenUI {
         // Same condition as the asset buttons: their modals would open with everything disabled
         this.btnHouses.disabled = !currentPlayer.hasPressedSpin || game.years <= 0;
         this.btnCars.disabled = !currentPlayer.hasPressedSpin || game.years <= 0;
+        this.btnAuction.disabled = !currentPlayer.hasPressedSpin || game.years <= 0;
+        this.btnLottery.disabled = !currentPlayer.hasPressedSpin || game.years <= 0;
 
         this.btnSpin.classList.toggle("d-none", currentPlayer.hasPressedSpin);
         const showRoll = game.rolledNumber > 0 && this.rollingAnimationType !== RollingAnimationType.Spin;
@@ -305,7 +309,7 @@ class PlayScreenUI {
         this.btnWedding.classList.toggle("green", currentPlayer.married);
         this.btnWedding.disabled = !currentPlayer.hasPressedSpin;
 
-        this.btnKids.disabled = !currentPlayer.married;
+        this.btnKids.disabled = !currentPlayer.married || !currentPlayer.hasPressedSpin || game.years <= 0;
         if (!this.btnKids.disabled)
             this.btnKids.textContent = `${currentPlayer.kids} kids`;
 
@@ -320,7 +324,6 @@ class PlayScreenUI {
             this.btnAddLifePoints.classList.add("d-none");
             this.btnRemoveLifePoints.classList.add("d-none");
             this.btnSalary.disabled = true;
-            this.btnAuction.disabled = true;
             this.btnWedding.disabled = true;
         }
     }
