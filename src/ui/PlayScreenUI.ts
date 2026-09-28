@@ -22,6 +22,7 @@ class PlayScreenUI {
     private btnEndTurn = document.getElementById("btn-end-turn") as HTMLButtonElement;
     private yearsLeft = document.getElementById("years-left") as HTMLDivElement;
     private playerName = document.getElementById("player-name") as HTMLDivElement;
+    private playError = document.getElementById("play-error") as HTMLDivElement;
     private playerScoreboard = document.getElementById("player-scoreboard") as HTMLTableSectionElement;
     private playerScoreboardHeader = document.getElementById("player-scoreboard-header") as HTMLTableSectionElement;
 
@@ -79,6 +80,7 @@ class PlayScreenUI {
 
     constructor() {
         this.btnSpin.addEventListener("click", () => {
+            this.clearError();
             let spun: boolean = false;
             try {
                 game.getCurrentPlayerTurn().onSpin();
@@ -97,6 +99,7 @@ class PlayScreenUI {
                 event.preventDefault();
         });
         this.btnEndTurn.addEventListener("click", () => {
+            this.clearError();
             try {
                 game.endTurn();
             }
@@ -138,9 +141,10 @@ class PlayScreenUI {
             this.toggleOperation(Operation.Salary, this.inputSalary);
         });
         this.btnConfirmSalary.addEventListener("click", () => {
+            this.clearError();
             let input = parseInt(this.inputSalary.value);
             if (Number.isNaN(input)) {
-                alert("Invalid input");
+                this.showError("Invalid input");
                 return;
             }
             try {
@@ -157,9 +161,10 @@ class PlayScreenUI {
             this.toggleOperation(Operation.Auction, this.inputAuction);
         });
         this.btnConfirmAuction.addEventListener("click", () => {
+            this.clearError();
             let input = parseInt(this.inputAuction.value);
             if (Number.isNaN(input)) {
-                alert("Invalid input");
+                this.showError("Invalid input");
                 return;
             }
             try {
@@ -182,6 +187,7 @@ class PlayScreenUI {
 
         });
         this.btn1Kid.addEventListener("click", () => {
+            this.clearError();
             try {
                 game.getCurrentPlayerTurn().addKids(1);
             }
@@ -191,6 +197,7 @@ class PlayScreenUI {
             this.render();
         });
         this.btn2Kids.addEventListener("click", () => {
+            this.clearError();
             try {
                 game.getCurrentPlayerTurn().addKids(2);
             }
@@ -200,6 +207,7 @@ class PlayScreenUI {
             this.render();
         });
         this.btnTryKid.addEventListener("click", () => {
+            this.clearError();
             let failed = false;
             try {
                 game.getCurrentPlayerTurn().tryForAKid();
@@ -213,6 +221,7 @@ class PlayScreenUI {
         });
         for (const {button, asset, name} of this.assetButtons) {
             button.addEventListener("click", () => {
+                this.clearError();
                 const player = game.getCurrentPlayerTurn();
                 const price = this.formatNumber(this.getAssetPrice(player, asset));
                 try {
@@ -401,10 +410,11 @@ class PlayScreenUI {
     }
 
     private confirmOperationInput(inputElement: HTMLInputElement, addOperation: Operation, removeOperation: Operation, addFunc: (value: number) => void, removeFunc: (value: number) => void) {
+        this.clearError();
         if (this._operation === addOperation || this._operation === removeOperation) {
             let input = parseInt(inputElement.value);
             if (Number.isNaN(input)) {
-                alert("Invalid input");
+                this.showError("Invalid input");
                 return;
             }
             try {
@@ -423,8 +433,17 @@ class PlayScreenUI {
     }
 
     public onError(exception: any) {
-        alert(`Error: ${exception}`);
+        this.showError(`Error: ${exception}`);
         console.log(exception);
+    }
+
+    private showError(message: string) {
+        this.playError.textContent = message;
+        this.playError.classList.remove("d-none");
+    }
+
+    private clearError() {
+        this.playError.classList.add("d-none");
     }
 }
 
