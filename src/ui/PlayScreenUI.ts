@@ -324,6 +324,7 @@ class PlayScreenUI {
             this.btnRemoveLifePoints.classList.add("d-none");
             this.btnSalary.disabled = true;
             this.btnWedding.disabled = true;
+            this.btnChance.disabled = true;
         }
     }
 
