@@ -470,7 +470,10 @@ class PlayScreenUI {
     /**
      * Counts the displayed text from "from" to "to" instead of jumping straight to the new
      * value, so an increase/decrease is felt, not just read. A no-op (sets the text directly)
-     * when the value hasn't actually changed.
+     * when the value hasn't actually changed. Paused while a modal is open (a houses/cars/kids/
+     * confirm/lottery/roll modal covers the sticky row, so the count wouldn't be seen anyway):
+     * elapsed time simply doesn't advance until the modal closes, then the count resumes from
+     * where it was.
      */
     private animateStatChange(element: HTMLElement, from: number, to: number, formatFn: (value: number) => string) {
         if (from === to) {
@@ -478,9 +481,13 @@ class PlayScreenUI {
             return;
         }
         const duration = 2000;
-        const start = performance.now();
+        let elapsed = 0;
+        let last = performance.now();
         const step = (now: number) => {
-            const t = Math.min(1, (now - start) / duration);
+            if (!document.querySelector(".modal.show"))
+                elapsed += now - last;
+            last = now;
+            const t = Math.min(1, elapsed / duration);
             const eased = 1 - Math.pow(1 - t, 3);
             element.textContent = formatFn(Math.round(from + (to - from) * eased));
             if (t < 1)

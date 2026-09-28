@@ -194,6 +194,7 @@ $player-accent-colors: (
 }
 
 .sticky-top {
+  border-top: 3px solid var(--player-accent);
   border-bottom: 3px solid var(--player-accent);
 }
 
