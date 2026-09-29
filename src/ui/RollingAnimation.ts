@@ -1,5 +1,4 @@
 import {sounds} from "./Sounds.js";
-import {Mth} from "../Mth.js";
 
 /**
  * Uses the #roll-modal
@@ -45,7 +44,7 @@ export class RollingAnimation {
         const currentNumber = parseInt(this.usedElements[this.currentElement].id.split("-")[2]);
         if (this.rolledNumber == currentNumber)
             this.currentSpin++;
-        if (!this.slowdown && this.currentSpin >= this.spins / 2 && (Mth.randomInt(0, 20) == 0 || this.currentSpin >= this.spins - 1))
+        if (!this.slowdown && this.currentSpin >= this.spins - 1)
             this.slowdown = true;
         if (this.slowdown)
             timeout = 250;
