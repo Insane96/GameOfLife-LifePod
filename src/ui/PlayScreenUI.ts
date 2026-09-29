@@ -639,7 +639,7 @@ class PlayScreenUI {
 
         this.toastContainer.appendChild(toastElement);
         toastElement.addEventListener("hidden.bs.toast", () => toastElement.remove());
-        new bootstrap.Toast(toastElement, {delay: 2500}).show();
+        new bootstrap.Toast(toastElement, {delay: 5000}).show();
     }
 
     /**
