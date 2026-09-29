@@ -128,6 +128,7 @@ class PlayScreenUI {
             this.inputMoney.value = "";
             this.inputLifePoints.value = "";
             this.inputAuction.value = "";
+            this.toastContainer.replaceChildren();
             this.render();
         });
         this.btnAddMoney.addEventListener("click", () => {
