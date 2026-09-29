@@ -56,6 +56,11 @@ class PlayScreenUI {
     private rollModal = document.getElementById("roll-modal") as HTMLDivElement;
     private rollingAnimation: RollingAnimation | null = null;
     private rollingAnimationType: RollingAnimationType | null = null;
+    // Tracks modal open/close via Bootstrap's own events (fired the instant show()/hide() is
+    // called) instead of querying ".modal.show" in the animation loop: that class is only added
+    // once the backdrop's own fade-in has already finished, so a class-based check misses the
+    // whole backdrop fade and lets the count-up run unpaused during it.
+    private isModalOpen: boolean = false;
 
     private btnChance = document.getElementById("btn-chance") as HTMLButtonElement;
     private chanceResult = document.getElementById("chance-result") as HTMLDivElement;
@@ -96,6 +101,8 @@ class PlayScreenUI {
     private lastLifePoints: number = 0;
 
     constructor() {
+        document.addEventListener("show.bs.modal", () => { this.isModalOpen = true; });
+        document.addEventListener("hidden.bs.modal", () => { this.isModalOpen = false; });
         this.btnSpin.addEventListener("click", () => {
             this.clearError();
             let spun: boolean = false;
@@ -106,9 +113,15 @@ class PlayScreenUI {
             catch (e) {
                 this.onError(e);
             }
-            if (spun)
-                this.playRollAnimation();
-            this.render();
+            if (spun) {
+                // Hides the roll number and blocks other actions (see the "busy" checks in
+                // render()) until playRollAnimation() actually opens the modal, once money/Life
+                // Points have finished animating below.
+                this.rollingAnimationType = RollingAnimationType.Spin;
+                this.render(() => this.playRollAnimation());
+            }
+            else
+                this.render();
         });
         // Blocks closing (click outside, Esc) until the animation is over
         this.rollModal.addEventListener("hide.bs.modal", (event) => {
@@ -159,8 +172,8 @@ class PlayScreenUI {
         });
         this.btnChance.addEventListener("click", () => {
             game.rollAndSetChance();
-            this.playChanceAnimation();
-            this.render();
+            this.rollingAnimationType = RollingAnimationType.TryForAKid;
+            this.render(() => this.playChanceAnimation());
         });
         this.btnSalary.addEventListener("click", () => {
             this.inputSalary.value = String(game.getCurrentPlayerTurn().salary);
@@ -206,7 +219,8 @@ class PlayScreenUI {
             }
             this._operation = Operation.None;
             this.inputAuction.value = "";
-            this.playChanceAnimation();
+            this.rollingAnimationType = RollingAnimationType.TryForAKid;
+            this.render(() => this.playChanceAnimation());
         });
         this.inputAuction.addEventListener("keydown", (event) => {
             if (event.key === "Enter")
@@ -251,8 +265,10 @@ class PlayScreenUI {
                 this.onError(e);
                 failed = true;
             }
-            if (!failed)
-                this.playChanceAnimation();
+            if (!failed) {
+                this.rollingAnimationType = RollingAnimationType.TryForAKid;
+                this.render(() => this.playChanceAnimation());
+            }
         });
         for (const {button, asset, name} of this.assetButtons) {
             button.addEventListener("click", () => {
@@ -290,7 +306,13 @@ class PlayScreenUI {
         });
     }
 
-    public render() {
+    /**
+     * @param onStatsSettled called once the money/Life Points animation below is done (right
+     * away if there was nothing to animate). Callers that need to open a modal right after a
+     * stat change (Spin, Chance, Try for a kid, Auction) pass it instead of opening the modal
+     * themselves, so the animation is never covered by a modal that's already sliding in.
+     */
+    public render(onStatsSettled?: () => void) {
         const currentPlayer: Player = game.getCurrentPlayerTurn();
 
         this.playerScoreboardHeader.classList.toggle("d-none", game.years > 0);
@@ -319,6 +341,7 @@ class PlayScreenUI {
             this.playerLifePoints.textContent = "";
             this.playScreen.removeAttribute("data-player-color");
             this.statsPlayer = null;
+            onStatsSettled?.();
         }
         else {
             this.playScreen.dataset.playerColor = PlayerColor[currentPlayer.color];
@@ -326,22 +349,28 @@ class PlayScreenUI {
             const samePlayer = this.statsPlayer === currentPlayer;
             const fromMoney = samePlayer ? this.lastMoney : currentPlayer.money;
             const fromLifePoints = samePlayer ? this.lastLifePoints : currentPlayer.lifePoints;
-
-            this.animateStatChange(this.playerMoney, fromMoney, currentPlayer.money, (v) => `€ ${this.formatNumber(v)}`);
-            this.animateStatChange(this.playerLifePoints, fromLifePoints, currentPlayer.lifePoints, (v) => `♥ ${this.formatNumber(v)}`);
-
-            if (samePlayer && currentPlayer.money !== this.lastMoney) {
-                const delta = currentPlayer.money - this.lastMoney;
-                this.showDeltaToast(`${delta > 0 ? "+" : "−"} € ${this.formatNumber(Math.abs(delta))}`, delta > 0);
-            }
-            if (samePlayer && currentPlayer.lifePoints !== this.lastLifePoints) {
-                const delta = currentPlayer.lifePoints - this.lastLifePoints;
-                this.showDeltaToast(`${delta > 0 ? "+" : "−"} ♥ ${this.formatNumber(Math.abs(delta))}`, delta > 0);
-            }
+            const toMoney = currentPlayer.money;
+            const toLifePoints = currentPlayer.lifePoints;
 
             this.statsPlayer = currentPlayer;
-            this.lastMoney = currentPlayer.money;
-            this.lastLifePoints = currentPlayer.lifePoints;
+            this.lastMoney = toMoney;
+            this.lastLifePoints = toLifePoints;
+
+            // Like the physical Lifepod: money counts up first, then Life Points, then (via
+            // onStatsSettled) the roll/chance modal opens. animateStatChange no-ops straight
+            // into its callback when a value hasn't changed, so an unmarried/childless player
+            // skips the Life Points step entirely instead of waiting on it.
+            this.animateStatChange(this.playerMoney, fromMoney, toMoney, (v) => `€ ${this.formatNumber(v)}`, () => {
+                if (samePlayer && toLifePoints !== fromLifePoints) {
+                    const delta = toLifePoints - fromLifePoints;
+                    this.showDeltaToast(`${delta > 0 ? "+" : "−"} ♥ ${this.formatNumber(Math.abs(delta))}`, delta > 0);
+                }
+                this.animateStatChange(this.playerLifePoints, fromLifePoints, toLifePoints, (v) => `♥ ${this.formatNumber(v)}`, onStatsSettled);
+            });
+            if (samePlayer && toMoney !== fromMoney) {
+                const delta = toMoney - fromMoney;
+                this.showDeltaToast(`${delta > 0 ? "+" : "−"} € ${this.formatNumber(Math.abs(delta))}`, delta > 0);
+            }
         }
 
         const moneyOpen: boolean = this._operation === Operation.AddMoney || this._operation === Operation.RemoveMoney;
@@ -351,6 +380,11 @@ class PlayScreenUI {
         this.inputLifePoints.classList.toggle("d-none", !lifePointsOpen);
         this.btnConfirmLifePoints.classList.toggle("d-none", !lifePointsOpen);
 
+        // True from the moment Spin/Chance/Try for a kid/Auction is pressed until their roll
+        // modal actually closes, including the money/Life Points animation before it opens: the
+        // modal's own backdrop can't block these buttons during that gap, so this does instead.
+        const busy = this.rollingAnimationType !== null;
+
         for (const {button, asset, name} of this.assetButtons) {
             const ownedAsset = currentPlayer.getOwnedAsset(asset);
             const label = ownedAsset !== undefined ? `Sell ${name}` : `Buy ${name}`;
@@ -359,13 +393,13 @@ class PlayScreenUI {
             icon.ariaHidden = "true";
             button.replaceChildren(icon, label, document.createElement("br"), `€ ${this.formatNumber(this.getAssetPrice(currentPlayer, asset))}`);
             button.classList.toggle("green", ownedAsset !== undefined);
-            button.disabled = !currentPlayer.hasPressedSpin || game.years <= 0;
+            button.disabled = !currentPlayer.hasPressedSpin || game.years <= 0 || busy;
         }
         // Same condition as the asset buttons: their modals would open with everything disabled
-        this.btnHouses.disabled = !currentPlayer.hasPressedSpin || game.years <= 0;
-        this.btnCars.disabled = !currentPlayer.hasPressedSpin || game.years <= 0;
-        this.btnAuction.disabled = !currentPlayer.hasPressedSpin || game.years <= 0;
-        this.btnLottery.disabled = !currentPlayer.hasPressedSpin || game.years <= 0;
+        this.btnHouses.disabled = !currentPlayer.hasPressedSpin || game.years <= 0 || busy;
+        this.btnCars.disabled = !currentPlayer.hasPressedSpin || game.years <= 0 || busy;
+        this.btnAuction.disabled = !currentPlayer.hasPressedSpin || game.years <= 0 || busy;
+        this.btnLottery.disabled = !currentPlayer.hasPressedSpin || game.years <= 0 || busy;
 
         this.btnSpin.classList.toggle("d-none", currentPlayer.hasPressedSpin);
         const showRoll = game.rolledNumber > 0 && this.rollingAnimationType !== RollingAnimationType.Spin;
@@ -383,14 +417,16 @@ class PlayScreenUI {
         this.chanceResultNumber.textContent = showChance ? `${game.rolledChance}` : "";
 
         this.yearsLeft.textContent = `Years left: ${game.years}`;
-        this.btnEndTurn.disabled = !currentPlayer.hasPressedSpin;
+        this.btnEndTurn.disabled = !currentPlayer.hasPressedSpin || busy;
 
         this.btnWeddingLabel.textContent = !currentPlayer.married ? "Wedding" : "Anniversary";
         this.btnWedding.classList.toggle("green", currentPlayer.married);
-        this.btnWedding.disabled = !currentPlayer.hasPressedSpin;
+        this.btnWedding.disabled = !currentPlayer.hasPressedSpin || busy;
 
-        this.btnKids.disabled = !currentPlayer.married || !currentPlayer.hasPressedSpin || game.years <= 0;
+        this.btnKids.disabled = !currentPlayer.married || !currentPlayer.hasPressedSpin || game.years <= 0 || busy;
         this.btnKidsLabel.textContent = currentPlayer.married ? `${currentPlayer.kids} kids` : "Kids";
+
+        this.btnChance.disabled = busy;
 
         if (game.years <= 0) {
             this.btnSpin.disabled = true;
@@ -470,22 +506,25 @@ class PlayScreenUI {
 
     /**
      * Counts the displayed text from "from" to "to" instead of jumping straight to the new
-     * value, so an increase/decrease is felt, not just read. A no-op (sets the text directly)
-     * when the value hasn't actually changed. Paused while a modal is open (a houses/cars/kids/
-     * confirm/lottery/roll modal covers the sticky row, so the count wouldn't be seen anyway):
-     * elapsed time simply doesn't advance until the modal closes, then the count resumes from
-     * where it was.
+     * value, so an increase/decrease is felt, not just read. A no-op (sets the text directly,
+     * then calling onComplete right away) when the value hasn't actually changed. Paused while a
+     * modal is open (a houses/cars/kids/confirm/lottery/roll modal covers the sticky row, so the
+     * count wouldn't be seen anyway), tracked via isModalOpen (set from Bootstrap's own
+     * show.bs.modal/hidden.bs.modal events) rather than a ".modal.show" DOM query, since that
+     * class is only added once the backdrop's own fade-in has already finished: elapsed time
+     * simply doesn't advance until the modal closes, then the count resumes from where it was.
      */
-    private animateStatChange(element: HTMLElement, from: number, to: number, formatFn: (value: number) => string) {
+    private animateStatChange(element: HTMLElement, from: number, to: number, formatFn: (value: number) => string, onComplete?: () => void) {
         if (from === to) {
             element.textContent = formatFn(to);
+            onComplete?.();
             return;
         }
         const duration = 2000;
         let elapsed = 0;
         let last = performance.now();
         const step = (now: number) => {
-            if (!document.querySelector(".modal.show"))
+            if (!this.isModalOpen)
                 elapsed += now - last;
             last = now;
             const t = Math.min(1, elapsed / duration);
@@ -493,6 +532,8 @@ class PlayScreenUI {
             element.textContent = formatFn(Math.round(from + (to - from) * eased));
             if (t < 1)
                 requestAnimationFrame(step);
+            else
+                onComplete?.();
         };
         requestAnimationFrame(step);
     }
