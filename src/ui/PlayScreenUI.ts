@@ -1,5 +1,5 @@
 import {game} from "../Game.js";
-import {Player} from "../Player.js";
+import {Player, SpinBreakdown, StatStep} from "../Player.js";
 import {Asset} from "../Asset.js";
 import {PlayerColor} from "../PlayerColor.js";
 import {Operation} from "./Operation.js";
@@ -105,20 +105,19 @@ class PlayScreenUI {
         document.addEventListener("hidden.bs.modal", () => { this.isModalOpen = false; });
         this.btnSpin.addEventListener("click", () => {
             this.clearError();
-            let spun: boolean = false;
+            let spinBreakdown: SpinBreakdown | null = null;
             try {
-                game.getCurrentPlayerTurn().onSpin();
-                spun = true;
+                spinBreakdown = game.getCurrentPlayerTurn().onSpin();
             }
             catch (e) {
                 this.onError(e);
             }
-            if (spun) {
+            if (spinBreakdown !== null) {
                 // Hides the roll number and blocks other actions (see the "busy" checks in
                 // render()) until playRollAnimation() actually opens the modal, once money/Life
                 // Points have finished animating below.
                 this.rollingAnimationType = RollingAnimationType.Spin;
-                this.render(() => this.playRollAnimation());
+                this.render(() => this.playRollAnimation(), spinBreakdown);
             }
             else
                 this.render();
@@ -308,8 +307,11 @@ class PlayScreenUI {
      * away if there was nothing to animate). Callers that need to open a modal right after a
      * stat change (Spin, Chance, Try for a kid, Auction) pass it instead of opening the modal
      * themselves, so the animation is never covered by a modal that's already sliding in.
+     * @param spinBreakdown Player.onSpin()'s per-category breakdown, animated step by step
+     * instead of the usual single lump sum (see animateStatSteps). Only Spin has one: every
+     * other action still just moves the total in one go, like before.
      */
-    public render(onStatsSettled?: () => void) {
+    public render(onStatsSettled?: () => void, spinBreakdown?: SpinBreakdown) {
         const currentPlayer: Player = game.getCurrentPlayerTurn();
 
         this.playerScoreboardHeader.classList.toggle("d-none", game.years > 0);
@@ -353,21 +355,24 @@ class PlayScreenUI {
             this.lastMoney = toMoney;
             this.lastLifePoints = toLifePoints;
 
-            // Like the physical Lifepod: money counts up first, then Life Points, then (via
-            // onStatsSettled) the roll/chance modal opens. animateStatChange no-ops straight
-            // into its callback when a value hasn't changed, so an unmarried/childless player
-            // skips the Life Points step entirely instead of waiting on it.
-            this.animateStatChange(this.playerMoney, fromMoney, toMoney, (v) => `€ ${this.formatNumber(v)}`, () => {
-                if (samePlayer && toLifePoints !== fromLifePoints) {
-                    const delta = toLifePoints - fromLifePoints;
-                    this.showDeltaToast(`${delta > 0 ? "+" : "−"} ♥ ${this.formatNumber(Math.abs(delta))}`, delta > 0);
-                }
-                this.animateStatChange(this.playerLifePoints, fromLifePoints, toLifePoints, (v) => `♥ ${this.formatNumber(v)}`, onStatsSettled);
+            // Spin reports its change broken down by category (salary, houses, cars; then
+            // houses/cars/wedding/kids for Life Points — see Player.onSpin()); every other action
+            // still just moves the total in one lump, like before (label "" so animateStatSteps
+            // shows no "(category)" suffix on its toast).
+            const moneySteps: StatStep[] = samePlayer && spinBreakdown
+                ? spinBreakdown.money
+                : [{label: "", amount: toMoney - fromMoney}];
+            const lifePointsSteps: StatStep[] = samePlayer && spinBreakdown
+                ? spinBreakdown.lifePoints
+                : [{label: "", amount: toLifePoints - fromLifePoints}];
+
+            // Like the physical Lifepod: money counts up first (through each of its categories),
+            // then Life Points, then (via onStatsSettled) the roll/chance modal opens.
+            // animateStatSteps/animateStatChange no-op straight through a step whose amount is 0
+            // (e.g. no houses owned), so nothing pauses on an empty category.
+            this.animateStatSteps(this.playerMoney, fromMoney, moneySteps, "€", (v) => `€ ${this.formatNumber(v)}`, () => {
+                this.animateStatSteps(this.playerLifePoints, fromLifePoints, lifePointsSteps, "♥", (v) => `♥ ${this.formatNumber(v)}`, onStatsSettled);
             });
-            if (samePlayer && toMoney !== fromMoney) {
-                const delta = toMoney - fromMoney;
-                this.showDeltaToast(`${delta > 0 ? "+" : "−"} € ${this.formatNumber(Math.abs(delta))}`, delta > 0);
-            }
         }
 
         const moneyOpen: boolean = this._operation === Operation.AddMoney || this._operation === Operation.RemoveMoney;
@@ -511,13 +516,12 @@ class PlayScreenUI {
      * class is only added once the backdrop's own fade-in has already finished: elapsed time
      * simply doesn't advance until the modal closes, then the count resumes from where it was.
      */
-    private animateStatChange(element: HTMLElement, from: number, to: number, formatFn: (value: number) => string, onComplete?: () => void) {
+    private animateStatChange(element: HTMLElement, from: number, to: number, formatFn: (value: number) => string, duration: number = 2000, playEndSound: boolean = true, onComplete?: () => void) {
         if (from === to) {
             element.textContent = formatFn(to);
             onComplete?.();
             return;
         }
-        const duration = 2000;
         // Floor between ticks: without it, a big delta changes the displayed value on nearly
         // every frame (60/s), which layered with playTone's 0.05s ring turns into a drone
         // instead of a tick. This caps it to a rhythm that still eases off naturally near the
@@ -545,11 +549,38 @@ class PlayScreenUI {
             if (t < 1)
                 requestAnimationFrame(step);
             else {
-                sounds.moneyLPChangesEnd();
+                if (playEndSound)
+                    sounds.moneyLPChangesEnd();
                 onComplete?.();
             }
         };
         requestAnimationFrame(step);
+    }
+
+    /**
+     * Chains animateStatChange through a list of category steps (see StatStep), each starting
+     * where the previous one left off, with its own labelled delta toast (e.g. "+ € 5,000
+     * (salary)") and its own duration: 2000ms for "salary" (kept at the original pace since it's
+     * a single lump), 1000ms for every other category so a fully loaded Spin (salary, houses,
+     * cars, then houses/cars/wedding/kids Life Points) doesn't drag on. The end-of-count sound
+     * (see animateStatChange) is skipped for "salary" so it doesn't double up with a category
+     * sound that follows immediately after.
+     */
+    private animateStatSteps(element: HTMLElement, from: number, steps: StatStep[], symbol: string, formatFn: (value: number) => string, onComplete?: () => void) {
+        if (steps.length === 0) {
+            onComplete?.();
+            return;
+        }
+        const [step, ...rest] = steps;
+        const to = from + step.amount;
+        if (step.amount !== 0) {
+            const suffix = step.label !== "" ? ` (${step.label})` : "";
+            this.showDeltaToast(`${step.amount > 0 ? "+" : "−"} ${symbol} ${this.formatNumber(Math.abs(step.amount))}${suffix}`, step.amount > 0);
+        }
+        const duration = step.label === "salary" ? 2000 : 1000;
+        this.animateStatChange(element, from, to, formatFn, duration, step.label !== "salary", () => {
+            this.animateStatSteps(element, to, rest, symbol, formatFn, onComplete);
+        });
     }
 
     /**

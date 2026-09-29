@@ -4,6 +4,21 @@ import {OwnedAsset} from "./OwnedAsset.js";
 import {HouseRules} from "./HouseRules.js";
 import {game} from "./Game.js";
 
+/**
+ * One category's contribution to a money/Life Points change (e.g. "salary", "houses"), so the
+ * UI can animate/report them one at a time instead of a single lump sum. Plain data: Player stays
+ * unaware of how (or whether) the UI displays it.
+ */
+export interface StatStep {
+    label: string;
+    amount: number;
+}
+
+export interface SpinBreakdown {
+    money: StatStep[];
+    lifePoints: StatStep[];
+}
+
 export class Player {
     private _money: number = 0;
     private _lifePoints: number = 0;
@@ -24,7 +39,7 @@ export class Player {
         return this._hasPressedSpin;
     }
 
-    public onSpin() {
+    public onSpin(): SpinBreakdown {
         if (this._hasPressedSpin)
             throw new Error("Player has already pressed Spin");
         let salaryPenalty: number = 0;
@@ -41,18 +56,53 @@ export class Player {
         }
         let calculatedSalary: number = this._salary * (1 - salaryPenalty);
         this.addMoney(calculatedSalary);
-        if (this._money < 0)
-            this.removeMoney(-this._money * 0.10);
+        // Folded into the "salary" step: it's a correction of that same payout, not its own category.
+        let salaryTotal = calculatedSalary;
+        if (this._money < 0) {
+            const penalty = -this._money * 0.10;
+            this.removeMoney(penalty);
+            salaryTotal -= penalty;
+        }
+
+        // costPerTurn/lifePointsPerTurn are fixed per Asset (not per OwnedAsset instance), so they
+        // can be summed up-front for the breakdown regardless of what onNewTurn() then does to each
+        // OwnedAsset's own _value (appreciation/depreciation/removal).
+        let houseCost = 0, carCost = 0, houseLifePoints = 0, carLifePoints = 0;
         for (const asset of this._assets) {
+            if (asset.asset.isHouse()) {
+                houseCost += asset.asset.costPerTurn;
+                houseLifePoints += asset.asset.lifePointsPerTurn;
+            }
+            else if (asset.asset.isCar()) {
+                carCost += asset.asset.costPerTurn;
+                carLifePoints += asset.asset.lifePointsPerTurn;
+            }
             asset.onNewTurn(this);
         }
+
+        const weddingLifePoints = this._married ? 1500 : 0;
         if (this._married)
-            this.addLifePoints(1500);
-        if (this._kids > 0) {
-            this.addLifePoints(this._kids * 350);
-        }
+            this.addLifePoints(weddingLifePoints);
+        const kidsLifePoints = this._kids > 0 ? this._kids * 350 : 0;
+        if (kidsLifePoints > 0)
+            this.addLifePoints(kidsLifePoints);
+
         game.roll();
         this._hasPressedSpin = true;
+
+        return {
+            money: [
+                {label: "salary", amount: salaryTotal},
+                {label: "houses", amount: -houseCost},
+                {label: "cars", amount: -carCost},
+            ],
+            lifePoints: [
+                {label: "houses", amount: houseLifePoints},
+                {label: "cars", amount: carLifePoints},
+                {label: "wedding", amount: weddingLifePoints},
+                {label: "kids", amount: kidsLifePoints},
+            ],
+        };
     }
 
     public endTurn() {
