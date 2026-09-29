@@ -52,7 +52,17 @@ class Sounds {
 
     moneyLPChanges() {
         const ctx = this.getContext();
-        this.playTone(ctx, 500, ctx.currentTime, 0.05);
+        this.playTone(ctx, 700, ctx.currentTime, 0.05);
+    }
+
+    moneyLPChangesEnd() {
+        const ctx = this.getContext();
+        const noteLength = 0.125;
+        const gap = 0.0;
+        const now = ctx.currentTime;
+        for (let i = 0; i < 4; i++) {
+            this.playTone(ctx, 1000, now + i * (noteLength + gap), noteLength);
+        }
     }
 
     spinBeep() {

@@ -544,8 +544,10 @@ class PlayScreenUI {
             element.textContent = formatFn(value);
             if (t < 1)
                 requestAnimationFrame(step);
-            else
+            else {
+                sounds.moneyLPChangesEnd();
                 onComplete?.();
+            }
         };
         requestAnimationFrame(step);
     }
