@@ -375,8 +375,16 @@ class PlayScreenUI {
             // (e.g. no houses owned), so nothing pauses on an empty category. The end-of-count
             // sound only plays outside of Spin (see animateStatSteps).
             const isSpin = samePlayer && !!spinBreakdown;
+            const moneyAnimated = moneySteps.some(s => s.amount !== 0);
             this.animateStatSteps(this.playerMoney, fromMoney, moneySteps, "€", (v) => `€ ${this.formatNumber(v)}`, !isSpin, () => {
-                this.animateStatSteps(this.playerLifePoints, fromLifePoints, lifePointsSteps, "♥", (v) => `♥ ${this.formatNumber(v)}`, !isSpin, onStatsSettled);
+                const startLifePoints = () => this.animateStatSteps(this.playerLifePoints, fromLifePoints, lifePointsSteps, "♥", (v) => `♥ ${this.formatNumber(v)}`, !isSpin, onStatsSettled);
+                // Half a second of breathing room between the money and Life Points animations,
+                // but only when money actually animated something (see animateStatSteps for the
+                // same rule between categories within one stat).
+                if (moneyAnimated)
+                    setTimeout(startLifePoints, 350);
+                else
+                    startLifePoints();
             });
         }
 
@@ -582,7 +590,9 @@ class PlayScreenUI {
      * where the previous one left off, with its own labelled delta toast (e.g. "+ € 5,000
      * (salary)") and its own duration: 2000ms for "salary" (kept at the original pace since it's
      * a single lump), 1000ms for every other category so a fully loaded Spin (salary, houses,
-     * cars, then houses/cars/wedding/kids Life Points) doesn't drag on.
+     * cars, then houses/cars/wedding/kids Life Points) doesn't drag on. A no-op step (amount 0,
+     * e.g. no houses owned) never gets a pause before or after it: nothing visibly happened, so
+     * there's nothing to breathe between.
      * @param playEndSound whether animateStatChange's end-of-count sound plays after each step.
      * False for a Spin breakdown: with several categories chained back to back it would fire
      * repeatedly, right into the next category's tick sound. True for every other action (manual
@@ -601,7 +611,11 @@ class PlayScreenUI {
         }
         const duration = step.label === "salary" ? 2000 : 1000;
         this.animateStatChange(element, from, to, formatFn, duration, playEndSound, () => {
-            this.animateStatSteps(element, to, rest, symbol, formatFn, playEndSound, onComplete);
+            const next = () => this.animateStatSteps(element, to, rest, symbol, formatFn, playEndSound, onComplete);
+            if (step.amount !== 0 && rest.length > 0)
+                setTimeout(next, 500);
+            else
+                next();
         });
     }
 
