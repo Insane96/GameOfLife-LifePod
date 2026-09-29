@@ -172,8 +172,8 @@ class PlayScreenUI {
         });
         this.btnChance.addEventListener("click", () => {
             game.rollAndSetChance();
-            this.rollingAnimationType = RollingAnimationType.TryForAKid;
-            this.render(() => this.playChanceAnimation());
+            this.playChanceAnimation();
+            this.render();
         });
         this.btnSalary.addEventListener("click", () => {
             this.inputSalary.value = String(game.getCurrentPlayerTurn().salary);
@@ -219,8 +219,7 @@ class PlayScreenUI {
             }
             this._operation = Operation.None;
             this.inputAuction.value = "";
-            this.rollingAnimationType = RollingAnimationType.TryForAKid;
-            this.render(() => this.playChanceAnimation());
+            this.playChanceAnimation();
         });
         this.inputAuction.addEventListener("keydown", (event) => {
             if (event.key === "Enter")
@@ -265,10 +264,8 @@ class PlayScreenUI {
                 this.onError(e);
                 failed = true;
             }
-            if (!failed) {
-                this.rollingAnimationType = RollingAnimationType.TryForAKid;
-                this.render(() => this.playChanceAnimation());
-            }
+            if (!failed)
+                this.playChanceAnimation();
         });
         for (const {button, asset, name} of this.assetButtons) {
             button.addEventListener("click", () => {
