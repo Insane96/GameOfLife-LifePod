@@ -16,6 +16,8 @@ class LotteryUI {
     private btnLotterySpin = document.getElementById("btn-lottery-spin") as HTMLButtonElement;
 
     private rollModal = document.getElementById("roll-modal") as HTMLDivElement;
+    private rollPotWrapper = document.getElementById("roll-pot-wrapper") as HTMLDivElement;
+    private rollPot = document.getElementById("roll-pot") as HTMLDivElement;
     private rollingAnimation: RollingAnimation | null = null;
     // True for the whole failed-attempts + winner sequence, including the pauses between spins
     private rollSequenceActive: boolean = false;
@@ -31,12 +33,15 @@ class LotteryUI {
             if (this.rollSequenceActive)
                 event.preventDefault();
         });
-        this.rollModal.addEventListener("hidden.bs.modal", () => this.clearRollMarks());
+        this.rollModal.addEventListener("hidden.bs.modal", () => {
+            this.clearRollMarks();
+            this.rollPotWrapper.classList.add("d-none");
+        });
         this.btnLotterySpin.addEventListener("click", () => this.onSpin());
     }
 
     public render() {
-        this.lotteryPot.textContent = `Pot: € ${(lottery.pot * 1000).toLocaleString("en-US")}`;
+        this.lotteryPot.textContent = `€ ${(lottery.pot * 1000).toLocaleString("en-US")}`;
 
         const activePlayer = lottery.getActivePlayer();
         const chosenNumbers = lottery.getChosenNumbers();
@@ -50,16 +55,24 @@ class LotteryUI {
     }
 
     private createPlayerRow(player: Player, isActive: boolean, chosenNumbers: number[]): HTMLElement {
-        const row = document.createElement("div");
-        row.classList.add("d-flex", "align-items-center", "flex-wrap", "gap-1");
+        const borderClass = this.borderClassForColor(player.color);
 
-        const label = document.createElement("span");
-        label.textContent = `${player.name} (${lottery.getRequiredCount(player)}):`;
+        // One bordered card per player, tinted with their color (same "Visa card" identity
+        // cue as the rest of the game), instead of everyone crammed into a single row.
+        const row = document.createElement("div");
+        row.classList.add("d-flex", "flex-column", "gap-1", "p-2", "rounded-3", "border", borderClass);
+
+        const label = document.createElement("div");
+        label.classList.add("fw-semibold");
+        label.textContent = `${player.name} (${lottery.getRequiredCount(player)})`;
         row.appendChild(label);
+
+        const numbersRow = document.createElement("div");
+        numbersRow.classList.add("d-flex", "align-items-center", "flex-wrap", "gap-1");
+        row.appendChild(numbersRow);
 
         const playerNumbers = lottery.numbersPerPlayer.get(player) ?? [];
         const required = lottery.getRequiredCount(player);
-        const borderClass = this.borderClassForColor(player.color);
         for (let number = 0; number <= 10; number++) {
             const button = document.createElement("button");
             button.type = "button";
@@ -82,7 +95,7 @@ class LotteryUI {
                     this.setPlayerNumbers(player, [...playerNumbers, number]);
                 });
             }
-            row.appendChild(button);
+            numbersRow.appendChild(button);
         }
 
         if (isActive) {
@@ -101,7 +114,7 @@ class LotteryUI {
                 }
                 this.render();
             });
-            row.appendChild(btnConfirm);
+            numbersRow.appendChild(btnConfirm);
         }
         return row;
     }
@@ -126,6 +139,7 @@ class LotteryUI {
             for (const number of numbers)
                 chosenNumberOwners.push({number, color: player.color});
         }
+        const startingPot = lottery.pot;
         try {
             lottery.roll();
         }
@@ -137,6 +151,8 @@ class LotteryUI {
         for (const {number, color} of chosenNumberOwners) {
             document.getElementById(`roll-number-${number}`)?.classList.add("roll-number-chosen", this.borderClassForColor(color));
         }
+        this.rollPotWrapper.classList.remove("d-none");
+        this.setRollPot(startingPot);
         bootstrap.Modal.getOrCreateInstance(this.rollModal).show();
         this.rollSequenceActive = true;
         // Replays every number the model tried (roll() already picked the winner and paid it out):
@@ -144,7 +160,11 @@ class LotteryUI {
         this.playRollAttempts([...lottery.lastRollAttempts]);
     }
 
-    private playRollAttempts(attempts: {number: number, won: boolean}[]) {
+    private setRollPot(potValue: number) {
+        this.rollPot.textContent = `€ ${(potValue * 1000).toLocaleString("en-US")}`;
+    }
+
+    private playRollAttempts(attempts: {number: number, won: boolean, pot: number}[]) {
         const attempt = attempts[0];
         const remaining = attempts.slice(1);
         try {
@@ -157,8 +177,9 @@ class LotteryUI {
         }
     }
 
-    private onRollAttemptEnd(attempt: {number: number, won: boolean}, remaining: {number: number, won: boolean}[]) {
+    private onRollAttemptEnd(attempt: {number: number, won: boolean, pot: number}, remaining: {number: number, won: boolean, pot: number}[]) {
         this.rollingAnimation = null;
+        this.setRollPot(attempt.pot);
         if (attempt.won) {
             this.rollSequenceActive = false;
             playScreenUI.render();

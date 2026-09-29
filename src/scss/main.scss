@@ -102,6 +102,12 @@ body,
   height: var(--roll-size);
 }
 
+// Bootstrap's default modal width (500px) leaves a lot of empty space around the roll
+// circle (18rem = 288px at most); shrink the dialog to the content instead.
+#roll-modal .modal-dialog {
+  --bs-modal-width: fit-content;
+}
+
 .roll-number {
   position: absolute;
   top: calc(50% - var(--roll-cell-size) / 2);

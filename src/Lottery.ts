@@ -10,10 +10,11 @@ class Lottery {
     public playedRoundsBonus: number = 0;
     public winningNumber: number = -1;
     /**
-     * Every number tried by the last roll() call, in order, each with whether it won.
-     * Only the last entry can be a win: roll() stops as soon as it finds one.
+     * Every number tried by the last roll() call, in order, each with whether it won and the pot
+     * as it stood right after that attempt (roll() resets pot to 0 before the UI replays this list,
+     * so this is the only record of how it grew).
      */
-    public lastRollAttempts: {number: number, won: boolean}[] = [];
+    public lastRollAttempts: {number: number, won: boolean, pot: number}[] = [];
 
     public newLottery() {
         this.playedRoundsBonus = 1 + Math.floor(game.playedRounds / 5);
@@ -57,7 +58,6 @@ class Lottery {
                     break;
                 }
             }
-            this.lastRollAttempts.push({number: rolledNumber, won});
             if (!won) {
                 numbersToRoll = numbersToRoll.filter((_, i) => i !== rolledNumberIndex);
                 let noWinnerIncrease = 20;
@@ -65,6 +65,7 @@ class Lottery {
                     noWinnerIncrease *= this.playedRoundsBonus;
                 this.pot += noWinnerIncrease;
             }
+            this.lastRollAttempts.push({number: rolledNumber, won, pot: this.pot});
         } while (!won && numbersToRoll.length > 0);
         this.reset();
     }

@@ -162,9 +162,12 @@
   <div id="lottery-modal" class="modal fade" tabindex="-1" aria-label="Lottery">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
-        <div class="modal-body d-flex flex-column flex-sm-row justify-content-center gap-2">
-          <div id="lottery-pot" class="d-flex flex-column align-items-center fw-semibold"></div>
-          <div id="lottery-player-list" class="d-flex flex-column align-items-center gap-2"></div>
+        <div class="modal-body d-flex flex-column align-items-center gap-3">
+          <div class="d-flex flex-column align-items-center">
+            <div id="lottery-pot" class="stat-value"></div>
+            <div class="stat-label">Pot</div>
+          </div>
+          <div id="lottery-player-list" class="d-flex flex-column align-items-stretch gap-2 w-100"></div>
           <button id="btn-lottery-spin" class="btn btn-primary d-flex align-items-center"><i class="bi bi-ticket-perforated-fill me-2" aria-hidden="true"></i>Spin</button>
         </div>
       </div>
@@ -211,7 +214,11 @@
   <div id="roll-modal" class="modal fade fs-2" tabindex="-1" aria-label="Roll">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
-        <div class="modal-body">
+        <div class="modal-body d-flex flex-column align-items-center gap-2">
+          <div id="roll-pot-wrapper" class="d-flex flex-column align-items-center d-none">
+            <div id="roll-pot" class="stat-value"></div>
+            <div class="stat-label">Pot</div>
+          </div>
           <div class="roll-circle mx-auto">
             <div id="roll-number-0" class="roll-number border rounded-circle d-flex align-items-center justify-content-center">0</div>
             <div id="roll-number-1" class="roll-number border rounded-circle d-flex align-items-center justify-content-center">1</div>
