@@ -50,6 +50,11 @@ class Sounds {
         this.playTone(ctx, 1000, ctx.currentTime, 0.1);
     }
 
+    moneyLPChanges() {
+        const ctx = this.getContext();
+        this.playTone(ctx, 500, ctx.currentTime, 0.05);
+    }
+
     spinBeep() {
         const ctx = this.getContext();
         this.playTone(ctx, 1000, ctx.currentTime, 0.075, "square");

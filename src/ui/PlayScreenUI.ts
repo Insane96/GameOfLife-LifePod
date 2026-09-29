@@ -518,15 +518,30 @@ class PlayScreenUI {
             return;
         }
         const duration = 2000;
+        // Floor between ticks: without it, a big delta changes the displayed value on nearly
+        // every frame (60/s), which layered with playTone's 0.05s ring turns into a drone
+        // instead of a tick. This caps it to a rhythm that still eases off naturally near the
+        // end, since the displayed value stops changing every frame as the count-up slows down.
+        const minTickInterval = 60;
         let elapsed = 0;
         let last = performance.now();
+        let lastValue = Math.round(from);
+        let lastTick = -Infinity;
         const step = (now: number) => {
             if (!this.isModalOpen)
                 elapsed += now - last;
             last = now;
             const t = Math.min(1, elapsed / duration);
             const eased = 1 - Math.pow(1 - t, 3);
-            element.textContent = formatFn(Math.round(from + (to - from) * eased));
+            const value = Math.round(from + (to - from) * eased);
+            if (value !== lastValue) {
+                lastValue = value;
+                if (now - lastTick >= minTickInterval) {
+                    sounds.moneyLPChanges();
+                    lastTick = now;
+                }
+            }
+            element.textContent = formatFn(value);
             if (t < 1)
                 requestAnimationFrame(step);
             else
