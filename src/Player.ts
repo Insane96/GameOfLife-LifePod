@@ -42,26 +42,29 @@ export class Player {
     public onSpin(): SpinBreakdown {
         if (this._hasPressedSpin)
             throw new Error("Player has already pressed Spin");
-        let salaryPenalty: number = 0;
+
+        // Rent: charged instead of a mortgage/upkeep once the game is a few rounds in, if the
+        // player still owns no house.
+        let rentPenalty: number = 0;
         if (game.playedRounds >= 3 && !this._assets.some(ownedAsset => ownedAsset.asset.isHouse()))
-            salaryPenalty += 0.15;
+            rentPenalty = 0.15;
+        let kidsPenalty: number = 0;
         if (this._kids > 0) {
             //TODO Track age so they will no longer cost anything @ 18 years
-            let kidsPenalty = 0.05 + (Math.min(this._kids, 5) * 0.05);
+            kidsPenalty = 0.05 + (Math.min(this._kids, 5) * 0.05);
             if (this._kids > 5)
                 kidsPenalty += 0.03 * (this._kids - 5);
             if (kidsPenalty > 0.4)
                 kidsPenalty = 0.4;
-            salaryPenalty += kidsPenalty;
         }
-        let calculatedSalary: number = this._salary * (1 - salaryPenalty);
+        const rentAmount = this._salary * rentPenalty;
+        const kidsAmount = this._salary * kidsPenalty;
+        let calculatedSalary: number = this._salary - rentAmount - kidsAmount;
         this.addMoney(calculatedSalary);
-        // Folded into the "salary" step: it's a correction of that same payout, not its own category.
-        let salaryTotal = calculatedSalary;
+        let debtAmount = 0;
         if (this._money < 0) {
-            const penalty = -this._money * 0.10;
-            this.removeMoney(penalty);
-            salaryTotal -= penalty;
+            debtAmount = -this._money * 0.10;
+            this.removeMoney(debtAmount);
         }
 
         // costPerTurn/lifePointsPerTurn are fixed per Asset (not per OwnedAsset instance), so they
@@ -92,7 +95,10 @@ export class Player {
 
         return {
             money: [
-                {label: "salary", amount: salaryTotal},
+                {label: "salary", amount: this._salary},
+                {label: "rent", amount: -rentAmount},
+                {label: "kids", amount: -kidsAmount},
+                {label: "debts", amount: -debtAmount},
                 {label: "houses", amount: -houseCost},
                 {label: "cars", amount: -carCost},
             ],

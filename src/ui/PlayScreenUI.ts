@@ -60,7 +60,10 @@ class PlayScreenUI {
     // called) instead of querying ".modal.show" in the animation loop: that class is only added
     // once the backdrop's own fade-in has already finished, so a class-based check misses the
     // whole backdrop fade and lets the count-up run unpaused during it.
-    private isModalOpen: boolean = false;
+    // A counter, not a boolean: e.g. Try for a kid closes kids-modal (data-bs-dismiss) right as
+    // it opens roll-modal, so kids-modal's own hidden.bs.modal (~150ms later, once its fade-out
+    // ends) would otherwise flip this back to "no modal open" while roll-modal is still up.
+    private openModalCount: number = 0;
 
     private btnChance = document.getElementById("btn-chance") as HTMLButtonElement;
     private chanceResult = document.getElementById("chance-result") as HTMLDivElement;
@@ -101,8 +104,8 @@ class PlayScreenUI {
     private lastLifePoints: number = 0;
 
     constructor() {
-        document.addEventListener("show.bs.modal", () => { this.isModalOpen = true; });
-        document.addEventListener("hidden.bs.modal", () => { this.isModalOpen = false; });
+        document.addEventListener("show.bs.modal", () => { this.openModalCount++; });
+        document.addEventListener("hidden.bs.modal", () => { this.openModalCount = Math.max(0, this.openModalCount - 1); });
         this.btnSpin.addEventListener("click", () => {
             this.clearError();
             let spinBreakdown: SpinBreakdown | null = null;
@@ -369,9 +372,11 @@ class PlayScreenUI {
             // Like the physical Lifepod: money counts up first (through each of its categories),
             // then Life Points, then (via onStatsSettled) the roll/chance modal opens.
             // animateStatSteps/animateStatChange no-op straight through a step whose amount is 0
-            // (e.g. no houses owned), so nothing pauses on an empty category.
-            this.animateStatSteps(this.playerMoney, fromMoney, moneySteps, "€", (v) => `€ ${this.formatNumber(v)}`, () => {
-                this.animateStatSteps(this.playerLifePoints, fromLifePoints, lifePointsSteps, "♥", (v) => `♥ ${this.formatNumber(v)}`, onStatsSettled);
+            // (e.g. no houses owned), so nothing pauses on an empty category. The end-of-count
+            // sound only plays outside of Spin (see animateStatSteps).
+            const isSpin = samePlayer && !!spinBreakdown;
+            this.animateStatSteps(this.playerMoney, fromMoney, moneySteps, "€", (v) => `€ ${this.formatNumber(v)}`, !isSpin, () => {
+                this.animateStatSteps(this.playerLifePoints, fromLifePoints, lifePointsSteps, "♥", (v) => `♥ ${this.formatNumber(v)}`, !isSpin, onStatsSettled);
             });
         }
 
@@ -394,7 +399,7 @@ class PlayScreenUI {
             icon.classList.add("bi", asset.isHouse() ? "bi-house-door-fill" : "bi-car-front-fill", "d-block", "mb-1");
             icon.ariaHidden = "true";
             button.replaceChildren(icon, label, document.createElement("br"), `€ ${this.formatNumber(this.getAssetPrice(currentPlayer, asset))}`);
-            button.classList.toggle("green", ownedAsset !== undefined);
+            this.setOwnedStyle(button, ownedAsset !== undefined);
             button.disabled = !currentPlayer.hasPressedSpin || game.years <= 0 || busy;
         }
         // Same condition as the asset buttons: their modals would open with everything disabled
@@ -422,7 +427,7 @@ class PlayScreenUI {
         this.btnEndTurn.disabled = !currentPlayer.hasPressedSpin || busy;
 
         this.btnWeddingLabel.textContent = !currentPlayer.married ? "Wedding" : "Anniversary";
-        this.btnWedding.classList.toggle("green", currentPlayer.married);
+        this.setOwnedStyle(this.btnWedding, currentPlayer.married);
         this.btnWedding.disabled = !currentPlayer.hasPressedSpin || busy;
 
         this.btnKids.disabled = !currentPlayer.married || !currentPlayer.hasPressedSpin || game.years <= 0 || busy;
@@ -502,6 +507,20 @@ class PlayScreenUI {
         return ownedAsset !== undefined ? Math.round(ownedAsset._value) : asset.buyCost;
     }
 
+    /**
+     * Marks an asset/wedding button as "owned" by switching its outline color (primary <->
+     * success) instead of filling it solid green: a flat fill needs the text/icon recolored too
+     * (readability) and, being a plain utility class of equal specificity to Bootstrap's own
+     * .btn rule, loses to Bootstrap's own :disabled background the moment the button is disabled
+     * (which it is at the start of every turn, before Spin). Swapping the outline variant instead
+     * reuses Bootstrap's own color/contrast/disabled handling for that variant, so none of that
+     * applies.
+     */
+    private setOwnedStyle(button: HTMLButtonElement, owned: boolean) {
+        button.classList.toggle("btn-outline-primary", !owned);
+        button.classList.toggle("btn-outline-success", owned);
+    }
+
     private formatNumber(value: number): string {
         return value.toLocaleString("en-US");
     }
@@ -511,10 +530,11 @@ class PlayScreenUI {
      * value, so an increase/decrease is felt, not just read. A no-op (sets the text directly,
      * then calling onComplete right away) when the value hasn't actually changed. Paused while a
      * modal is open (a houses/cars/kids/confirm/lottery/roll modal covers the sticky row, so the
-     * count wouldn't be seen anyway), tracked via isModalOpen (set from Bootstrap's own
+     * count wouldn't be seen anyway), tracked via openModalCount (bumped by Bootstrap's own
      * show.bs.modal/hidden.bs.modal events) rather than a ".modal.show" DOM query, since that
      * class is only added once the backdrop's own fade-in has already finished: elapsed time
-     * simply doesn't advance until the modal closes, then the count resumes from where it was.
+     * simply doesn't advance until every open modal closes, then the count resumes from where it
+     * was.
      */
     private animateStatChange(element: HTMLElement, from: number, to: number, formatFn: (value: number) => string, duration: number = 2000, playEndSound: boolean = true, onComplete?: () => void) {
         if (from === to) {
@@ -532,7 +552,7 @@ class PlayScreenUI {
         let lastValue = Math.round(from);
         let lastTick = -Infinity;
         const step = (now: number) => {
-            if (!this.isModalOpen)
+            if (this.openModalCount === 0)
                 elapsed += now - last;
             last = now;
             const t = Math.min(1, elapsed / duration);
@@ -562,11 +582,13 @@ class PlayScreenUI {
      * where the previous one left off, with its own labelled delta toast (e.g. "+ € 5,000
      * (salary)") and its own duration: 2000ms for "salary" (kept at the original pace since it's
      * a single lump), 1000ms for every other category so a fully loaded Spin (salary, houses,
-     * cars, then houses/cars/wedding/kids Life Points) doesn't drag on. The end-of-count sound
-     * (see animateStatChange) is skipped for "salary" so it doesn't double up with a category
-     * sound that follows immediately after.
+     * cars, then houses/cars/wedding/kids Life Points) doesn't drag on.
+     * @param playEndSound whether animateStatChange's end-of-count sound plays after each step.
+     * False for a Spin breakdown: with several categories chained back to back it would fire
+     * repeatedly, right into the next category's tick sound. True for every other action (manual
+     * +/-, wedding, kids, assets, chance/auction), which only ever animate a single step anyway.
      */
-    private animateStatSteps(element: HTMLElement, from: number, steps: StatStep[], symbol: string, formatFn: (value: number) => string, onComplete?: () => void) {
+    private animateStatSteps(element: HTMLElement, from: number, steps: StatStep[], symbol: string, formatFn: (value: number) => string, playEndSound: boolean, onComplete?: () => void) {
         if (steps.length === 0) {
             onComplete?.();
             return;
@@ -578,8 +600,8 @@ class PlayScreenUI {
             this.showDeltaToast(`${step.amount > 0 ? "+" : "−"} ${symbol} ${this.formatNumber(Math.abs(step.amount))}${suffix}`, step.amount > 0);
         }
         const duration = step.label === "salary" ? 2000 : 1000;
-        this.animateStatChange(element, from, to, formatFn, duration, step.label !== "salary", () => {
-            this.animateStatSteps(element, to, rest, symbol, formatFn, onComplete);
+        this.animateStatChange(element, from, to, formatFn, duration, playEndSound, () => {
+            this.animateStatSteps(element, to, rest, symbol, formatFn, playEndSound, onComplete);
         });
     }
 
@@ -603,7 +625,7 @@ class PlayScreenUI {
 
         this.toastContainer.appendChild(toastElement);
         toastElement.addEventListener("hidden.bs.toast", () => toastElement.remove());
-        new bootstrap.Toast(toastElement, {delay: 5000}).show();
+        new bootstrap.Toast(toastElement, {delay: 2500}).show();
     }
 
     /**

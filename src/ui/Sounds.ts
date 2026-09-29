@@ -2,7 +2,7 @@ class Sounds {
     // Created on first use: browsers only allow audio after a user gesture
     private ctx: AudioContext | null = null;
     private master: GainNode | null = null;
-    private volume = 1;
+    private volume = 0.4;
 
     constructor() {
         // The first click anywhere (New game, Resume game...) creates and unlocks the context

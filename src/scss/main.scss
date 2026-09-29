@@ -261,3 +261,9 @@ $player-accent-colors: (
 .toast-negative {
   border-left: 4px solid var(--bs-danger);
 }
+
+// .form-range is full-width by default: without a cap it stretches across the whole
+// cell-settings column, disproportionate to its small volume icon.
+#input-volume {
+  max-width: 8rem;
+}
