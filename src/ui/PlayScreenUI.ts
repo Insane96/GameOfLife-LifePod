@@ -382,7 +382,7 @@ class PlayScreenUI {
                 // but only when money actually animated something (see animateStatSteps for the
                 // same rule between categories within one stat).
                 if (moneyAnimated)
-                    setTimeout(startLifePoints, 350);
+                    setTimeout(startLifePoints, 500);
                 else
                     startLifePoints();
             });

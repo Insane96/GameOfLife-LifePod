@@ -249,9 +249,15 @@ $player-accent-colors: (
   }
 }
 
-// Delta toasts ("+50.000 €", "-2 Life Points"): a colored edge shows the sign at a glance
+// Delta toasts ("+50.000 €", "-2 Life Points"): a colored edge shows the sign at a glance,
+// clickable to dismiss early (see PlayScreenUI.showDeltaToast)
 .toast-stack {
   z-index: 1080;
+}
+
+.toast-positive,
+.toast-negative {
+  cursor: pointer;
 }
 
 .toast-positive {
