@@ -439,8 +439,10 @@ class PlayScreenUI {
             });
             this.playerScoreboard.replaceChildren(...rows);
         }
-        else
+        else {
             this.playerName.textContent = currentPlayer.name;
+            this.playerScoreboard.replaceChildren();
+        }
 
         if (game.years <= 0) {
             this.playerMoney.textContent = "";
