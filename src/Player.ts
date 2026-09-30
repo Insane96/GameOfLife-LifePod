@@ -14,7 +14,12 @@ export interface StatStep {
     amount: number;
 }
 
-export interface SpinBreakdown {
+/**
+ * A money/Life Points change broken down into labelled StatSteps, returned by any action whose
+ * toast/animation should show what caused the change (Spin, Wedding, Kids, Auction) instead of a
+ * single unlabelled lump sum.
+ */
+export interface StatBreakdown {
     money: StatStep[];
     lifePoints: StatStep[];
 }
@@ -39,7 +44,7 @@ export class Player {
         return this._hasPressedSpin;
     }
 
-    public onSpin(): SpinBreakdown {
+    public onSpin(): StatBreakdown {
         if (this._hasPressedSpin)
             throw new Error("Player has already pressed Spin");
 
@@ -174,32 +179,46 @@ export class Player {
         return this._married;
     }
 
-    public getMarried() {
+    public getMarried(): StatBreakdown {
+        const label = !this._married ? "wedding" : "anniversary";
         this.addLifePoints(3000);
         let moneyGift: number = !this._married ? 1000 : 500;
         this._married = true;
+        let totalGift = 0;
         for (const player of game.players) {
             if (player === this)
                 continue;
             player.removeMoney(moneyGift);
             this.addMoney(moneyGift);
+            totalGift += moneyGift;
         }
+        return {
+            money: [{label: "gifts", amount: totalGift}],
+            lifePoints: [{label, amount: 3000}],
+        };
     }
 
     public get kids() {
         return this._kids;
     }
 
-    public addKids(kids: number) {
+    public addKids(kids: number): StatStep[] {
         if (kids < 1 || kids > 2)
             throw new Error("kids must be between 1 or 2");
         if (!HouseRules.UnlimitedKids && this._kids + kids > 9)
             throw new Error("Can't add kids. Can't go over 9");
         this._kids += kids;
-        this.addLifePoints(kids * 350);
+        const lifePointsGain = kids * 350;
+        this.addLifePoints(lifePointsGain);
+        return [{label: kids === 1 ? "baby" : "twins", amount: lifePointsGain}];
     }
 
-    public tryForAKid() {
+    /**
+     * @returns the Life Points steps from addKids() on a birth, or an empty array if the roll
+     * didn't yield one (the caller tells those apart the same way as any other no-op step: by
+     * checking whether the array is empty).
+     */
+    public tryForAKid(): StatStep[] {
         if (!HouseRules.UnlimitedKids && this._kids >= 9)
             throw new Error("Maximum number of kids reached");
         let newBorn = game.rollAndSetChance();
@@ -207,8 +226,7 @@ export class Player {
             newBorn = 1;
             game.rolledChance = 1;
         }
-        if (newBorn > 0)
-            this.addKids(newBorn);
+        return newBorn > 0 ? this.addKids(newBorn) : [];
     }
 
     public buyAsset(asset: Asset) {
@@ -258,17 +276,26 @@ export class Player {
             this._qualification = Qualification.PhD;
     }
 
-    public bid(amount: number) {
+    /**
+     * @returns a single money step describing the outcome ("auction won"/"auction lost"), or an
+     * empty array when the bid had no effect (result == 1).
+     */
+    public bid(amount: number): StatStep[] {
         if (Number.isNaN(amount))
             throw new Error("bid must be a number.");
         if (amount < 10000 || amount > 100000)
             throw new Error("bid must be between 10.000 and 100.000 (inclusive)");
         let result = game.rollAndSetChance();
         //TODO House rule: balanced bid: to win with 1 and 2
-        if (result == 0)
+        if (result == 0) {
             this.removeMoney(amount);
-        else if (result == 2)
+            return [{label: "auction lost", amount: -amount}];
+        }
+        if (result == 2) {
             this.addMoney(amount);
+            return [{label: "auction won", amount}];
+        }
+        return [];
     }
 
     /**

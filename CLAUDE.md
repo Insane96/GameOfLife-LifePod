@@ -49,7 +49,8 @@ cards").
   `lastLifePoints`) of what was last shown for the current player; when the
   model value differs from the snapshot for the *same* player (a turn change
   is not a "change"), it counts the displayed number from the old to the new
-  value (`animateStatChange`, ease-out over 500ms) and shows a delta toast
+  value (`animateStatChange`, linear count-up over 2000ms for "salary",
+  1000ms for every other category) and shows a delta toast
   (`showDeltaToast`, a dynamically created Bootstrap `.toast` appended to
   `#toast-container`, colored via `.toast-positive`/`.toast-negative`). No
   events in the model: the comparison happens entirely in the UI layer. Other

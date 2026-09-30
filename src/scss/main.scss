@@ -256,7 +256,8 @@ $player-accent-colors: (
 }
 
 .toast-positive,
-.toast-negative {
+.toast-negative,
+.toast-neutral {
   cursor: pointer;
 }
 
@@ -266,6 +267,11 @@ $player-accent-colors: (
 
 .toast-negative {
   border-left: 4px solid var(--bs-danger);
+}
+
+// Outcome with nothing to animate (no birth, no auction effect): neither a gain nor a loss.
+.toast-neutral {
+  border-left: 4px solid var(--bs-secondary);
 }
 
 // .form-range is full-width by default: without a cap it stretches across the whole

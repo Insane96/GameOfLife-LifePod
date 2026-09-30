@@ -1,5 +1,5 @@
 import {game} from "../Game.js";
-import {Player, SpinBreakdown, StatStep} from "../Player.js";
+import {Player, StatBreakdown, StatStep} from "../Player.js";
 import {Asset} from "../Asset.js";
 import {PlayerColor} from "../PlayerColor.js";
 import {Operation} from "./Operation.js";
@@ -103,24 +103,31 @@ class PlayScreenUI {
     private lastMoney: number = 0;
     private lastLifePoints: number = 0;
 
+    // Try for a kid/Auction already know their outcome (rollAndSetChance() resolves it
+    // immediately) before the suspense of the roll animation plays out, so the breakdown/message
+    // they'll show once it ends is stashed here instead of passed straight to render(), unlike
+    // Spin (see render()'s onStatsSettled/breakdown, animated up front instead).
+    private pendingBreakdown: StatBreakdown | null = null;
+    private pendingInfoMessage: string | null = null;
+
     constructor() {
         document.addEventListener("show.bs.modal", () => { this.openModalCount++; });
         document.addEventListener("hidden.bs.modal", () => { this.openModalCount = Math.max(0, this.openModalCount - 1); });
         this.btnSpin.addEventListener("click", () => {
             this.clearError();
-            let spinBreakdown: SpinBreakdown | null = null;
+            let breakdown: StatBreakdown | null = null;
             try {
-                spinBreakdown = game.getCurrentPlayerTurn().onSpin();
+                breakdown = game.getCurrentPlayerTurn().onSpin();
             }
             catch (e) {
                 this.onError(e);
             }
-            if (spinBreakdown !== null) {
+            if (breakdown !== null) {
                 // Hides the roll number and blocks other actions (see the "busy" checks in
                 // render()) until playRollAnimation() actually opens the modal, once money/Life
                 // Points have finished animating below.
                 this.rollingAnimationType = RollingAnimationType.Spin;
-                this.render(() => this.playRollAnimation(), spinBreakdown);
+                this.render(() => this.playRollAnimation(), breakdown);
             }
             else
                 this.render();
@@ -212,8 +219,9 @@ class PlayScreenUI {
                 this.showError("Invalid input");
                 return;
             }
+            let steps: StatStep[];
             try {
-                game.getCurrentPlayerTurn().bid(input);
+                steps = game.getCurrentPlayerTurn().bid(input);
             }
             catch (e) {
                 this.onError(e);
@@ -221,6 +229,9 @@ class PlayScreenUI {
             }
             this._operation = Operation.None;
             this.inputAuction.value = "";
+            this.pendingBreakdown = {money: steps, lifePoints: []};
+            if (steps.length === 0)
+                this.pendingInfoMessage = "Your bid didn't yield anything";
             this.playChanceAnimation();
         });
         this.inputAuction.addEventListener("keydown", (event) => {
@@ -229,8 +240,8 @@ class PlayScreenUI {
         });
         this.btnWedding.addEventListener("click", () => {
             this.confirmAction("Confirm Wedding/Anniversary?", () => {
-                game.getCurrentPlayerTurn().getMarried();
-                this.render();
+                const breakdown = game.getCurrentPlayerTurn().getMarried();
+                this.render(undefined, breakdown);
             });
         });
         this.btnKids.addEventListener("click", () => {
@@ -239,35 +250,42 @@ class PlayScreenUI {
         this.btn1Kid.addEventListener("click", () => {
             this.clearError();
             try {
-                game.getCurrentPlayerTurn().addKids(1);
+                const steps = game.getCurrentPlayerTurn().addKids(1);
+                this.render(undefined, {money: [], lifePoints: steps});
             }
             catch (e) {
                 this.onError(e);
+                this.render();
             }
-            this.render();
         });
         this.btn2Kids.addEventListener("click", () => {
             this.clearError();
             try {
-                game.getCurrentPlayerTurn().addKids(2);
+                const steps = game.getCurrentPlayerTurn().addKids(2);
+                this.render(undefined, {money: [], lifePoints: steps});
             }
             catch (e) {
                 this.onError(e);
+                this.render();
             }
-            this.render();
         });
         this.btnTryKid.addEventListener("click", () => {
             this.clearError();
             let failed = false;
+            let steps: StatStep[] = [];
             try {
-                game.getCurrentPlayerTurn().tryForAKid();
+                steps = game.getCurrentPlayerTurn().tryForAKid();
             }
             catch (e) {
                 this.onError(e);
                 failed = true;
             }
-            if (!failed)
+            if (!failed) {
+                this.pendingBreakdown = {money: [], lifePoints: steps};
+                if (steps.length === 0)
+                    this.pendingInfoMessage = "Better luck next time";
                 this.playChanceAnimation();
+            }
         });
         for (const {button, asset, name} of this.assetButtons) {
             button.addEventListener("click", () => {
@@ -310,11 +328,12 @@ class PlayScreenUI {
      * away if there was nothing to animate). Callers that need to open a modal right after a
      * stat change (Spin, Chance, Try for a kid, Auction) pass it instead of opening the modal
      * themselves, so the animation is never covered by a modal that's already sliding in.
-     * @param spinBreakdown Player.onSpin()'s per-category breakdown, animated step by step
-     * instead of the usual single lump sum (see animateStatSteps). Only Spin has one: every
-     * other action still just moves the total in one go, like before.
+     * @param breakdown a per-category breakdown (Spin, Wedding, Kids, Auction; see StatBreakdown),
+     * animated step by step with its own labelled toast instead of the usual single unlabelled
+     * lump sum (see animateStatSteps). Actions without one (manual +/-, assets, salary) still just
+     * move the total in one go, like before.
      */
-    public render(onStatsSettled?: () => void, spinBreakdown?: SpinBreakdown) {
+    public render(onStatsSettled?: () => void, breakdown?: StatBreakdown) {
         const currentPlayer: Player = game.getCurrentPlayerTurn();
 
         this.playerScoreboardHeader.classList.toggle("d-none", game.years > 0);
@@ -359,25 +378,28 @@ class PlayScreenUI {
             this.lastLifePoints = toLifePoints;
 
             // Spin reports its change broken down by category (salary, houses, cars; then
-            // houses/cars/wedding/kids for Life Points — see Player.onSpin()); every other action
-            // still just moves the total in one lump, like before (label "" so animateStatSteps
-            // shows no "(category)" suffix on its toast).
-            const moneySteps: StatStep[] = samePlayer && spinBreakdown
-                ? spinBreakdown.money
+            // houses/cars/wedding/kids for Life Points — see Player.onSpin()); Wedding/Kids/
+            // Auction report a single labelled step (see getMarried/addKids/bid). Every other
+            // action still just moves the total in one unlabelled lump, like before (label ""
+            // so animateStatSteps shows no "(category)" suffix on its toast).
+            const moneySteps: StatStep[] = samePlayer && breakdown
+                ? breakdown.money
                 : [{label: "", amount: toMoney - fromMoney}];
-            const lifePointsSteps: StatStep[] = samePlayer && spinBreakdown
-                ? spinBreakdown.lifePoints
+            const lifePointsSteps: StatStep[] = samePlayer && breakdown
+                ? breakdown.lifePoints
                 : [{label: "", amount: toLifePoints - fromLifePoints}];
 
             // Like the physical Lifepod: money counts up first (through each of its categories),
             // then Life Points, then (via onStatsSettled) the roll/chance modal opens.
             // animateStatSteps/animateStatChange no-op straight through a step whose amount is 0
             // (e.g. no houses owned), so nothing pauses on an empty category. The end-of-count
-            // sound only plays outside of Spin (see animateStatSteps).
-            const isSpin = samePlayer && !!spinBreakdown;
+            // sound is suppressed only when a stat has more than one step to chain through (Spin):
+            // otherwise it would fire once per category, right into the next one's tick sound (see
+            // animateStatSteps). A single-step breakdown (Wedding, Kids, Auction) or a plain lump
+            // sum always gets it, same as before this existed.
             const moneyAnimated = moneySteps.some(s => s.amount !== 0);
-            this.animateStatSteps(this.playerMoney, fromMoney, moneySteps, "€", (v) => `€ ${this.formatNumber(v)}`, !isSpin, () => {
-                const startLifePoints = () => this.animateStatSteps(this.playerLifePoints, fromLifePoints, lifePointsSteps, "♥", (v) => `♥ ${this.formatNumber(v)}`, !isSpin, onStatsSettled);
+            this.animateStatSteps(this.playerMoney, fromMoney, moneySteps, "€", (v) => `€ ${this.formatNumber(v)}`, moneySteps.length <= 1, () => {
+                const startLifePoints = () => this.animateStatSteps(this.playerLifePoints, fromLifePoints, lifePointsSteps, "♥", (v) => `♥ ${this.formatNumber(v)}`, lifePointsSteps.length <= 1, onStatsSettled);
                 // Half a second of breathing room between the money and Life Points animations,
                 // but only when money actually animated something (see animateStatSteps for the
                 // same rule between categories within one stat).
@@ -504,7 +526,16 @@ class PlayScreenUI {
     private onSpinnerEnd() {
         this.rollingAnimation = null;
         this.rollingAnimationType = null;
-        this.render();
+        // Try for a kid/Auction stash their outcome here (see pendingBreakdown) since it's already
+        // known before the roll animation's suspense plays out; consumed once, right as the result
+        // becomes visible.
+        const breakdown = this.pendingBreakdown ?? undefined;
+        const infoMessage = this.pendingInfoMessage;
+        this.pendingBreakdown = null;
+        this.pendingInfoMessage = null;
+        if (infoMessage !== null)
+            this.showInfoToast(infoMessage);
+        this.render(undefined, breakdown);
     }
 
     /**
@@ -593,9 +624,10 @@ class PlayScreenUI {
      * e.g. no houses owned) never gets a pause before or after it: nothing visibly happened, so
      * there's nothing to breathe between.
      * @param playEndSound whether animateStatChange's end-of-count sound plays after each step.
-     * False for a Spin breakdown: with several categories chained back to back it would fire
-     * repeatedly, right into the next category's tick sound. True for every other action (manual
-     * +/-, wedding, kids, assets, chance/auction), which only ever animate a single step anyway.
+     * False for a multi-step breakdown (Spin): with several categories chained back to back it
+     * would fire repeatedly, right into the next category's tick sound. True for a single-step
+     * breakdown (Wedding, Kids, Auction) or a plain lump sum (manual +/-, assets, salary), which
+     * only ever animate one step anyway (see render()).
      */
     private animateStatSteps(element: HTMLElement, from: number, steps: StatStep[], symbol: string, formatFn: (value: number) => string, playEndSound: boolean, onComplete?: () => void) {
         if (steps.length === 0) {
@@ -622,8 +654,20 @@ class PlayScreenUI {
      * Delta toast for a value change (e.g. "+ € 50,000"), see #toast-container.
      */
     private showDeltaToast(message: string, positive: boolean) {
+        this.showToast(message, positive ? "toast-positive" : "toast-negative");
+    }
+
+    /**
+     * Toast for an outcome with no money/Life Points change to animate (e.g. Try for a kid
+     * rolling no birth, an Auction bid that didn't yield anything), so it's not left silent.
+     */
+    private showInfoToast(message: string) {
+        this.showToast(message, "toast-neutral");
+    }
+
+    private showToast(message: string, variantClass: string) {
         const toastElement = document.createElement("div");
-        toastElement.classList.add("toast", "align-items-center", "border-0", positive ? "toast-positive" : "toast-negative");
+        toastElement.classList.add("toast", "align-items-center", "border-0", variantClass);
         toastElement.setAttribute("role", "status");
         toastElement.setAttribute("aria-live", "polite");
         toastElement.setAttribute("aria-atomic", "true");
