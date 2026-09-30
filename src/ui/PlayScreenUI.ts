@@ -9,7 +9,7 @@ import {sounds} from "./Sounds.js";
 // Minimal typing for the Bootstrap bundle loaded with a <script> tag (no @types/bootstrap)
 declare const bootstrap: {
     Modal: { getOrCreateInstance(element: Element): { show(): void } };
-    Toast: new (element: Element, options?: {delay?: number}) => { show(): void };
+    Toast: new (element: Element, options?: {delay?: number}) => { show(): void; hide(): void };
 };
 
 enum RollingAnimationType {
@@ -682,7 +682,12 @@ class PlayScreenUI {
 
         this.toastContainer.appendChild(toastElement);
         toastElement.addEventListener("hidden.bs.toast", () => toastElement.remove());
-        new bootstrap.Toast(toastElement, {delay: 5000}).show();
+        const toast = new bootstrap.Toast(toastElement, {delay: 5000});
+        // Clickable to dismiss early (see the cursor: pointer on .toast-positive/-negative/-neutral
+        // in main.scss): otherwise it sits there for the full 5s, which on mobile — where it can
+        // cover a button underneath — reads as stuck rather than just delayed.
+        toastElement.addEventListener("click", () => toast.hide());
+        toast.show();
     }
 
     /**
