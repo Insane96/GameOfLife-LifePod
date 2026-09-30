@@ -20,7 +20,12 @@ enum RollingAnimationType {
 
 class PlayScreenUI {
     private playScreen = document.getElementById("play-screen") as HTMLDivElement;
-    private toastContainer = document.getElementById("toast-container") as HTMLDivElement;
+    // Two containers anchored to the sticky money/LP row (see index.html), one just below it
+    // (shown in portrait, where the row sticks to the top) and one just above it (shown in
+    // landscape, where the row sits in the middle): whichever is currently visible is picked at
+    // toast-creation time, see getActiveToastContainer().
+    private toastContainerPortrait = document.getElementById("toast-container-portrait") as HTMLDivElement;
+    private toastContainerLandscape = document.getElementById("toast-container-landscape") as HTMLDivElement;
     private btnSpin = document.getElementById("btn-spin") as HTMLButtonElement;
     private btnEndTurn = document.getElementById("btn-end-turn") as HTMLButtonElement;
     private yearsLeft = document.getElementById("years-left") as HTMLDivElement;
@@ -150,7 +155,8 @@ class PlayScreenUI {
             this.inputMoney.value = "";
             this.inputLifePoints.value = "";
             this.inputAuction.value = "";
-            this.toastContainer.replaceChildren();
+            this.toastContainerPortrait.replaceChildren();
+            this.toastContainerLandscape.replaceChildren();
             this.render();
         });
         this.btnAddMoney.addEventListener("click", () => {
@@ -651,7 +657,7 @@ class PlayScreenUI {
     }
 
     /**
-     * Delta toast for a value change (e.g. "+ € 50,000"), see #toast-container.
+     * Delta toast for a value change (e.g. "+ € 50,000"), see getActiveToastContainer().
      */
     private showDeltaToast(message: string, positive: boolean) {
         this.showToast(message, positive ? "toast-positive" : "toast-negative");
@@ -663,6 +669,16 @@ class PlayScreenUI {
      */
     private showInfoToast(message: string) {
         this.showToast(message, "toast-neutral");
+    }
+
+    /**
+     * The sticky money/LP row sits at the top of the screen in portrait (toastContainerPortrait,
+     * just below it) and in the middle in landscape (toastContainerLandscape, just above it, see
+     * index.html) — 576px is Bootstrap's own "sm" breakpoint, the same one that switches the rest
+     * of the layout between the two (see "Responsive behavior" in CLAUDE.md).
+     */
+    private getActiveToastContainer(): HTMLDivElement {
+        return window.innerWidth >= 576 ? this.toastContainerLandscape : this.toastContainerPortrait;
     }
 
     private showToast(message: string, variantClass: string) {
@@ -680,7 +696,7 @@ class PlayScreenUI {
         flex.appendChild(body);
         toastElement.appendChild(flex);
 
-        this.toastContainer.appendChild(toastElement);
+        this.getActiveToastContainer().appendChild(toastElement);
         toastElement.addEventListener("hidden.bs.toast", () => toastElement.remove());
         const toast = new bootstrap.Toast(toastElement, {delay: 5000});
         // Clickable to dismiss early (see the cursor: pointer on .toast-positive/-negative/-neutral
