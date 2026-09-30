@@ -564,8 +564,7 @@ class PlayScreenUI {
                 elapsed += now - last;
             last = now;
             const t = Math.min(1, elapsed / duration);
-            const eased = 1 - Math.pow(1 - t, 3);
-            const value = Math.round(from + (to - from) * eased);
+            const value = Math.round(from + (to - from) * t);
             if (value !== lastValue) {
                 lastValue = value;
                 if (now - lastTick >= minTickInterval) {
