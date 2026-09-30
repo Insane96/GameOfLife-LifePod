@@ -71,7 +71,7 @@ class Lottery {
             if (!won) {
                 numbersToRoll = numbersToRoll.filter((_, i) => i !== rolledNumberIndex);
                 let noWinnerIncrease = 20;
-                if (HouseRules.LotteryPlayedRoundsBonusOnNoWinner.get())
+                if (HouseRules.LotteryPotBonusOnNoWinnerYearsPlayedBased.get())
                     noWinnerIncrease *= this.playedRoundsBonus;
                 this.pot += noWinnerIncrease;
             }
