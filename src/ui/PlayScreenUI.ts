@@ -42,12 +42,14 @@ class PlayScreenUI {
     private playerScoreboardHeader = document.getElementById("player-scoreboard-header") as HTMLTableSectionElement;
 
     private playerMoney = document.getElementById("player-money") as HTMLDivElement;
+    private playerMoneyLabel = document.getElementById("player-money-label") as HTMLDivElement;
     private btnAddMoney = document.getElementById("btn-add-money") as HTMLButtonElement;
     private btnRemoveMoney = document.getElementById("btn-remove-money") as HTMLButtonElement;
     private inputMoney = document.getElementById("input-money") as HTMLInputElement;
     private btnConfirmMoney = document.getElementById("btn-confirm-money") as HTMLButtonElement;
 
     private playerLifePoints = document.getElementById("player-life-points") as HTMLDivElement;
+    private playerLifePointsLabel = document.getElementById("player-life-points-label") as HTMLDivElement;
     private btnAddLifePoints = document.getElementById("btn-add-life-points") as HTMLButtonElement;
     private btnRemoveLifePoints = document.getElementById("btn-remove-life-points") as HTMLButtonElement;
     private inputLifePoints = document.getElementById("input-life-points") as HTMLInputElement;
@@ -418,11 +420,15 @@ class PlayScreenUI {
         if (game.years <= 0) {
             this.playerMoney.textContent = "";
             this.playerLifePoints.textContent = "";
+            this.playerMoneyLabel.classList.add("d-none");
+            this.playerLifePointsLabel.classList.add("d-none");
             this.playScreen.removeAttribute("data-player-color");
             this.statsPlayer = null;
             onStatsSettled?.();
         }
         else {
+            this.playerMoneyLabel.classList.remove("d-none");
+            this.playerLifePointsLabel.classList.remove("d-none");
             this.playScreen.dataset.playerColor = PlayerColor[currentPlayer.color];
 
             const samePlayer = this.statsPlayer === currentPlayer;
@@ -496,7 +502,7 @@ class PlayScreenUI {
         this.btnAuction.disabled = !currentPlayer.hasPressedSpin || game.years <= 0 || busy;
         this.btnLottery.disabled = !currentPlayer.hasPressedSpin || game.years <= 0 || busy;
 
-        this.btnSpin.classList.toggle("d-none", currentPlayer.hasPressedSpin);
+        this.btnSpin.classList.toggle("d-none", currentPlayer.hasPressedSpin || game.years <= 0);
         const showRoll = game.rolledNumber > 0 && this.rollingAnimationType !== RollingAnimationType.Spin;
         this.playerRoll.classList.toggle("d-none", !showRoll);
         this.playerRollNumber.textContent = showRoll ? `${game.rolledNumber}` : "";
