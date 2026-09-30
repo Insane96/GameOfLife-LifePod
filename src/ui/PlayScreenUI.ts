@@ -8,6 +8,7 @@ import {sounds} from "./Sounds.js";
 import {confirmModal} from "./ConfirmModal.js";
 import {persistence} from "../Persistence.js";
 import {globalUI} from "./GlobalUI.js";
+import {confetti} from "./Confetti.js";
 
 // Minimal typing for the Bootstrap bundle loaded with a <script> tag (no @types/bootstrap)
 declare const bootstrap: {
@@ -115,6 +116,14 @@ class PlayScreenUI {
     private statsPlayer: Player | null = null;
     private lastMoney: number = 0;
     private lastLifePoints: number = 0;
+
+    // End-of-game scoreboard reveal (see revealScoreboard()): scoreboardAnimated guards against
+    // re-running the reveal on every render() call while sitting on the end screen (e.g. a
+    // window resize). scoreboardRevealId is bumped every time the scoreboard is cleared (a fresh
+    // reveal starting, or Undo taking the game back below game.years <= 0 mid-animation) so a
+    // reveal still in flight can tell it's stale and stop touching the DOM.
+    private scoreboardAnimated: boolean = false;
+    private scoreboardRevealId: number = 0;
 
     // Try for a kid/Auction already know their outcome (rollAndSetChance() resolves it
     // immediately) before the suspense of the roll animation plays out, so the breakdown/message
@@ -424,24 +433,17 @@ class PlayScreenUI {
         this.playerScoreboardHeader.classList.toggle("d-none", game.years > 0);
         if (game.years <= 0) {
             this.playerName.textContent = "";
-            const rows: HTMLTableRowElement[] = [];
-            game.getRanking().forEach((player, index) => {
-                const row = document.createElement("tr");
-                if (index === 0)
-                    row.classList.add("table-warning");
-                let cell = row.insertCell();
-                cell.textContent = String(index + 1);
-                cell = row.insertCell();
-                cell.textContent = player.name;
-                cell = row.insertCell();
-                cell.textContent = `♥ ${this.formatNumber(player.lifePoints)}`;
-                rows.push(row);
-            });
-            this.playerScoreboard.replaceChildren(...rows);
+            if (!this.scoreboardAnimated) {
+                this.scoreboardAnimated = true;
+                this.playerScoreboard.replaceChildren();
+                this.revealScoreboard(game.getRanking(), ++this.scoreboardRevealId);
+            }
         }
         else {
             this.playerName.textContent = currentPlayer.name;
             this.playerScoreboard.replaceChildren();
+            this.scoreboardAnimated = false;
+            this.scoreboardRevealId++;
         }
 
         if (game.years <= 0) {
@@ -663,6 +665,56 @@ class PlayScreenUI {
 
     private formatNumber(value: number): string {
         return value.toLocaleString("en-US");
+    }
+
+    /**
+     * Reveals the final ranking one row at a time, from last place up to the winner, instead of
+     * the table appearing all at once: each row's Life Points count up from 0 over 4000ms
+     * (reusing animateStatChange), and the winner's reveal triggers a confetti burst. New rows
+     * are prepended, so the winner ends up on top once fully revealed, matching getRanking()'s
+     * order. revealId is the token this call was started with (see scoreboardRevealId): every
+     * step checks it's still current before touching the DOM, so a reveal that's fallen behind
+     * (Undo taking the game back below game.years <= 0 mid-animation, or a brand new game
+     * starting) quietly stops instead of writing into a scoreboard that's moved on.
+     */
+    private revealScoreboard(ranking: Player[], revealId: number) {
+        const revealOrder = [...ranking].reverse();
+        const revealNext = (index: number) => {
+            if (revealId !== this.scoreboardRevealId || index >= revealOrder.length)
+                return;
+            const player = revealOrder[index];
+            const rank = ranking.length - index;
+            const isWinner = rank === 1;
+
+            const row = document.createElement("tr");
+            row.classList.add("scoreboard-row-enter");
+            if (isWinner)
+                row.classList.add("table-warning");
+            let cell = row.insertCell();
+            cell.textContent = String(rank);
+            cell = row.insertCell();
+            cell.textContent = player.name;
+            const lifePointsCell = row.insertCell();
+            lifePointsCell.textContent = `♥ ${this.formatNumber(0)}`;
+
+            this.playerScoreboard.prepend(row);
+            // Force a reflow so the transition below actually plays instead of the row just
+            // appearing already in its final state.
+            row.getBoundingClientRect();
+            row.classList.remove("scoreboard-row-enter");
+
+            if (isWinner) {
+                confetti.burst();
+                sounds.successTune();
+            }
+
+            this.animateStatChange(lifePointsCell, 0, player.lifePoints, (v) => `♥ ${this.formatNumber(v)}`, 4000, true, () => {
+                if (revealId !== this.scoreboardRevealId)
+                    return;
+                setTimeout(() => revealNext(index + 1), 2000);
+            });
+        };
+        revealNext(0);
     }
 
     /**

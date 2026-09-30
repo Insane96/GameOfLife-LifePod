@@ -281,3 +281,48 @@ $player-accent-colors: (
 #input-volume {
   max-width: 8rem;
 }
+
+// End-of-game scoreboard: rows fade/slide in one at a time as PlayScreenUI.revealScoreboard()
+// reveals them from last place to the winner, instead of the table appearing all at once.
+#player-scoreboard tr {
+  transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+.scoreboard-row-enter {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+// Confetti burst on the winner's scoreboard reveal (see Confetti.ts). Skipped entirely in JS
+// under prefers-reduced-motion, so no media-query guard is needed here.
+.confetti-container {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1090;
+}
+
+.confetti-piece {
+  position: absolute;
+  top: 0;
+  left: var(--confetti-left);
+  width: 0.5rem;
+  height: 0.9rem;
+  animation: confetti-fall var(--confetti-duration) ease-in var(--confetti-delay) forwards;
+}
+
+@keyframes confetti-fall {
+  from {
+    transform: translateY(-10vh) rotate(0deg);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(110vh) rotate(var(--confetti-rotate));
+    opacity: 0.8;
+  }
+}
