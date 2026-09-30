@@ -62,6 +62,19 @@ class Game {
         }
     }
 
+    /**
+     * Manual correction of the years left (see the years-left long-press in PlayScreenUI), same
+     * range as the "Years" field on the New game screen. The years--/endGame() flow in endTurn()
+     * assigns this.years directly instead, since it needs to reach 0 to end the game.
+     */
+    public setYearsLeft(years: number): void {
+        if (Number.isNaN(years))
+            throw new Error("years must be a number.");
+        if (years < 1 || years > 99)
+            throw new Error("years must be between 1 and 99 (inclusive)");
+        this.years = years;
+    }
+
     public getCurrentPlayerTurn(): Player {
         return this.players[this.currentPlayerTurn];
     }

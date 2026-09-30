@@ -5,5 +5,6 @@ export enum Operation {
     AddLifePoints,
     RemoveLifePoints,
     Salary,
-    Auction
+    Auction,
+    YearsLeft
 }

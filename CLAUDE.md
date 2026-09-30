@@ -139,7 +139,9 @@ cards").
       buttons in portrait (`align-items-center`) and keeps them left-aligned
       from `sm` up (`align-items-sm-stretch`).
     - The "Houses" / "Cars" buttons are stacked (`flex-column`) in portrait and
-      side by side (`flex-sm-row flex-sm-wrap`) from `sm` up.
+      side by side (`flex-sm-row flex-sm-wrap`) from `sm` up, at their natural
+      width in portrait (`align-items-center`, same as Salary/Chance/Auction
+      above) instead of stretching full-width (flexbox's `stretch` default).
     - **Modals** (`kids-modal`, `houses-modal`, `cars-modal`, `confirm-modal`):
       native Bootstrap modals, written by hand in `index.html` outside
       `#play-screen`, with `modal fade` + `tabindex="-1"` + `aria-label`, and
@@ -180,15 +182,16 @@ cards").
       `aria-hidden="true"`; icon-only buttons (`+`/`−`/`✓`/remove
       player/fullscreen) keep their existing `aria-label` and use the
       `.btn-icon` class (fixed 2.5rem circle, centered icon).
-- **Fullscreen button**: a single `btn-fullscreen` element, handled by
-  `GlobalUI`, shared by all screens. `GlobalUI.render()` moves it (with
+- **Fullscreen button and volume control**: a single `btn-fullscreen` element
+  and a single `volume-control` element (icon + `input-volume`), both handled
+  by `GlobalUI`, shared by all screens. `GlobalUI.render()` moves both (with
   `appendChild`, which moves the node instead of copying it) into the start
-  screen or into `cell-settings`, depending on `game.gameStarted`. Its
-  `aria-label` is updated from the `fullscreenchange` event, not from the
-  click, because the user can also leave fullscreen with Esc or a system
-  gesture. It is hidden when `requestFullscreen` is not available (iPhone
-  Safari does not support it on regular pages; the PWA is the way to get
-  fullscreen there, see "Open").
+  screen (`start-screen-settings`) or into `cell-settings`, depending on
+  `game.gameStarted`. `btn-fullscreen`'s `aria-label` is updated from the
+  `fullscreenchange` event, not from the click, because the user can also
+  leave fullscreen with Esc or a system gesture. It is hidden when
+  `requestFullscreen` is not available (iPhone Safari does not support it on
+  regular pages; the PWA is the way to get fullscreen there, see "Open").
 
 ## Persistence (localStorage) — critical requirement
 

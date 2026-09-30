@@ -28,7 +28,14 @@ class PlayScreenUI {
     private toastContainerLandscape = document.getElementById("toast-container-landscape") as HTMLDivElement;
     private btnSpin = document.getElementById("btn-spin") as HTMLButtonElement;
     private btnEndTurn = document.getElementById("btn-end-turn") as HTMLButtonElement;
-    private yearsLeft = document.getElementById("years-left") as HTMLDivElement;
+    private btnYearsLeft = document.getElementById("btn-years-left") as HTMLButtonElement;
+    private yearsLeftValue = document.getElementById("years-left-value") as HTMLSpanElement;
+    private inputYearsLeft = document.getElementById("input-years-left") as HTMLInputElement;
+    private btnConfirmYearsLeft = document.getElementById("btn-confirm-years-left") as HTMLButtonElement;
+    // Set by btnYearsLeft's pointerdown, cleared by whichever of pointerup/pointerleave/
+    // pointercancel comes first: only a hold that survives the full delay opens the operation
+    // (see the constructor), so a normal tap/click still does nothing to it.
+    private yearsLeftPressTimer: ReturnType<typeof setTimeout> | null = null;
     private playerName = document.getElementById("player-name") as HTMLDivElement;
     private playError = document.getElementById("play-error") as HTMLDivElement;
     private playerScoreboard = document.getElementById("player-scoreboard") as HTMLTableSectionElement;
@@ -153,6 +160,7 @@ class PlayScreenUI {
             this.inputMoney.value = "";
             this.inputLifePoints.value = "";
             this.inputAuction.value = "";
+            this.inputYearsLeft.value = "";
             this.toastContainerPortrait.replaceChildren();
             this.toastContainerLandscape.replaceChildren();
             this.render();
@@ -241,6 +249,55 @@ class PlayScreenUI {
         this.inputAuction.addEventListener("keydown", (event) => {
             if (event.key === "Enter")
                 this.btnConfirmAuction.click();
+        });
+        // Years left opens its input on a press-and-hold (not a click, which does nothing) so a
+        // normal tap doesn't risk nudging the game's remaining length by accident.
+        const openYearsLeftOperation = () => {
+            this.inputYearsLeft.value = String(game.years);
+            this.toggleOperation(Operation.YearsLeft, this.inputYearsLeft);
+        };
+        this.btnYearsLeft.addEventListener("pointerdown", () => {
+            this.yearsLeftPressTimer = setTimeout(() => {
+                this.yearsLeftPressTimer = null;
+                openYearsLeftOperation();
+            }, 500);
+        });
+        const cancelYearsLeftPress = () => {
+            if (this.yearsLeftPressTimer !== null) {
+                clearTimeout(this.yearsLeftPressTimer);
+                this.yearsLeftPressTimer = null;
+            }
+        };
+        this.btnYearsLeft.addEventListener("pointerup", cancelYearsLeftPress);
+        this.btnYearsLeft.addEventListener("pointerleave", cancelYearsLeftPress);
+        this.btnYearsLeft.addEventListener("pointercancel", cancelYearsLeftPress);
+        // Keyboard/assistive tech has no equivalent of "hold": Enter/Space opens it right away.
+        this.btnYearsLeft.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                openYearsLeftOperation();
+            }
+        });
+        this.btnConfirmYearsLeft.addEventListener("click", () => {
+            this.clearError();
+            let input = parseInt(this.inputYearsLeft.value);
+            if (Number.isNaN(input)) {
+                this.showError("Invalid input");
+                return;
+            }
+            try {
+                game.setYearsLeft(input);
+                this._operation = Operation.None;
+                this.inputYearsLeft.value = "";
+            }
+            catch (e) {
+                this.onError(e);
+            }
+            this.render();
+        });
+        this.inputYearsLeft.addEventListener("keydown", (event) => {
+            if (event.key === "Enter")
+                this.btnConfirmYearsLeft.click();
         });
         this.btnWedding.addEventListener("click", () => {
             this.confirmAction("Confirm Wedding/Anniversary?", () => {
@@ -454,7 +511,13 @@ class PlayScreenUI {
         this.chanceResult.classList.toggle("d-none", !showChance);
         this.chanceResultNumber.textContent = showChance ? `${game.rolledChance}` : "";
 
-        this.yearsLeft.textContent = `Years left: ${game.years}`;
+        this.yearsLeftValue.textContent = String(game.years);
+        // aria-label overrides the accessible name computed from content, so it needs the number
+        // baked in too, not just the static hint (otherwise screen reader users would never hear it).
+        this.btnYearsLeft.ariaLabel = `${game.years} years left. Press and hold to change`;
+        this.inputYearsLeft.classList.toggle("d-none", this._operation !== Operation.YearsLeft);
+        this.btnConfirmYearsLeft.classList.toggle("d-none", this._operation !== Operation.YearsLeft);
+        this.btnYearsLeft.disabled = busy;
         this.btnEndTurn.disabled = !currentPlayer.hasPressedSpin || busy;
 
         this.btnWeddingLabel.textContent = !currentPlayer.married ? "Wedding" : "Anniversary";
@@ -479,6 +542,7 @@ class PlayScreenUI {
             this.btnSalary.disabled = true;
             this.btnWedding.disabled = true;
             this.btnChance.disabled = true;
+            this.btnYearsLeft.disabled = true;
         }
     }
 

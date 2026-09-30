@@ -137,7 +137,12 @@
           <!-- Degree/PhD -->
         </div>
         <div id="cell-years-end-turn" class="col-6 col-sm-3 d-flex flex-column align-items-end gap-2 p-2">
-          <div id="years-left" class="small opacity-75"></div>
+          <button id="btn-years-left" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1" aria-label="Years left. Press and hold to change">
+            <i class="bi bi-arrow-repeat" aria-hidden="true"></i><span id="years-left-value"></span>
+          </button>
+          <div class="d-flex align-items-center gap-2">
+            <input id="input-years-left" type="text" inputmode="numeric" pattern="[0-9]*" class="form-control w-auto d-none" aria-label="Years left input"><button id="btn-confirm-years-left" aria-label="Confirm years left" class="btn btn-primary btn-icon d-none"><i class="bi bi-check-lg" aria-hidden="true"></i></button>
+          </div>
           <button id="btn-end-turn" class="btn btn-primary"><i class="bi bi-arrow-right-circle-fill me-2" aria-hidden="true"></i>End turn</button>
         </div>
       </div>
