@@ -1,8 +1,10 @@
 import {game, GameSave} from "./Game.js";
 import {lottery, LotterySave} from "./Lottery.js";
+import {HouseRules} from "./HouseRules.js";
 
 const SAVE_KEY = "lifepod.save";
 const PREVIOUS_KEY = "lifepod.save.previous";
+const HOUSE_RULES_KEY = "lifepod.houserules";
 const VERSION = 1;
 
 interface SaveEnvelope {
@@ -120,6 +122,37 @@ class Persistence {
             console.error("Failed to wipe the saved game (storage unavailable?)", e);
         }
         this.lastSaved = null;
+    }
+
+    /**
+     * House rules are a setting, not part of the game state: own key, no undo point, and not
+     * touched by wipe()/reset() so they survive across games.
+     */
+    public saveHouseRules(): void {
+        try {
+            localStorage.setItem(HOUSE_RULES_KEY, JSON.stringify(HouseRules.toJSON()));
+        }
+        catch (e) {
+            console.error("Failed to save the house rules (storage unavailable?)", e);
+        }
+    }
+
+    public loadHouseRules(): void {
+        let raw: string | null;
+        try {
+            raw = localStorage.getItem(HOUSE_RULES_KEY);
+        }
+        catch {
+            return;
+        }
+        if (raw === null)
+            return;
+        try {
+            HouseRules.loadFromJSON(JSON.parse(raw));
+        }
+        catch (e) {
+            console.error("Failed to load the house rules, ignoring", e);
+        }
     }
 
     private applyRaw(raw: string): boolean {
