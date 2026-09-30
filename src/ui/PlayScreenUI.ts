@@ -94,8 +94,6 @@ class PlayScreenUI {
         {button: document.getElementById("btn-car-luxury") as HTMLButtonElement, asset: Asset.LuxuryCar, name: "Luxury Car"},
     ];
 
-    private inputVolume: HTMLInputElement = document.getElementById("input-volume") as HTMLInputElement;
-
     private confirmModal = document.getElementById("confirm-modal") as HTMLDivElement;
     private confirmMessage = document.getElementById("confirm-message") as HTMLParagraphElement;
     private btnConfirmOk = document.getElementById("btn-confirm-ok") as HTMLButtonElement;
@@ -320,9 +318,6 @@ class PlayScreenUI {
                 }
             });
         }
-        this.inputVolume.addEventListener("input", () => {
-            sounds.setVolume(this.inputVolume.valueAsNumber);
-        });
         this.btnConfirmOk.addEventListener("click", () => {
             this.confirmCallback?.();
             this.confirmCallback = null;

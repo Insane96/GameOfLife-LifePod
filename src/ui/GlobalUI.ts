@@ -6,6 +6,7 @@ class GlobalUI {
     private iconFullscreen = document.getElementById("icon-fullscreen") as HTMLElement;
     private cellSettings = document.getElementById("cell-settings") as HTMLDivElement;
     private startScreenSettings = document.getElementById("start-screen-settings") as HTMLDivElement;
+    private volumeControl = document.getElementById("volume-control") as HTMLDivElement;
     private inputVolume = document.getElementById("input-volume") as HTMLInputElement;
 
     constructor() {
@@ -36,9 +37,11 @@ class GlobalUI {
     public render() {
         if (game.gameStarted) {
             this.cellSettings.appendChild(this.btnFullscreen);
+            this.cellSettings.appendChild(this.volumeControl);
         }
         else {
             this.startScreenSettings.appendChild(this.btnFullscreen);
+            this.startScreenSettings.appendChild(this.volumeControl);
         }
     }
 }

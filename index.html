@@ -41,7 +41,7 @@
           </div>
         </div>
       </div>
-      <div id="start-screen-settings" class="position-fixed bottom-0 start-0 m-3"></div>
+      <div id="start-screen-settings" class="position-fixed bottom-0 start-0 d-flex align-items-center gap-2 m-3"></div>
     </div>
     <div id="play-screen" class="d-none container-fluid min-vh-100 d-flex flex-column fs-5">
       <div class="row flex-grow-1 align-items-start">
@@ -130,10 +130,7 @@
         </div>
       </div>
       <div class="row flex-grow-1 align-items-end">
-        <div id="cell-settings" class="col-6 col-sm-3 d-flex align-items-center gap-2 justify-content-start p-2">
-          <i class="bi bi-volume-up-fill" aria-hidden="true"></i>
-          <input id="input-volume" type="range" min="0" max="1" value="0.4" step="0.01" class="form-range" aria-label="Volume">
-        </div>
+        <div id="cell-settings" class="col-6 col-sm-3 d-flex align-items-center gap-2 justify-content-start p-2"></div>
         <div id="cell-life-learn-spin" class="col-12 col-sm-6 order-first order-sm-0 d-flex justify-content-center gap-2 p-2">
           <button id="btn-wedding" class="btn btn-outline-primary"><i class="bi bi-heart-fill me-2" aria-hidden="true"></i><span id="btn-wedding-label">Wedding</span></button>
           <button id="btn-kids" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#kids-modal"><i class="bi bi-people-fill me-2" aria-hidden="true"></i><span id="btn-kids-label">Kids</span></button>
@@ -147,6 +144,10 @@
     </div>
   </div>
   <button id="btn-fullscreen" class="btn btn-outline-secondary btn-icon m-1" aria-label="Enter fullscreen"><i id="icon-fullscreen" class="bi bi-arrows-fullscreen" aria-hidden="true"></i></button>
+  <div id="volume-control" class="d-flex align-items-center gap-2 m-1">
+    <i class="bi bi-volume-up-fill" aria-hidden="true"></i>
+    <input id="input-volume" type="range" min="0" max="1" value="0.4" step="0.01" class="form-range" aria-label="Volume">
+  </div>
 
   <div id="kids-modal" class="modal fade" tabindex="-1" aria-label="Kids">
     <div class="modal-dialog modal-dialog-centered">
