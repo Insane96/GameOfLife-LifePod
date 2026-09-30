@@ -1,7 +1,7 @@
-import {game} from "../Game.js";
 import {sounds} from "./Sounds.js";
 
 class GlobalUI {
+    private playScreen = document.getElementById("play-screen") as HTMLDivElement;
     private btnFullscreen = document.getElementById("btn-fullscreen") as HTMLButtonElement;
     private iconFullscreen = document.getElementById("icon-fullscreen") as HTMLElement;
     private cellSettings = document.getElementById("cell-settings") as HTMLDivElement;
@@ -35,7 +35,9 @@ class GlobalUI {
     }
 
     public render() {
-        if (game.gameStarted) {
+        // Which screen is actually visible, not game.gameStarted: "Back to menu" (PlayScreenUI)
+        // can show the start screen again without resetting the game, so the two can diverge.
+        if (!this.playScreen.classList.contains("d-none")) {
             this.cellSettings.appendChild(this.btnFullscreen);
             this.cellSettings.appendChild(this.volumeControl);
         }

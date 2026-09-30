@@ -1,13 +1,17 @@
 import {DOMPlayer} from "./DOMPlayer.js";
 import {ALL_PLAYER_COLORS, PlayerColor} from "../PlayerColor.js";
 import {game} from "../Game.js";
+import {lottery} from "../Lottery.js";
 import {playScreenUI} from "./PlayScreenUI.js";
 import {globalUI} from "./GlobalUI.js";
+import {persistence} from "../Persistence.js";
+import {confirmModal} from "./ConfirmModal.js";
 
 class MainMenuUI {
     private startScreen = document.getElementById("start-screen");
     private playScreen = document.getElementById("play-screen");
     private btnStartGame = document.getElementById("btn-start") as HTMLButtonElement;
+    private btnContinue = document.getElementById("btn-continue") as HTMLButtonElement;
     private btnAddPlayer = document.getElementById("btn-add-player") as HTMLButtonElement;
     private playersList = document.getElementById("players-list");
     private inputYears = document.getElementById("input-years") as HTMLInputElement;
@@ -51,15 +55,25 @@ class MainMenuUI {
                 }
                 playingPlayers.push(domPlayer);
             }
-            for (const domPlayer of playingPlayers) {
-                domPlayer.player = game.addPlayer(domPlayer.getName(), domPlayer.color!);
+            if (persistence.hasSavedGame()) {
+                confirmModal.confirm("Starting a new game will discard the saved game. Continue?", () => {
+                    this.startNewGame(playingPlayers, years);
+                });
             }
-            game.init(years);
-            this.startScreen?.classList.add("d-none");
-            this.playScreen?.classList.remove("d-none");
-            playScreenUI.render();
-            globalUI.render();
+            else
+                this.startNewGame(playingPlayers, years);
         });
+        this.btnContinue.addEventListener("click", () => {
+            this.clearError();
+            if (!persistence.load()) {
+                this.showError("Could not load the saved game");
+                this.btnContinue.disabled = true;
+                return;
+            }
+            this.showPlayScreen();
+        });
+        if (persistence.hasSavedGame())
+            this.btnContinue.disabled = false;
         this.btnAddPlayer.addEventListener("click", () => {
             this.clearError();
             if (this.playersCount < 6)
@@ -100,6 +114,29 @@ class MainMenuUI {
         this.domPlayers[id] = null;
         this.updateColorGrid();
         return true;
+    }
+
+    /**
+     * The actual start of a new game, run either right away (no saved game to lose) or once the
+     * user confirms discarding one (see btnStartGame above). wipe() first: otherwise save()'s own
+     * diffing would shift the abandoned game into the undo slot, and Undo would resurrect it.
+     */
+    private startNewGame(playingPlayers: DOMPlayer[], years: number) {
+        game.reset();
+        lottery.reset();
+        persistence.wipe();
+        for (const domPlayer of playingPlayers) {
+            domPlayer.player = game.addPlayer(domPlayer.getName(), domPlayer.color!);
+        }
+        game.init(years);
+        this.showPlayScreen();
+    }
+
+    private showPlayScreen() {
+        this.startScreen?.classList.add("d-none");
+        this.playScreen?.classList.remove("d-none");
+        playScreenUI.render();
+        globalUI.render();
     }
 
     private showError(message: string) {

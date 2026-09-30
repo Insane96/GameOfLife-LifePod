@@ -55,9 +55,11 @@ cards").
   `#toast-container`, colored via `.toast-positive`/`.toast-negative`). No
   events in the model: the comparison happens entirely in the UI layer. Other
   values (the roll, asset prices, ...) are not animated yet.
-- **Undo**: an "Undo last action" button always visible next to "End turn".
-  More important than in the original because the device changes hands more
-  often.
+- **Undo**: an "Undo last action" button (`btn-undo`), always visible next to
+  the "Menu" button in `cell-settings` (not next to "End turn": grouped with
+  the other screen-level controls instead of the turn-specific ones). More
+  important than in the original because the device changes hands more often.
+  Single level (undoes only the last action, no stack): see "Persistence".
 - **Game creation**: players are entered first (name + color), then "New
   game" is pressed, which calls the backend (`game.init` with the number of
   years) and starts the game.
@@ -119,8 +121,10 @@ cards").
     with `table-warning`) and disables/hides Spin and the +/− buttons. There is
     no `game.winner`: the winner is the first entry of the ranking. Ties keep
     the turn order (the sort is stable).
-  - The bottom-left cell (`cell-settings`) is reserved for settings (volume,
-    fullscreen).
+  - The bottom-left cell (`cell-settings`) is reserved for settings: volume,
+    fullscreen (both moved in by `GlobalUI`, see below), plus the static
+    `btn-menu` ("Back to menu", does not touch the saved game) and `btn-undo`
+    ("Undo last action") buttons, both wired by `PlayScreenUI`.
   - **Responsive behavior** (Bootstrap classes only, breakpoint `sm` = 576px:
     below it the layout is "portrait", from `sm` up it is "landscape"; it is
     based on width, not on the real orientation):
@@ -156,14 +160,18 @@ cards").
       with `flex-sm-fill`). Do not use `modal-sm` when the buttons are in a row:
       300px are not enough.
       `confirm-modal` replaces the native `confirm()` for actions that need a
-      yes/no check (Wedding/Anniversary, selling an asset): it has no
-      `data-bs-target` opener of its own, because the message and the action to
-      run on confirm change every time. `PlayScreenUI.confirmAction(message,
-      onConfirm)` sets `#confirm-message`, stores `onConfirm` in
-      `confirmCallback`, and opens the modal; the single `btn-confirm-ok`
-      listener (attached once, in the constructor) runs `confirmCallback` and
-      clears it. `btn-confirm-cancel` and outside/Esc close the modal with no
-      callback (`data-bs-dismiss="modal"`, nothing else attached).
+      yes/no check (Wedding/Anniversary, selling an asset, overwriting a saved
+      game from the main menu): it has no `data-bs-target` opener of its own,
+      because the message and the action to run on confirm change every time.
+      Wrapped by the shared `ConfirmModal` singleton (`ui/ConfirmModal.ts`,
+      same non-exported-class/exported-instance pattern as the other screens)
+      instead of belonging to a single screen, since both `PlayScreenUI` and
+      `MainMenuUI` need it. `confirmModal.confirm(message, onConfirm)` sets
+      `#confirm-message`, stores `onConfirm` in `confirmCallback`, and opens
+      the modal; the single `btn-confirm-ok` listener (attached once, in its
+      constructor) runs `confirmCallback` and clears it. `btn-confirm-cancel`
+      and outside/Esc close the modal with no callback (`data-bs-dismiss=
+      "modal"`, nothing else attached).
     - The warm glow in `main.scss` is a `background-attachment: fixed` gradient
       on `body`; `.sticky-top` repeats it so that the opaque `bg-body` of the
       sticky row does not cut the glow.
@@ -187,7 +195,10 @@ cards").
   by `GlobalUI`, shared by all screens. `GlobalUI.render()` moves both (with
   `appendChild`, which moves the node instead of copying it) into the start
   screen (`start-screen-settings`) or into `cell-settings`, depending on
-  `game.gameStarted`. `btn-fullscreen`'s `aria-label` is updated from the
+  whether `#play-screen` is currently visible (not `game.gameStarted`: "Back
+  to menu", see `btn-menu` above, shows the start screen again without
+  resetting the game, so the two can diverge). `btn-fullscreen`'s `aria-label`
+  is updated from the
   `fullscreenchange` event, not from the click, because the user can also
   leave fullscreen with Esc or a system gesture. It is hidden when
   `requestFullscreen` is not available (iPhone Safari does not support it on
@@ -195,14 +206,46 @@ cards").
 
 ## Persistence (localStorage) — critical requirement
 
-If the page is reloaded by mistake, the game must not be lost.
+If the page is reloaded by mistake, the game must not be lost. Implemented in
+`src/Persistence.ts` (`Persistence`, non-exported class + exported `persistence`
+instance, same singleton pattern as the other models), used by `MainMenuUI`
+and by `PlayScreenUI`/`LotteryUI`.
 
-- Write the entire game state on every single action (spin, applied event,
-  turn change). Small, instant writes, no debounce needed.
-- At startup, if a saved state exists: always explicitly ask "Resume game" vs
-  "New game". Never resume or delete automatically without asking.
-- An explicit "New game" action is needed somewhere in the interface (settings
-  or a screen corner) to deliberately wipe the storage at the end of a game.
+- Every model (`Game`, `Player`, `OwnedAsset`, `Lottery`) serializes itself
+  (`toJSON()`/`loadFromJSON()` or `static fromJSON()`), never `Persistence` or
+  the UI: keeps "Models vs UI" (backend never knows the DOM) and keeps the
+  shape next to the fields it mirrors. `Asset` can't be serialized directly
+  (its `onNewTurnExtra` is a function): each static Asset has an `id` string
+  and `Asset.byId(id)` reconstructs the singleton reference. `Lottery`'s
+  `numbersPerPlayer`/`confirmedPlayers` are keyed by `Player` object identity,
+  so they save as indices into `game.players` and resolve back to references
+  on load, against the array `Game.loadFromJSON` already rebuilt.
+- `persistence.save()` writes the whole state (`{version, game, lottery}` JSON
+  under the `lifepod.save` key) every time it's called, but only if it
+  actually differs from the last write: called from the tail of
+  `PlayScreenUI.render()` and `LotteryUI.render()` (every handler already
+  ends in one of those, see "Rendering" in Code conventions) rather than from
+  every individual handler, so a UI-only re-render (opening an input, say)
+  never touches storage. `LotteryUI.onSpin()` also calls it explicitly right
+  after `lottery.roll()`, since the payout needs to survive a reload during
+  the several-second animated reveal that follows, before the next `render()`.
+- Undo: whatever `lifepod.save` held right before a real (content-changing)
+  write is kept as `lifepod.save.previous`; `persistence.undo()` promotes it
+  back and removes it, single level (not a stack, not repeatable until a new
+  action creates a fresh undo point). `btn-undo`, see "Undo" under Interface
+  decisions.
+- At startup (`MainMenuUI`'s constructor), `persistence.hasSavedGame()`
+  decides whether "Continue game" (`btn-continue`) is enabled; clicking it
+  calls `persistence.load()`. Never resumed or deleted automatically.
+- No dedicated "wipe" action: `btn-menu` ("Back to menu", see Interface
+  decisions) returns to the start screen without touching the save, so from
+  there the player picks "Continue" or starts fresh. Starting fresh
+  (`btn-start`) while a save exists asks for confirmation first (shared
+  `confirmModal`, see "Modals"); only once confirmed does `MainMenuUI` call
+  `game.reset()`/`lottery.reset()`/`persistence.wipe()` before adding the new
+  players and calling `game.init()`. `wipe()` (not just letting the next
+  `save()` overwrite it) matters: otherwise the abandoned game would end up
+  as the fresh game's `lifepod.save.previous`, and Undo would resurrect it.
 
 ## Deploy (GitHub Pages)
 
@@ -306,12 +349,6 @@ palette) instead of using the defaults as-is.
 
 ## Open / to be decided
 
-- Undo: limited to the last action or a stack of several actions within the
-  turn?
-- localStorage persistence: not implemented yet (the "Continue game" button is
-  a placeholder). `game` (the singleton) has no reset for a new game;
-  `Asset`s contain functions, so they must be saved by name and rebuilt, not
-  serialized. `game.gameStarted` also has no reset.
 - Translations: postponed. When needed: IT + EN, a hand-made `t(key)` helper
   with TS dictionaries (the English type constrained to the Italian keys), no
   external library.

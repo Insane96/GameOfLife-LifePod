@@ -1,7 +1,18 @@
-import {Player} from "./Player.js";
+import {Player, PlayerSave} from "./Player.js";
 import {Mth} from "./Mth.js";
 import {PlayerColor} from "./PlayerColor.js";
 import {HouseRules} from "./HouseRules.js";
+
+export interface GameSave {
+    conversionRatio: number;
+    years: number;
+    playedRounds: number;
+    currentPlayerTurn: number;
+    rolledNumber: number;
+    rolledChance: -1 | 0 | 1 | 2;
+    gameStarted: boolean;
+    players: PlayerSave[];
+}
 
 class Game {
     // Set by init()
@@ -102,6 +113,43 @@ class Game {
 
     public getRanking(): Player[] {
         return [...this.players].sort((a, b) => b.lifePoints - a.lifePoints);
+    }
+
+    /**
+     * Back to the pre-init() state, so a second game can be started in the same page session
+     * (e.g. from the menu, after "Back to menu") without leftover players from the previous one.
+     */
+    public reset(): void {
+        this.players = [];
+        this.currentPlayerTurn = 0;
+        this.playedRounds = 0;
+        this.rolledNumber = 0;
+        this.rolledChance = -1;
+        this._gameStarted = false;
+    }
+
+    public toJSON(): GameSave {
+        return {
+            conversionRatio: this.conversionRatio,
+            years: this.years,
+            playedRounds: this.playedRounds,
+            currentPlayerTurn: this.currentPlayerTurn,
+            rolledNumber: this.rolledNumber,
+            rolledChance: this.rolledChance,
+            gameStarted: this._gameStarted,
+            players: this.players.map(player => player.toJSON()),
+        };
+    }
+
+    public loadFromJSON(data: GameSave): void {
+        this.conversionRatio = data.conversionRatio;
+        this.years = data.years;
+        this.playedRounds = data.playedRounds;
+        this.currentPlayerTurn = data.currentPlayerTurn;
+        this.rolledNumber = data.rolledNumber;
+        this.rolledChance = data.rolledChance;
+        this._gameStarted = data.gameStarted;
+        this.players = data.players.map(playerData => Player.fromJSON(playerData));
     }
 }
 

@@ -3,6 +3,7 @@ import {Player} from "../Player.js";
 import {ALL_PLAYER_COLORS, PlayerColor} from "../PlayerColor.js";
 import {RollingAnimation} from "./RollingAnimation.js";
 import {playScreenUI} from "./PlayScreenUI.js";
+import {persistence} from "../Persistence.js";
 
 // Minimal typing for the Bootstrap bundle loaded with a <script> tag (no @types/bootstrap)
 declare const bootstrap: {
@@ -52,6 +53,8 @@ class LotteryUI {
         this.lotteryPlayerList.replaceChildren(...rows);
 
         this.btnLotterySpin.disabled = activePlayer !== null || lottery.numbersPerPlayer.size === 0;
+
+        persistence.save();
     }
 
     private createPlayerRow(player: Player, isActive: boolean, chosenNumbers: number[]): HTMLElement {
@@ -147,6 +150,10 @@ class LotteryUI {
             playScreenUI.onError(e);
             return;
         }
+        // roll() already paid out the winner; save right away instead of waiting for the next
+        // render() (LotteryUI's own render() doesn't run again until the modal reopens, and the
+        // animated reveal below takes a few seconds — a reload during it would otherwise lose it).
+        persistence.save();
         bootstrap.Modal.getOrCreateInstance(this.lotteryModal).hide();
         for (const {number, color} of chosenNumberOwners) {
             document.getElementById(`roll-number-${number}`)?.classList.add("roll-number-chosen", this.borderClassForColor(color));

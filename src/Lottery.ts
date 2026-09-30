@@ -3,6 +3,16 @@ import {Mth} from "./Mth.js";
 import {game} from "./Game.js";
 import {HouseRules} from "./HouseRules.js";
 
+export interface LotterySave {
+    pot: number;
+    playedRoundsBonus: number;
+    winningNumber: number;
+    // numbersPerPlayer/confirmedPlayers are keyed by Player object identity, so they're saved as
+    // indices into game.players and resolved back to references on load (see loadFromJSON()).
+    numbersPerPlayer: {playerIndex: number, numbers: number[]}[];
+    confirmedPlayerIndexes: number[];
+}
+
 class Lottery {
     public pot: number = 0;
     public numbersPerPlayer: Map<Player, number[]> = new Map();
@@ -123,6 +133,32 @@ class Lottery {
             numbers.push(...playerNumbers);
         }
         return numbers;
+    }
+
+    public toJSON(): LotterySave {
+        return {
+            pot: this.pot,
+            playedRoundsBonus: this.playedRoundsBonus,
+            winningNumber: this.winningNumber,
+            numbersPerPlayer: [...this.numbersPerPlayer.entries()].map(([player, numbers]) => ({
+                playerIndex: game.players.indexOf(player),
+                numbers,
+            })),
+            confirmedPlayerIndexes: [...this.confirmedPlayers].map(player => game.players.indexOf(player)),
+        };
+    }
+
+    /**
+     * @param players the already-reconstructed players to resolve numbersPerPlayer/
+     * confirmedPlayers' indices against (see Game.loadFromJSON(), which must run first).
+     */
+    public loadFromJSON(data: LotterySave, players: Player[]): void {
+        this.pot = data.pot;
+        this.playedRoundsBonus = data.playedRoundsBonus;
+        this.winningNumber = data.winningNumber;
+        this.numbersPerPlayer = new Map(data.numbersPerPlayer.map(({playerIndex, numbers}) => [players[playerIndex], numbers]));
+        this.confirmedPlayers = new Set(data.confirmedPlayerIndexes.map(index => players[index]));
+        this.lastRollAttempts = [];
     }
 }
 

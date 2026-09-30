@@ -1,8 +1,21 @@
 import {PlayerColor} from "./PlayerColor.js";
 import {Asset} from "./Asset.js";
-import {OwnedAsset} from "./OwnedAsset.js";
+import {OwnedAsset, OwnedAssetSave} from "./OwnedAsset.js";
 import {HouseRules} from "./HouseRules.js";
 import {game} from "./Game.js";
+
+export interface PlayerSave {
+    name: string;
+    color: PlayerColor;
+    money: number;
+    lifePoints: number;
+    salary: number;
+    married: boolean;
+    kids: number;
+    qualification: number;
+    hasPressedSpin: boolean;
+    assets: OwnedAssetSave[];
+}
 
 /**
  * One category's contribution to a money/Life Points change (e.g. "salary", "houses"), so the
@@ -317,6 +330,34 @@ export class Player {
         this._lifePoints += this._money / game.conversionRatio;
         this._lifePoints = Math.round(this._lifePoints);
         this._money = 0;
+    }
+
+    public toJSON(): PlayerSave {
+        return {
+            name: this.name,
+            color: this.color,
+            money: this._money,
+            lifePoints: this._lifePoints,
+            salary: this._salary,
+            married: this._married,
+            kids: this._kids,
+            qualification: this._qualification,
+            hasPressedSpin: this._hasPressedSpin,
+            assets: this._assets.map(ownedAsset => ownedAsset.toJSON()),
+        };
+    }
+
+    public static fromJSON(data: PlayerSave): Player {
+        const player = new Player(data.name, data.color);
+        player._money = data.money;
+        player._lifePoints = data.lifePoints;
+        player._salary = data.salary;
+        player._married = data.married;
+        player._kids = data.kids;
+        player._qualification = data.qualification;
+        player._hasPressedSpin = data.hasPressedSpin;
+        player._assets = data.assets.map(assetData => OwnedAsset.fromJSON(assetData));
+        return player;
     }
 }
 

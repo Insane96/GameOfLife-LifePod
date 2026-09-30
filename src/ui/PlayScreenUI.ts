@@ -5,6 +5,9 @@ import {PlayerColor} from "../PlayerColor.js";
 import {Operation} from "./Operation.js";
 import {RollingAnimation} from "./RollingAnimation.js";
 import {sounds} from "./Sounds.js";
+import {confirmModal} from "./ConfirmModal.js";
+import {persistence} from "../Persistence.js";
+import {globalUI} from "./GlobalUI.js";
 
 // Minimal typing for the Bootstrap bundle loaded with a <script> tag (no @types/bootstrap)
 declare const bootstrap: {
@@ -26,8 +29,11 @@ class PlayScreenUI {
     // toast-creation time, see getActiveToastContainer().
     private toastContainerPortrait = document.getElementById("toast-container-portrait") as HTMLDivElement;
     private toastContainerLandscape = document.getElementById("toast-container-landscape") as HTMLDivElement;
+    private startScreen = document.getElementById("start-screen") as HTMLDivElement;
     private btnSpin = document.getElementById("btn-spin") as HTMLButtonElement;
     private btnEndTurn = document.getElementById("btn-end-turn") as HTMLButtonElement;
+    private btnUndo = document.getElementById("btn-undo") as HTMLButtonElement;
+    private btnMenu = document.getElementById("btn-menu") as HTMLButtonElement;
     private btnYearsLeft = document.getElementById("btn-years-left") as HTMLButtonElement;
     private yearsLeftValue = document.getElementById("years-left-value") as HTMLSpanElement;
     private inputYearsLeft = document.getElementById("input-years-left") as HTMLInputElement;
@@ -102,11 +108,6 @@ class PlayScreenUI {
         {button: document.getElementById("btn-car-economy") as HTMLButtonElement, asset: Asset.EconomyCar, name: "Economy Car"},
         {button: document.getElementById("btn-car-luxury") as HTMLButtonElement, asset: Asset.LuxuryCar, name: "Luxury Car"},
     ];
-
-    private confirmModal = document.getElementById("confirm-modal") as HTMLDivElement;
-    private confirmMessage = document.getElementById("confirm-message") as HTMLParagraphElement;
-    private btnConfirmOk = document.getElementById("btn-confirm-ok") as HTMLButtonElement;
-    private confirmCallback: (() => void) | null = null;
 
     // Snapshot of the last money/Life Points shown for the current player, so render() can tell
     // a real change (worth a count-up animation and a delta toast) from a turn change or a
@@ -302,7 +303,7 @@ class PlayScreenUI {
                 this.btnConfirmYearsLeft.click();
         });
         this.btnWedding.addEventListener("click", () => {
-            this.confirmAction("Confirm Wedding/Anniversary?", () => {
+            confirmModal.confirm("Confirm Wedding/Anniversary?", () => {
                 const breakdown = game.getCurrentPlayerTurn().getMarried();
                 this.render(undefined, breakdown);
             });
@@ -356,7 +357,7 @@ class PlayScreenUI {
                 const player = game.getCurrentPlayerTurn();
                 const price = this.formatNumber(this.getAssetPrice(player, asset));
                 if (player.hasAsset(asset)) {
-                    this.confirmAction(`Sell ${name} for € ${price}?`, () => {
+                    confirmModal.confirm(`Sell ${name} for € ${price}?`, () => {
                         try {
                             player.sellAsset(asset);
                         }
@@ -377,9 +378,33 @@ class PlayScreenUI {
                 }
             });
         }
-        this.btnConfirmOk.addEventListener("click", () => {
-            this.confirmCallback?.();
-            this.confirmCallback = null;
+        this.btnUndo.addEventListener("click", () => {
+            this.clearError();
+            if (!persistence.undo())
+                return;
+            this._operation = Operation.None;
+            this.inputSalary.value = String(game.getCurrentPlayerTurn().salary);
+            this.inputMoney.value = "";
+            this.inputLifePoints.value = "";
+            this.inputAuction.value = "";
+            this.inputYearsLeft.value = "";
+            this.toastContainerPortrait.replaceChildren();
+            this.toastContainerLandscape.replaceChildren();
+            this.render();
+        });
+        this.btnMenu.addEventListener("click", () => {
+            // Defensive: render() already saves after every model change, but this covers the
+            // unlikely case of a click landing before that save has run.
+            persistence.save();
+            this._operation = Operation.None;
+            this.playScreen.classList.add("d-none");
+            this.startScreen.classList.remove("d-none");
+            // btn-continue only gets (re-)enabled here and at page load (see MainMenuUI): a
+            // brand new game's first save happens after this point, so it may still be disabled
+            // from before this session's very first save.
+            const btnContinue = document.getElementById("btn-continue") as HTMLButtonElement;
+            btnContinue.disabled = !persistence.hasSavedGame();
+            globalUI.render();
         });
     }
 
@@ -525,6 +550,7 @@ class PlayScreenUI {
         this.btnConfirmYearsLeft.classList.toggle("d-none", this._operation !== Operation.YearsLeft);
         this.btnYearsLeft.disabled = busy;
         this.btnEndTurn.disabled = !currentPlayer.hasPressedSpin || busy;
+        this.btnUndo.disabled = !persistence.canUndo() || busy;
 
         this.btnWeddingLabel.textContent = !currentPlayer.married ? "Wedding" : "Anniversary";
         this.setOwnedStyle(this.btnWedding, currentPlayer.married);
@@ -550,6 +576,8 @@ class PlayScreenUI {
             this.btnChance.disabled = true;
             this.btnYearsLeft.disabled = true;
         }
+
+        persistence.save();
     }
 
     /**
@@ -818,15 +846,6 @@ class PlayScreenUI {
 
     private clearError() {
         this.playError.classList.add("d-none");
-    }
-
-    /**
-     * Opens the confirm modal and runs onConfirm only if the user confirms.
-     */
-    private confirmAction(message: string, onConfirm: () => void) {
-        this.confirmMessage.textContent = message;
-        this.confirmCallback = onConfirm;
-        bootstrap.Modal.getOrCreateInstance(this.confirmModal).show();
     }
 }
 
