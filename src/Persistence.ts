@@ -47,6 +47,38 @@ class Persistence {
         }
     }
 
+    /**
+     * Raw access to the current save, for the JSON save editor (SaveEditorUI). Bypasses the
+     * model entirely: unlike load()/save(), the caller is responsible for whatever it writes.
+     */
+    public getRaw(): string | null {
+        try {
+            return localStorage.getItem(SAVE_KEY);
+        }
+        catch {
+            return null;
+        }
+    }
+
+    /**
+     * Overwrites the save with an arbitrary string, used by the save editor. Shifts the previous
+     * content into the undo slot like save() does, but skips model validation entirely: the
+     * editor only checks the text is valid JSON, not that it matches the Game/Player/Lottery
+     * shape (the existing load() path already reports and clears a broken save).
+     */
+    public setRaw(raw: string): void {
+        try {
+            const current = localStorage.getItem(SAVE_KEY);
+            if (current !== null)
+                localStorage.setItem(PREVIOUS_KEY, current);
+            localStorage.setItem(SAVE_KEY, raw);
+            this.lastSaved = raw;
+        }
+        catch (e) {
+            console.error("Failed to save the edited game (storage unavailable?)", e);
+        }
+    }
+
     public hasSavedGame(): boolean {
         try {
             return localStorage.getItem(SAVE_KEY) !== null;

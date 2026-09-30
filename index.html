@@ -24,7 +24,10 @@
                   <label class="input-group-text" for="input-years">Years</label>
                   <input id="input-years" class="form-control" type="number" min="1" max="99" placeholder="15">
                 </div>
-                <button id="btn-house-rules" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#house-rules-modal"><i class="bi bi-sliders me-2" aria-hidden="true"></i>House rules</button>
+                <div class="d-flex gap-2">
+                  <button id="btn-house-rules" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#house-rules-modal"><i class="bi bi-sliders me-2" aria-hidden="true"></i>House rules</button>
+                  <button id="btn-edit-save" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#save-editor-modal"><i class="bi bi-code-slash me-2" aria-hidden="true"></i>Edit save</button>
+                </div>
               </div>
 
               <div class="d-flex justify-content-between align-items-center mb-2">
@@ -214,6 +217,22 @@
           <h2 class="h5 mb-0">House rules</h2>
           <div id="house-rules-list" class="d-flex flex-column gap-3"></div>
           <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="save-editor-modal" class="modal fade" tabindex="-1" aria-label="Edit save">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-body d-flex flex-column gap-3">
+          <h2 class="h5 mb-0">Edit save</h2>
+          <textarea id="input-save-editor" class="form-control font-monospace" rows="16" aria-label="Save JSON"></textarea>
+          <div id="save-editor-error" class="alert alert-danger d-none mb-0" role="alert"></div>
+          <div class="d-flex flex-column flex-sm-row justify-content-center gap-2">
+            <button id="btn-save-editor-cancel" class="btn btn-outline-secondary flex-sm-fill" data-bs-dismiss="modal">Cancel</button>
+            <button id="btn-save-editor-save" class="btn btn-primary flex-sm-fill">Save</button>
+          </div>
         </div>
       </div>
     </div>
