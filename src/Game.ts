@@ -80,7 +80,7 @@ class Game {
     }
 
     public roll() {
-        this.rolledNumber = HouseRules.BalancedRolling ?
+        this.rolledNumber = HouseRules.BalancedRolling.get() ?
             this.getCurrentPlayerTurn().modifyRollByCar(Mth.triangleInt(1, 10)) :
             this.getCurrentPlayerTurn().modifyRollByCar(Mth.randomInt(1, 10));
     }

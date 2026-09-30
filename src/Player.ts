@@ -205,7 +205,7 @@ export class Player {
     public addKids(kids: number): StatStep[] {
         if (kids < 1 || kids > 2)
             throw new Error("kids must be between 1 or 2");
-        if (!HouseRules.UnlimitedKids && this._kids + kids > 9)
+        if (!HouseRules.UnlimitedKids.get() && this._kids + kids > 9)
             throw new Error("Can't add kids. Can't go over 9");
         this._kids += kids;
         const lifePointsGain = kids * 350;
@@ -219,10 +219,10 @@ export class Player {
      * checking whether the array is empty).
      */
     public tryForAKid(): StatStep[] {
-        if (!HouseRules.UnlimitedKids && this._kids >= 9)
+        if (!HouseRules.UnlimitedKids.get() && this._kids >= 9)
             throw new Error("Maximum number of kids reached");
         let newBorn = game.rollAndSetChance();
-        if (newBorn > 0 && !HouseRules.UnlimitedKids && this._kids + newBorn > 9) {
+        if (newBorn > 0 && !HouseRules.UnlimitedKids.get() && this._kids + newBorn > 9) {
             newBorn = 1;
             game.rolledChance = 1;
         }
@@ -302,7 +302,7 @@ export class Player {
      * Clamps rolls by car. With luxury car you can't roll 1 or 2 and with an economy car you can't roll a 1
      */
     public modifyRollByCar(rolledNumber: number): number {
-        if (HouseRules.BalancedRolling) {
+        if (HouseRules.BalancedRolling.get()) {
             if (this.hasAsset(Asset.LuxuryCar)) return rolledNumber + 2;
             if (this.hasAsset(Asset.EconomyCar)) return rolledNumber + 1;
         }
