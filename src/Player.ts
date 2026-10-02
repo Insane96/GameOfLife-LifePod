@@ -3,6 +3,7 @@ import {Asset} from "./Asset.js";
 import {OwnedAsset, OwnedAssetSave} from "./OwnedAsset.js";
 import {HouseRules} from "./HouseRules.js";
 import {game} from "./Game.js";
+import {GameError} from "./GameError.js";
 
 export interface PlayerSave {
     name: string;
@@ -22,8 +23,12 @@ export interface PlayerSave {
  * UI can animate/report them one at a time instead of a single lump sum. Plain data: Player stays
  * unaware of how (or whether) the UI displays it.
  */
+export type StatStepLabel = "" | "salary" | "rent" | "kids" | "debts" | "houses" | "cars" | "wedding"
+    | "anniversary" | "gifts" | "baby" | "twins" | "auction lost" | "auction won";
+
 export interface StatStep {
-    label: string;
+    // "" for an unlabelled lump sum. An identifier, not display text: the UI translates it.
+    label: StatStepLabel;
     amount: number;
 }
 
@@ -141,7 +146,7 @@ export class Player {
         if (Number.isNaN(money))
             throw new Error("money must be a number.");
         if (money <= 0 || money > 2000000)
-            throw new Error("money must be between 1 and 2.000.000 (inclusive)");
+            throw new GameError("error.moneyRange");
         this._money += money;
         this._money = Math.round(this._money);
 
@@ -151,7 +156,7 @@ export class Player {
         if (Number.isNaN(money))
             throw new Error("money must be a number.");
         if (money <= 0 || money > 2000000)
-            throw new Error("money must be between 1 and 2.000.000 (inclusive)");
+            throw new GameError("error.moneyRange");
         this._money -= money;
         this._money = Math.round(this._money);
     }
@@ -162,7 +167,7 @@ export class Player {
 
     public set salary(value: number) {
         if (value < 5000 || value > 2000000)
-            throw new Error("salary must be between 1 and 2.000.000 (inclusive)");
+            throw new GameError("error.salaryRange");
         this._salary = value;
     }
 
@@ -174,7 +179,7 @@ export class Player {
         if (Number.isNaN(lifePoints))
             throw new Error("lifePoints must be a number.");
         if (lifePoints <= 0 || lifePoints > 5000)
-            throw new Error("lifePoints must be between 1 and 5.000 (inclusive)");
+            throw new GameError("error.lifePointsRange");
         this._lifePoints += lifePoints;
         this._lifePoints = Math.round(this._lifePoints);
     }
@@ -183,7 +188,7 @@ export class Player {
         if (Number.isNaN(lifePoints))
             throw new Error("lifePoints must be a number.");
         if (lifePoints <= 0 || lifePoints > 5000)
-            throw new Error("lifePoints must be between 1 and 5.000 (inclusive)");
+            throw new GameError("error.lifePointsRange");
         this._lifePoints -= lifePoints;
         this._lifePoints = Math.round(this._lifePoints);
     }
@@ -219,7 +224,7 @@ export class Player {
         if (kids < 1 || kids > 2)
             throw new Error("kids must be between 1 or 2");
         if (!HouseRules.UnlimitedKids.get() && this._kids + kids > 9)
-            throw new Error("Can't add kids. Can't go over 9");
+            throw new GameError("error.maxKids");
         this._kids += kids;
         const lifePointsGain = kids * 350;
         this.addLifePoints(lifePointsGain);
@@ -233,7 +238,7 @@ export class Player {
      */
     public tryForAKid(): StatStep[] {
         if (!HouseRules.UnlimitedKids.get() && this._kids >= 9)
-            throw new Error("Maximum number of kids reached");
+            throw new GameError("error.maxKids");
         let newBorn = game.rollAndSetChance();
         if (newBorn > 0 && !HouseRules.UnlimitedKids.get() && this._kids + newBorn > 9) {
             newBorn = 1;
@@ -297,7 +302,7 @@ export class Player {
         if (Number.isNaN(amount))
             throw new Error("bid must be a number.");
         if (amount < 10000 || amount > 100000)
-            throw new Error("bid must be between 10.000 and 100.000 (inclusive)");
+            throw new GameError("error.bidRange");
         let result = game.rollAndSetChance();
         //TODO House rule: balanced bid: to win with 1 and 2
         if (result == 0) {

@@ -1,5 +1,5 @@
 import {game} from "../Game.js";
-import {Player, StatBreakdown, StatStep} from "../Player.js";
+import {Player, StatBreakdown, StatStep, StatStepLabel} from "../Player.js";
 import {Asset} from "../Asset.js";
 import {PlayerColor} from "../PlayerColor.js";
 import {Operation} from "./Operation.js";
@@ -9,11 +9,32 @@ import {confirmModal} from "./ConfirmModal.js";
 import {persistence} from "../Persistence.js";
 import {globalUI} from "./GlobalUI.js";
 import {confetti} from "./Confetti.js";
+import {i18n, t} from "../i18n/I18n.js";
+import {GameError} from "../GameError.js";
+import type {TranslationKey} from "../i18n/en.js";
 
 // Minimal typing for the Bootstrap bundle loaded with a <script> tag (no @types/bootstrap)
 declare const bootstrap: {
     Modal: { getOrCreateInstance(element: Element): { show(): void } };
     Toast: new (element: Element, options?: {delay?: number}) => { show(): void; hide(): void };
+};
+
+// Display text of each StatStep label, shown as the "(category)" suffix of the delta toasts.
+// Record: a new label added to StatStepLabel without a translation is a compile error.
+const STAT_STEP_LABEL_KEYS: Record<Exclude<StatStepLabel, "">, TranslationKey> = {
+    "salary": "step.salary",
+    "rent": "step.rent",
+    "kids": "step.kids",
+    "debts": "step.debts",
+    "houses": "step.houses",
+    "cars": "step.cars",
+    "wedding": "step.wedding",
+    "anniversary": "step.anniversary",
+    "gifts": "step.gifts",
+    "baby": "step.baby",
+    "twins": "step.twins",
+    "auction lost": "step.auctionLost",
+    "auction won": "step.auctionWon",
 };
 
 enum RollingAnimationType {
@@ -104,12 +125,12 @@ class PlayScreenUI {
 
     private btnHouses = document.getElementById("btn-houses") as HTMLButtonElement;
     private btnCars = document.getElementById("btn-cars") as HTMLButtonElement;
-    private assetButtons: {button: HTMLButtonElement, asset: Asset, name: string}[] = [
-        {button: document.getElementById("btn-house-small") as HTMLButtonElement, asset: Asset.SmallHouse, name: "Modest House"},
-        {button: document.getElementById("btn-house-medium") as HTMLButtonElement, asset: Asset.MediumHouse, name: "Mid-sized House"},
-        {button: document.getElementById("btn-house-large") as HTMLButtonElement, asset: Asset.BigHouse, name: "Mansion"},
-        {button: document.getElementById("btn-car-economy") as HTMLButtonElement, asset: Asset.EconomyCar, name: "Economy Car"},
-        {button: document.getElementById("btn-car-luxury") as HTMLButtonElement, asset: Asset.LuxuryCar, name: "Luxury Car"},
+    private assetButtons: {button: HTMLButtonElement, asset: Asset, nameKey: TranslationKey}[] = [
+        {button: document.getElementById("btn-house-small") as HTMLButtonElement, asset: Asset.SmallHouse, nameKey: "houses.small"},
+        {button: document.getElementById("btn-house-medium") as HTMLButtonElement, asset: Asset.MediumHouse, nameKey: "houses.medium"},
+        {button: document.getElementById("btn-house-large") as HTMLButtonElement, asset: Asset.BigHouse, nameKey: "houses.large"},
+        {button: document.getElementById("btn-car-economy") as HTMLButtonElement, asset: Asset.EconomyCar, nameKey: "cars.economy"},
+        {button: document.getElementById("btn-car-luxury") as HTMLButtonElement, asset: Asset.LuxuryCar, nameKey: "cars.luxury"},
     ];
 
     // Snapshot of the last money/Life Points shown for the current player, so render() can tell
@@ -218,7 +239,7 @@ class PlayScreenUI {
             this.clearError();
             let input = parseInt(this.inputSalary.value);
             if (Number.isNaN(input)) {
-                this.showError("Invalid input");
+                this.showError(t("error.invalidInput"));
                 return;
             }
             try {
@@ -242,7 +263,7 @@ class PlayScreenUI {
             this.clearError();
             let input = parseInt(this.inputAuction.value);
             if (Number.isNaN(input)) {
-                this.showError("Invalid input");
+                this.showError(t("error.invalidInput"));
                 return;
             }
             let steps: StatStep[];
@@ -257,7 +278,7 @@ class PlayScreenUI {
             this.inputAuction.value = "";
             this.pendingBreakdown = {money: steps, lifePoints: []};
             if (steps.length === 0)
-                this.pendingInfoMessage = "Your bid didn't yield anything";
+                this.pendingInfoMessage = t("info.bidNothing");
             this.playChanceAnimation();
         });
         this.inputAuction.addEventListener("keydown", (event) => {
@@ -298,7 +319,7 @@ class PlayScreenUI {
             this.clearError();
             let input = parseInt(this.inputYearsLeft.value);
             if (Number.isNaN(input)) {
-                this.showError("Invalid input");
+                this.showError(t("error.invalidInput"));
                 return;
             }
             try {
@@ -316,7 +337,7 @@ class PlayScreenUI {
                 this.btnConfirmYearsLeft.click();
         });
         this.btnWedding.addEventListener("click", () => {
-            confirmModal.confirm("Confirm Wedding/Anniversary?", () => {
+            confirmModal.confirm(t(!game.getCurrentPlayerTurn().married ? "confirm.wedding" : "confirm.anniversary"), () => {
                 // The march plays first and money/Life Points are added once it's over; meanwhile
                 // the other buttons are blocked (see "busy" in render())
                 this.weddingTunePlaying = true;
@@ -367,17 +388,17 @@ class PlayScreenUI {
             if (!failed) {
                 this.pendingBreakdown = {money: [], lifePoints: steps};
                 if (steps.length === 0)
-                    this.pendingInfoMessage = "Better luck next time";
+                    this.pendingInfoMessage = t("info.betterLuck");
                 this.playChanceAnimation();
             }
         });
-        for (const {button, asset, name} of this.assetButtons) {
+        for (const {button, asset, nameKey} of this.assetButtons) {
             button.addEventListener("click", () => {
                 this.clearError();
                 const player = game.getCurrentPlayerTurn();
                 const price = this.formatNumber(this.getAssetPrice(player, asset));
                 if (player.hasAsset(asset)) {
-                    confirmModal.confirm(`Sell ${name} for € ${price}?`, () => {
+                    confirmModal.confirm(t("confirm.sell", {name: t(nameKey), price}), () => {
                         try {
                             player.sellAsset(asset);
                         }
@@ -530,9 +551,9 @@ class PlayScreenUI {
         // Also true while the wedding march plays, before the gifts are added.
         const busy = this.rollingAnimationType !== null || this.weddingTunePlaying;
 
-        for (const {button, asset, name} of this.assetButtons) {
+        for (const {button, asset, nameKey} of this.assetButtons) {
             const ownedAsset = currentPlayer.getOwnedAsset(asset);
-            const label = ownedAsset !== undefined ? `Sell ${name}` : `Buy ${name}`;
+            const label = t(ownedAsset !== undefined ? "asset.sell" : "asset.buy", {name: t(nameKey)});
             const icon = document.createElement("i");
             icon.classList.add("bi", asset.isHouse() ? "bi-house-door-fill" : "bi-car-front-fill", "d-block", "mb-1");
             icon.ariaHidden = "true";
@@ -564,7 +585,7 @@ class PlayScreenUI {
         this.yearsLeftValue.textContent = String(game.years);
         // aria-label overrides the accessible name computed from content, so it needs the number
         // baked in too, not just the static hint (otherwise screen reader users would never hear it).
-        this.btnYearsLeft.ariaLabel = `${game.years} years left. Press and hold to change`;
+        this.btnYearsLeft.ariaLabel = t("play.yearsLeftLabel", {years: game.years});
         this.inputYearsLeft.classList.toggle("d-none", this._operation !== Operation.YearsLeft);
         this.btnConfirmYearsLeft.classList.toggle("d-none", this._operation !== Operation.YearsLeft);
         this.btnYearsLeft.disabled = busy;
@@ -572,12 +593,14 @@ class PlayScreenUI {
         this.btnUndo.disabled = !persistence.canUndo() || busy;
         this.btnMenu.disabled = busy;
 
-        this.btnWeddingLabel.textContent = !currentPlayer.married ? "Wedding" : "Anniversary";
+        this.btnWeddingLabel.textContent = t(!currentPlayer.married ? "play.wedding" : "play.anniversary");
         this.setOwnedStyle(this.btnWedding, currentPlayer.married);
         this.btnWedding.disabled = !currentPlayer.hasPressedSpin || busy;
 
         this.btnKids.disabled = !currentPlayer.married || !currentPlayer.hasPressedSpin || game.years <= 0 || busy;
-        this.btnKidsLabel.textContent = currentPlayer.married ? `${currentPlayer.kids} kids` : "Kids";
+        this.btnKidsLabel.textContent = !currentPlayer.married
+            ? t("kids.title")
+            : t(currentPlayer.kids === 1 ? "kids.countOne" : "kids.countOther", {count: currentPlayer.kids});
 
         this.btnChance.disabled = busy;
 
@@ -680,7 +703,7 @@ class PlayScreenUI {
     }
 
     private formatNumber(value: number): string {
-        return value.toLocaleString("en-US");
+        return value.toLocaleString(i18n.getLocale());
     }
 
     /**
@@ -806,7 +829,7 @@ class PlayScreenUI {
         const [step, ...rest] = steps;
         const to = from + step.amount;
         if (step.amount !== 0) {
-            const suffix = step.label !== "" ? ` (${step.label})` : "";
+            const suffix = step.label !== "" ? ` (${t(STAT_STEP_LABEL_KEYS[step.label])})` : "";
             this.showDeltaToast(`${step.amount > 0 ? "+" : "−"} ${symbol} ${this.formatNumber(Math.abs(step.amount))}${suffix}`, step.amount > 0);
         }
         const duration = step.label === "salary" ? 2000 : 1000;
@@ -886,7 +909,7 @@ class PlayScreenUI {
         if (this._operation === addOperation || this._operation === removeOperation) {
             let input = parseInt(inputElement.value);
             if (Number.isNaN(input)) {
-                this.showError("Invalid input");
+                this.showError(t("error.invalidInput"));
                 return;
             }
             try {
@@ -905,7 +928,10 @@ class PlayScreenUI {
     }
 
     public onError(exception: any) {
-        this.showError(`Error: ${exception}`);
+        if (exception instanceof GameError)
+            this.showError(t(exception.key, exception.params));
+        else
+            this.showError(t("error.unexpected", {message: exception instanceof Error ? exception.message : String(exception)}));
         console.log(exception);
     }
 

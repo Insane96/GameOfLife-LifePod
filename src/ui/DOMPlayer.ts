@@ -1,5 +1,6 @@
 import {PlayerColor} from "../PlayerColor.js";
 import {Player} from "../Player.js";
+import {t} from "../i18n/I18n.js";
 
 export class DOMPlayer {
     public id: number;
@@ -27,8 +28,6 @@ export class DOMPlayer {
         textBox.type = "text";
         // w-auto: form-control is width: 100% by default, which would fill the whole row
         textBox.classList.add("form-control", "w-auto");
-        textBox.placeholder = "Player " + (this.id + 1);
-        textBox.ariaLabel = "Player " + (this.id + 1) + " name";
         div.appendChild(textBox);
 
         let colorPicker = document.getElementById("color-picker-template")?.cloneNode(true) as HTMLElement;
@@ -58,12 +57,27 @@ export class DOMPlayer {
         removeIcon.classList.add("bi", "bi-x-lg");
         removeIcon.ariaHidden = "true";
         removePlayer.appendChild(removeIcon);
-        removePlayer.ariaLabel = "Remove player";
         // Placed before the name, so it stays in the first row when the colors wrap
         div.insertBefore(removePlayer, textBox);
 
         this._domElement = div;
+        this.translate();
         return div;
+    }
+
+    /**
+     * Texts with the player number in them, which a data-i18n attribute can't carry. Called on
+     * creation and on every language change (by MainMenuUI). An empty name falls back to the
+     * placeholder (see getName), so the default name follows the language too.
+     */
+    public translate() {
+        const textBox = this._domElement?.querySelector<HTMLInputElement>(`#txt-player-${this.id}-name`);
+        const removePlayer = this._domElement?.querySelector<HTMLButtonElement>(`#btn-remove-player-${this.id}`);
+        if (!textBox || !removePlayer)
+            return;
+        textBox.placeholder = t("menu.playerPlaceholder", {number: this.id + 1});
+        textBox.ariaLabel = t("menu.playerNameLabel", {number: this.id + 1});
+        removePlayer.ariaLabel = t("menu.removePlayer");
     }
 
     public selectColor(color: PlayerColor) {

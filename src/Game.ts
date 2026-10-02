@@ -2,6 +2,7 @@ import {Player, PlayerSave} from "./Player.js";
 import {Mth} from "./Mth.js";
 import {PlayerColor} from "./PlayerColor.js";
 import {HouseRules} from "./HouseRules.js";
+import {GameError} from "./GameError.js";
 
 export interface GameSave {
     conversionRatio: number;
@@ -52,7 +53,7 @@ class Game {
     public endTurn() {
         let currentPlayer: Player = this.getCurrentPlayerTurn();
         if (!currentPlayer.hasPressedSpin)
-            throw new Error("Can't end turn: player hasn't pressed Spin");
+            throw new GameError("error.spinNotPressed");
         currentPlayer.endTurn();
         this.rolledNumber = 0;
         this.rolledChance = -1;
@@ -82,7 +83,7 @@ class Game {
         if (Number.isNaN(years))
             throw new Error("years must be a number.");
         if (years < 1 || years > 99)
-            throw new Error("years must be between 1 and 99 (inclusive)");
+            throw new GameError("error.yearsRange");
         this.years = years;
     }
 

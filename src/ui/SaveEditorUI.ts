@@ -1,4 +1,5 @@
 import {persistence} from "../Persistence.js";
+import {t} from "../i18n/I18n.js";
 
 // Minimal typing for the Bootstrap bundle loaded with a <script> tag (no @types/bootstrap)
 declare const bootstrap: {
@@ -30,7 +31,7 @@ class SaveEditorUI {
                 parsed = JSON.parse(this.textarea.value);
             }
             catch (e) {
-                this.showError(`Invalid JSON: ${e instanceof Error ? e.message : String(e)}`);
+                this.showError(t("error.invalidJson", {message: e instanceof Error ? e.message : String(e)}));
                 return;
             }
             persistence.setRaw(JSON.stringify(parsed));

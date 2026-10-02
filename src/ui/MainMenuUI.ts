@@ -6,6 +6,7 @@ import {playScreenUI} from "./PlayScreenUI.js";
 import {globalUI} from "./GlobalUI.js";
 import {persistence} from "../Persistence.js";
 import {confirmModal} from "./ConfirmModal.js";
+import {i18n, t} from "../i18n/I18n.js";
 
 class MainMenuUI {
     private startScreen = document.getElementById("start-screen");
@@ -33,7 +34,7 @@ class MainMenuUI {
             this.clearError();
             let years = parseInt(!this.inputYears.value ? this.inputYears.placeholder : this.inputYears.value);
             if (years < 1 || years > 99) {
-                this.showError("Years must be between 1 and 99");
+                this.showError(t("error.yearsRange"));
                 return;
             }
             let playingPlayers: DOMPlayer[] = [];
@@ -41,22 +42,22 @@ class MainMenuUI {
                 if (domPlayer === null)
                     continue;
                 if (domPlayer.color === null) {
-                    this.showError("Some players haven't chosen a color");
+                    this.showError(t("error.missingColor"));
                     return;
                 }
                 //Spaces only names aren't valid
                 if (!domPlayer.getName().trim()) {
-                    this.showError("Detected empty or invalid names for some player(s)");
+                    this.showError(t("error.invalidNames"));
                     return;
                 }
                 if (playingPlayers.some(otherDomPlayer => otherDomPlayer.getName() === domPlayer.getName())) {
-                    this.showError("Detected equal names for some player(s)");
+                    this.showError(t("error.duplicateNames"));
                     return;
                 }
                 playingPlayers.push(domPlayer);
             }
             if (persistence.hasSavedGame()) {
-                confirmModal.confirm("Starting a new game will discard the saved game. Continue?", () => {
+                confirmModal.confirm(t("confirm.discardSave"), () => {
                     this.startNewGame(playingPlayers, years);
                 });
             }
@@ -66,7 +67,7 @@ class MainMenuUI {
         this.btnContinue.addEventListener("click", () => {
             this.clearError();
             if (!persistence.load()) {
-                this.showError("Could not load the saved game");
+                this.showError(t("error.loadFailed"));
                 this.btnContinue.disabled = true;
                 return;
             }
@@ -79,10 +80,15 @@ class MainMenuUI {
             if (this.playersCount < 6)
                 this.addPlayer();
             else
-                this.showError("Player limit reached");
+                this.showError(t("error.playerLimit"));
         });
         this.addPlayer();
         this.addPlayer();
+        // The error is cleared like on any other user action; an open one would stay in the old language
+        i18n.addLanguageChangeListener(() => {
+            this.clearError();
+            this.domPlayers.forEach(domPlayer => domPlayer?.translate());
+        });
     }
 
     private addPlayer() {
@@ -108,7 +114,7 @@ class MainMenuUI {
     private tryRemovePlayer(id: number): boolean {
         this.clearError();
         if (this.playersCount <= 2) {
-            this.showError("At least two players are required");
+            this.showError(t("error.minPlayers"));
             return false;
         }
         this.domPlayers[id] = null;

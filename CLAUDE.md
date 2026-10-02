@@ -247,6 +247,58 @@ and by `PlayScreenUI`/`LotteryUI`.
   `save()` overwrite it) matters: otherwise the abandoned game would end up
   as the fresh game's `lifepod.save.previous`, and Undo would resurrect it.
 
+## Translations (i18n)
+
+Italian and English, with a hand-made helper and TS dictionaries in
+`src/i18n/`, no external library.
+
+- `en.ts` is the reference dictionary (`TranslationKey = keyof typeof en`);
+  `it.ts` is a `Partial<Record<TranslationKey, string>>`: a key that doesn't
+  exist in English is a compile error, a missing Italian key falls back to the
+  English text. Keys are dotted and grouped by screen/area (`menu.*`,
+  `play.*`, `error.*`, `confirm.*`, `step.*`, ...).
+- `I18n.ts`: `i18n` singleton (same pattern as the other modules) plus the
+  `t(key, params?)` shorthand. Placeholders are written `{name}` in the text
+  and filled from `params`. `i18n.getLocale()` (`"it-IT"`/`"en-US"`) is what
+  every `toLocaleString` uses, never a hard-coded locale. Plurals: two keys
+  (`kids.countOne`/`kids.countOther`) chosen with `count === 1`, enough for
+  IT/EN.
+- The chosen language is a preference, not part of the game: saved under
+  `lifepod.lang`, separate from `lifepod.save` (Undo never touches it);
+  defaults to `navigator.language` (any `it-*` → Italian, else English).
+  `setLanguage()` also updates `<html lang>`.
+- The language selector (`input-language`) lives only in the main menu
+  (`start-screen-settings`, not moved by `GlobalUI` like volume/fullscreen),
+  wired by `GlobalUI`. On a change, `i18n` calls the listeners registered with
+  `addLanguageChangeListener`: `GlobalUI` (static texts, fullscreen label),
+  `MainMenuUI` (clears the error, re-translates the player rows via
+  `DOMPlayer.translate()`), `HouseRulesUI`. `PlayScreenUI`/`LotteryUI` don't
+  register: they aren't visible while the language can change and re-render
+  when shown (an out-of-turn `PlayScreenUI.render()` could also start the
+  value animations).
+- **Static texts** in `index.html` carry their key in `data-i18n`
+  (`textContent`), `data-i18n-aria-label` or `data-i18n-placeholder`, applied
+  by `GlobalUI.render()` over the whole document (cloned elements like the
+  color picker included). Text next to an icon is wrapped in a
+  `<span data-i18n>` so setting `textContent` doesn't wipe the icon. The
+  English text stays in the HTML as the fallback; an unknown key keeps it and
+  logs a console warning. Texts that a `render()` rewrites (e.g.
+  `btn-wedding-label`) or that need params (player number) get no `data-i18n`:
+  they are translated in TS.
+- **Models hold no display text**, only identifiers the UI translates (same
+  idea as "Models vs UI"):
+  - errors the player can run into are thrown as `GameError(key, params)`
+    (`src/GameError.ts`, only a type import of `TranslationKey`) and
+    translated by `PlayScreenUI.onError`; errors only a bug can trigger (the
+    UI already prevents them) stay plain English `Error`s, shown as
+    "Error: {message}";
+  - `StatStep.label` (`StatStepLabel`) and `HouseRule.id` (`HouseRuleId`) are
+    string unions mapped to keys by a `Record` in the UI
+    (`STAT_STEP_LABEL_KEYS` in `PlayScreenUI`, `HOUSE_RULE_KEYS` in
+    `HouseRulesUI`), so adding one without a translation is a compile error.
+- Player names are user text: never translated. A name left empty takes the
+  (translated) placeholder at game creation and is saved as-is.
+
 ## Deploy (GitHub Pages)
 
 - The site is static and is published to GitHub Pages by the workflow
@@ -310,7 +362,8 @@ palette) instead of using the defaults as-is.
 - **User text in the DOM**: always `textContent`, never `innerHTML` (names are
   typed by the user).
 - **Accessibility**: buttons with only a symbol (`+`, `−`, `✓`, `X`) and
-  inputs without a visible `<label>` have an `aria-label` in the UI language.
+  inputs without a visible `<label>` have an `aria-label`, translated like any
+  other text (`data-i18n-aria-label` or `t()`, see "Translations").
 - **Numeric inputs**: `type="text" inputmode="numeric" pattern="[0-9]*"`;
   `parseInt` + `Number.isNaN` before calling the model. The backend rejects
   `NaN` and out-of-range values anyway.
@@ -333,6 +386,8 @@ palette) instead of using the defaults as-is.
 - **Models vs UI**: the backend (`Game`, `Player`, ...) never knows the DOM.
 - **Language**: this file, code comments (also in SCSS, scripts and workflows)
   and identifiers are in English. Conversation with the user is in Italian.
+  Text shown to the player is never written inline: it goes through the
+  dictionaries (see "Translations (i18n)").
 - **Native ES modules, no bundler**: relative imports need the `.js` extension
   (`import {X} from "./X.js"`); `package.json` has `"type": "module"` and
   `tsconfig` uses `NodeNext`.
@@ -349,9 +404,6 @@ palette) instead of using the defaults as-is.
 
 ## Open / to be decided
 
-- Translations: postponed. When needed: IT + EN, a hand-made `t(key)` helper
-  with TS dictionaries (the English type constrained to the Italian keys), no
-  external library.
 - PWA (future): the Lifepod will be used on a phone at the game table. With a
   Service Worker and a `manifest.json` it could work offline and be installed
   as an app, and it would also give fullscreen on iPhone (via the manifest

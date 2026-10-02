@@ -1,18 +1,38 @@
-import {HouseRules} from "../HouseRules.js";
+import {HouseRuleId, HouseRules} from "../HouseRules.js";
 import {persistence} from "../Persistence.js";
+import {i18n, t} from "../i18n/I18n.js";
+import type {TranslationKey} from "../i18n/en.js";
+
+// Record: a new HouseRule added without a translation is a compile error.
+const HOUSE_RULE_KEYS: Record<HouseRuleId, {name: TranslationKey, description: TranslationKey}> = {
+    "unlimitedKids": {name: "houseRule.unlimitedKids", description: "houseRule.unlimitedKids.description"},
+    "balancedRolling": {name: "houseRule.balancedRolling", description: "houseRule.balancedRolling.description"},
+    "lotteryPotBonusYearsPlayedBased": {name: "houseRule.lotteryPotBonus", description: "houseRule.lotteryPotBonus.description"},
+};
 
 /**
  * Wraps #house-rules-modal (see CLAUDE.md "Modals"): the rows are built once here from
  * HouseRules.HouseRules (the static structure - the modal chrome - stays in index.html, only the
  * per-rule content is generated, see "HTML vs TS" in CLAUDE.md). Each checkbox is independent, so
- * a toggle updates only its own HouseRule instead of re-rendering the whole list.
+ * a toggle updates only its own HouseRule instead of re-rendering the whole list. Only the texts
+ * are rewritten on a language change (see translate()).
  */
 class HouseRulesUI {
     private houseRulesList = document.getElementById("house-rules-list") as HTMLDivElement;
+    private texts: {id: HouseRuleId, title: HTMLSpanElement, description: HTMLSpanElement}[] = [];
 
     constructor() {
         persistence.loadHouseRules();
         this.buildList();
+        this.translate();
+        i18n.addLanguageChangeListener(() => this.translate());
+    }
+
+    private translate() {
+        for (const {id, title, description} of this.texts) {
+            title.textContent = t(HOUSE_RULE_KEYS[id].name);
+            description.textContent = t(HOUSE_RULE_KEYS[id].description);
+        }
     }
 
     private buildList() {
@@ -36,11 +56,10 @@ class HouseRulesUI {
 
             const title = document.createElement("span");
             title.className = "fw-semibold d-block";
-            title.textContent = houseRule.name;
 
             const description = document.createElement("span");
             description.className = "text-body-secondary small";
-            description.textContent = houseRule.description;
+            this.texts.push({id: houseRule.id, title, description});
 
             label.appendChild(title);
             label.appendChild(description);

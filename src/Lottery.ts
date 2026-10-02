@@ -2,6 +2,7 @@ import {Player} from "./Player.js";
 import {Mth} from "./Mth.js";
 import {game} from "./Game.js";
 import {HouseRules} from "./HouseRules.js";
+import {GameError} from "./GameError.js";
 
 export interface LotterySave {
     pot: number;
@@ -37,12 +38,12 @@ class Lottery {
                 throw new Error(`Number ${number} is outside the 0~10 range`);
         }
         if (new Set(numbers).size !== numbers.length)
-            throw new Error("Can't assign the same number twice to the same player");
+            throw new GameError("error.lotteryDuplicateNumber");
         for (const [otherPlayer, otherNumbers] of this.numbersPerPlayer) {
             if (otherPlayer === player) continue;
             for (const number of numbers) {
                 if (otherNumbers.includes(number))
-                    throw new Error(`Number ${number} is already taken by another player`);
+                    throw new GameError("error.lotteryNumberTaken", {number});
             }
         }
         this.numbersPerPlayer.set(player, numbers);
@@ -50,7 +51,7 @@ class Lottery {
 
     public roll() {
         if (this.numbersPerPlayer.size === 0)
-            throw new Error("Can't start lottery numbers extraction: no players have chosen numbers");
+            throw new GameError("error.lotteryNoNumbers");
         this.lastRollAttempts = [];
         let won: boolean = false;
         let numbersToRoll: number[] = [];
@@ -123,7 +124,7 @@ class Lottery {
     public confirmPicks(player: Player) {
         const picked = this.numbersPerPlayer.get(player)?.length ?? 0;
         if (picked !== this.getRequiredCount(player))
-            throw new Error(`${player.name} must pick exactly ${this.getRequiredCount(player)} numbers before confirming`);
+            throw new GameError("error.lotteryPickCount", {name: player.name, count: this.getRequiredCount(player)});
         this.confirmedPlayers.add(player);
     }
 

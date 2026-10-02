@@ -4,6 +4,7 @@ import {ALL_PLAYER_COLORS, PlayerColor} from "../PlayerColor.js";
 import {RollingAnimation} from "./RollingAnimation.js";
 import {playScreenUI} from "./PlayScreenUI.js";
 import {persistence} from "../Persistence.js";
+import {i18n, t} from "../i18n/I18n.js";
 
 // Minimal typing for the Bootstrap bundle loaded with a <script> tag (no @types/bootstrap)
 declare const bootstrap: {
@@ -42,7 +43,7 @@ class LotteryUI {
     }
 
     public render() {
-        this.lotteryPot.textContent = `€ ${(lottery.pot * 1000).toLocaleString("en-US")}`;
+        this.lotteryPot.textContent = `€ ${(lottery.pot * 1000).toLocaleString(i18n.getLocale())}`;
 
         const activePlayer = lottery.getActivePlayer();
         const chosenNumbers = lottery.getChosenNumbers();
@@ -105,7 +106,7 @@ class LotteryUI {
             const btnConfirm = document.createElement("button");
             btnConfirm.type = "button";
             btnConfirm.textContent = "✓";
-            btnConfirm.ariaLabel = `Confirm ${player.name}'s numbers`;
+            btnConfirm.ariaLabel = t("lottery.confirmNumbers", {name: player.name});
             btnConfirm.classList.add("btn", "btn-sm", "btn-success");
             btnConfirm.disabled = playerNumbers.length !== required;
             btnConfirm.addEventListener("click", () => {
@@ -168,7 +169,7 @@ class LotteryUI {
     }
 
     private setRollPot(potValue: number) {
-        this.rollPot.textContent = `€ ${(potValue * 1000).toLocaleString("en-US")}`;
+        this.rollPot.textContent = `€ ${(potValue * 1000).toLocaleString(i18n.getLocale())}`;
     }
 
     private playRollAttempts(attempts: {number: number, won: boolean, pot: number}[]) {

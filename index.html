@@ -21,57 +21,61 @@
 
               <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
                 <div class="input-group w-auto">
-                  <label class="input-group-text" for="input-years">Years</label>
+                  <label class="input-group-text" for="input-years" data-i18n="menu.years">Years</label>
                   <input id="input-years" class="form-control" type="number" min="1" max="99" placeholder="15">
                 </div>
                 <div class="d-flex gap-2">
-                  <button id="btn-house-rules" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#house-rules-modal"><i class="bi bi-sliders me-2" aria-hidden="true"></i>House rules</button>
+                  <button id="btn-house-rules" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#house-rules-modal"><i class="bi bi-sliders me-2" aria-hidden="true"></i><span data-i18n="houseRules.title">House rules</span></button>
                 </div>
               </div>
 
               <div class="d-flex justify-content-between align-items-center mb-2">
-                <h2 class="h5 mb-0">Players</h2>
-                <button id="btn-add-player" class="btn btn-outline-primary"><i class="bi bi-person-plus-fill me-2" aria-hidden="true"></i>Add player</button>
+                <h2 class="h5 mb-0" data-i18n="menu.players">Players</h2>
+                <button id="btn-add-player" class="btn btn-outline-primary"><i class="bi bi-person-plus-fill me-2" aria-hidden="true"></i><span data-i18n="menu.addPlayer">Add player</span></button>
               </div>
               <div id="players-list" class="d-flex flex-column gap-2"></div>
               <div id="menu-error" class="alert alert-danger d-none mt-3 mb-0" role="alert"></div>
             </div>
             <div class="card-footer bg-transparent border-0 d-grid gap-2 d-sm-flex justify-content-sm-center p-3 pt-0">
-              <button id="btn-start" class="btn btn-primary btn-lg"><i class="bi bi-play-fill me-2" aria-hidden="true"></i>Spin</button>
-              <button id="btn-continue" class="btn btn-outline-primary btn-lg" disabled><i class="bi bi-arrow-clockwise me-2" aria-hidden="true"></i>Continue game</button>
+              <button id="btn-start" class="btn btn-primary btn-lg"><i class="bi bi-play-fill me-2" aria-hidden="true"></i><span data-i18n="spin">Spin</span></button>
+              <button id="btn-continue" class="btn btn-outline-primary btn-lg" disabled><i class="bi bi-arrow-clockwise me-2" aria-hidden="true"></i><span data-i18n="menu.continue">Continue game</span></button>
             </div>
           </div>
         </div>
       </div>
       <div id="start-screen-settings" class="position-fixed bottom-0 start-0 d-flex align-items-center gap-2 m-3">
-        <button id="btn-edit-save" class="btn btn-outline-primary btn-icon" data-bs-toggle="modal" data-bs-target="#save-editor-modal" aria-label="Edit save"><i class="bi bi-code-slash" aria-hidden="true"></i></button>
+        <button id="btn-edit-save" class="btn btn-outline-primary btn-icon" data-bs-toggle="modal" data-bs-target="#save-editor-modal" aria-label="Edit save" data-i18n-aria-label="saveEditor.title"><i class="bi bi-code-slash" aria-hidden="true"></i></button>
+        <select id="input-language" class="form-select w-auto" aria-label="Language" data-i18n-aria-label="language">
+          <option value="en">English</option>
+          <option value="it">Italiano</option>
+        </select>
       </div>
     </div>
     <div id="play-screen" class="d-none container-fluid min-vh-100 d-flex flex-column fs-5">
       <div class="row flex-grow-1 align-items-start">
         <div class="col-sm-3 d-flex flex-column align-items-center align-items-sm-stretch justify-content-start gap-2 p-2">
           <div class="d-flex align-items-center gap-2">
-            <button id="btn-salary" class="btn btn-outline-primary"><i class="bi bi-briefcase-fill me-2" aria-hidden="true"></i>Salary</button>
+            <button id="btn-salary" class="btn btn-outline-primary"><i class="bi bi-briefcase-fill me-2" aria-hidden="true"></i><span data-i18n="play.salary">Salary</span></button>
           </div>
           <div class="d-flex align-items-center gap-2">
-            <input id="input-salary" type="text" inputmode="numeric" pattern="[0-9]*" class="form-control w-auto d-none" aria-label="Salary input"><button id="btn-confirm-salary" aria-label="Confirm salary" class="btn btn-primary btn-icon d-none"><i class="bi bi-check-lg" aria-hidden="true"></i></button>
+            <input id="input-salary" type="text" inputmode="numeric" pattern="[0-9]*" class="form-control w-auto d-none" aria-label="Salary input" data-i18n-aria-label="play.salaryInput"><button id="btn-confirm-salary" aria-label="Confirm salary" data-i18n-aria-label="play.confirmSalary" class="btn btn-primary btn-icon d-none"><i class="bi bi-check-lg" aria-hidden="true"></i></button>
           </div>
           <div class="d-flex align-items-center gap-2">
-            <button id="btn-chance" class="btn btn-outline-primary"><i class="bi bi-question-circle-fill me-2" aria-hidden="true"></i>Chance</button>
+            <button id="btn-chance" class="btn btn-outline-primary"><i class="bi bi-question-circle-fill me-2" aria-hidden="true"></i><span data-i18n="play.chance">Chance</span></button>
           </div>
           <div class="d-flex align-items-center gap-2">
-            <button id="btn-auction" class="btn btn-outline-primary"><i class="bi bi-currency-exchange me-2" aria-hidden="true"></i>Business / Auction</button>
+            <button id="btn-auction" class="btn btn-outline-primary"><i class="bi bi-currency-exchange me-2" aria-hidden="true"></i><span data-i18n="play.auction">Business / Auction</span></button>
           </div>
           <div class="d-flex align-items-center gap-2">
-            <input id="input-auction" type="text" inputmode="numeric" pattern="[0-9]*" class="form-control w-auto d-none" aria-label="Auction input" placeholder="10000~100000"><button id="btn-confirm-auction" aria-label="Confirm auction" class="btn btn-primary btn-icon d-none"><i class="bi bi-check-lg" aria-hidden="true"></i></button>
+            <input id="input-auction" type="text" inputmode="numeric" pattern="[0-9]*" class="form-control w-auto d-none" aria-label="Auction input" data-i18n-aria-label="play.auctionInput" placeholder="10000~100000"><button id="btn-confirm-auction" aria-label="Confirm auction" data-i18n-aria-label="play.confirmAuction" class="btn btn-primary btn-icon d-none"><i class="bi bi-check-lg" aria-hidden="true"></i></button>
           </div>
           <div class="d-flex align-items-center gap-2">
-            <button id="btn-lottery" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#lottery-modal"><i class="bi bi-ticket-perforated-fill me-2" aria-hidden="true"></i>Lottery</button>
+            <button id="btn-lottery" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#lottery-modal"><i class="bi bi-ticket-perforated-fill me-2" aria-hidden="true"></i><span data-i18n="lottery.title">Lottery</span></button>
           </div>
         </div>
         <div class="col-sm-6 d-flex flex-column flex-sm-row flex-sm-wrap justify-content-center align-items-center align-items-sm-stretch gap-2 p-2">
-          <button id="btn-houses" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#houses-modal"><i class="bi bi-house-door-fill me-2" aria-hidden="true"></i>Houses</button>
-          <button id="btn-cars" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#cars-modal"><i class="bi bi-car-front-fill me-2" aria-hidden="true"></i>Cars</button>
+          <button id="btn-houses" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#houses-modal"><i class="bi bi-house-door-fill me-2" aria-hidden="true"></i><span data-i18n="houses.title">Houses</span></button>
+          <button id="btn-cars" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#cars-modal"><i class="bi bi-car-front-fill me-2" aria-hidden="true"></i><span data-i18n="cars.title">Cars</span></button>
         </div>
         <div class="col-sm-3 d-flex justify-content-end p-2">
           <!-- Board spaces -->
@@ -87,9 +91,9 @@
             <table class="table table-borderless">
               <thead id="player-scoreboard-header">
               <tr>
-                <th scope="col">Rank</th>
-                <th scope="col">Player</th>
-                <th scope="col">Life Points</th>
+                <th scope="col" data-i18n="scoreboard.rank">Rank</th>
+                <th scope="col" data-i18n="scoreboard.player">Player</th>
+                <th scope="col" data-i18n="play.lifePoints">Life Points</th>
               </tr>
               </thead>
               <tbody id="player-scoreboard">
@@ -100,43 +104,43 @@
           <div class="d-flex flex-column flex-sm-row flex-sm-wrap justify-content-center align-items-center align-items-sm-start gap-3 gap-sm-4">
             <div class="d-flex flex-column align-items-center">
               <div class="d-flex align-items-center gap-2">
-                <button id="btn-remove-money" class="btn btn-outline-secondary btn-icon" aria-label="Subtract money"><i class="bi bi-dash-lg" aria-hidden="true"></i></button>
+                <button id="btn-remove-money" class="btn btn-outline-secondary btn-icon" aria-label="Subtract money" data-i18n-aria-label="play.subtractMoney"><i class="bi bi-dash-lg" aria-hidden="true"></i></button>
                 <div class="d-flex flex-column align-items-center">
                   <div id="player-money" class="stat-value"></div>
-                  <div id="player-money-label" class="stat-label">Money</div>
+                  <div id="player-money-label" class="stat-label" data-i18n="play.money">Money</div>
                 </div>
-                <button id="btn-add-money" class="btn btn-outline-secondary btn-icon" aria-label="Add money"><i class="bi bi-plus-lg" aria-hidden="true"></i></button>
+                <button id="btn-add-money" class="btn btn-outline-secondary btn-icon" aria-label="Add money" data-i18n-aria-label="play.addMoney"><i class="bi bi-plus-lg" aria-hidden="true"></i></button>
               </div>
               <div class="d-flex align-items-center gap-2 mt-1">
-                <input id="input-money" type="text" inputmode="numeric" pattern="[0-9]*" class="form-control w-auto d-none" aria-label="Money input"><button id="btn-confirm-money" aria-label="Confirm operation" class="btn btn-primary btn-icon d-none"><i class="bi bi-check-lg" aria-hidden="true"></i></button>
+                <input id="input-money" type="text" inputmode="numeric" pattern="[0-9]*" class="form-control w-auto d-none" aria-label="Money input" data-i18n-aria-label="play.moneyInput"><button id="btn-confirm-money" aria-label="Confirm operation" data-i18n-aria-label="play.confirmOperation" class="btn btn-primary btn-icon d-none"><i class="bi bi-check-lg" aria-hidden="true"></i></button>
               </div>
             </div>
 
             <div class="d-flex flex-column align-items-center">
               <div class="d-flex align-items-center gap-2">
-                <button id="btn-remove-life-points" class="btn btn-outline-secondary btn-icon" aria-label="Subtract life points"><i class="bi bi-dash-lg" aria-hidden="true"></i></button>
+                <button id="btn-remove-life-points" class="btn btn-outline-secondary btn-icon" aria-label="Subtract life points" data-i18n-aria-label="play.subtractLifePoints"><i class="bi bi-dash-lg" aria-hidden="true"></i></button>
                 <div class="d-flex flex-column align-items-center">
                   <div id="player-life-points" class="stat-value"></div>
-                  <div id="player-life-points-label" class="stat-label">Life Points</div>
+                  <div id="player-life-points-label" class="stat-label" data-i18n="play.lifePoints">Life Points</div>
                 </div>
-                <button id="btn-add-life-points" class="btn btn-outline-secondary btn-icon" aria-label="Add life points"><i class="bi bi-plus-lg" aria-hidden="true"></i></button>
+                <button id="btn-add-life-points" class="btn btn-outline-secondary btn-icon" aria-label="Add life points" data-i18n-aria-label="play.addLifePoints"><i class="bi bi-plus-lg" aria-hidden="true"></i></button>
               </div>
               <div class="d-flex align-items-center gap-2 mt-1">
-                <input id="input-life-points" type="text" inputmode="numeric" pattern="[0-9]*" class="form-control w-auto d-none" aria-label="Life points input"><button id="btn-confirm-life-points" aria-label="Confirm operation" class="btn btn-primary btn-icon d-none"><i class="bi bi-check-lg" aria-hidden="true"></i></button>
+                <input id="input-life-points" type="text" inputmode="numeric" pattern="[0-9]*" class="form-control w-auto d-none" aria-label="Life points input" data-i18n-aria-label="play.lifePointsInput"><button id="btn-confirm-life-points" aria-label="Confirm operation" data-i18n-aria-label="play.confirmOperation" class="btn btn-primary btn-icon d-none"><i class="bi bi-check-lg" aria-hidden="true"></i></button>
               </div>
             </div>
           </div>
           <div class="d-flex align-items-center gap-3 mt-2">
-            <div id="player-roll" class="d-flex flex-column align-items-center p-2">Rolled<div id="player-roll-number" class="roll-number border rounded-circle d-flex align-items-center justify-content-center green p-2"></div></div>
-            <div id="chance-result" class="d-flex flex-column align-items-center p-2">Chance<div id="chance-result-number" class="roll-number border rounded-circle d-flex align-items-center justify-content-center green p-2"></div></div>
+            <div id="player-roll" class="d-flex flex-column align-items-center p-2"><span data-i18n="play.rolled">Rolled</span><div id="player-roll-number" class="roll-number border rounded-circle d-flex align-items-center justify-content-center green p-2"></div></div>
+            <div id="chance-result" class="d-flex flex-column align-items-center p-2"><span data-i18n="play.chance">Chance</span><div id="chance-result-number" class="roll-number border rounded-circle d-flex align-items-center justify-content-center green p-2"></div></div>
           </div>
-          <button id="btn-spin" class="btn btn-primary btn-spin rounded-circle mt-2">Spin</button>
+          <button id="btn-spin" class="btn btn-primary btn-spin rounded-circle mt-2" data-i18n="spin">Spin</button>
         </div>
       </div>
       <div class="row flex-grow-1 align-items-end">
         <div id="cell-settings" class="col-6 col-sm-3 d-flex flex-wrap align-items-center gap-2 justify-content-start p-2">
-          <button id="btn-menu" class="btn btn-outline-secondary btn-icon" aria-label="Back to menu"><i class="bi bi-house-door-fill" aria-hidden="true"></i></button>
-          <button id="btn-undo" class="btn btn-outline-secondary btn-icon" aria-label="Undo last action"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i></button>
+          <button id="btn-menu" class="btn btn-outline-secondary btn-icon" aria-label="Back to menu" data-i18n-aria-label="play.backToMenu"><i class="bi bi-house-door-fill" aria-hidden="true"></i></button>
+          <button id="btn-undo" class="btn btn-outline-secondary btn-icon" aria-label="Undo last action" data-i18n-aria-label="play.undo"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i></button>
         </div>
         <div id="cell-life-learn-spin" class="col-12 col-sm-6 order-first order-sm-0 d-flex justify-content-center gap-2 p-2">
           <button id="btn-wedding" class="btn btn-outline-primary"><i class="bi bi-heart-fill me-2" aria-hidden="true"></i><span id="btn-wedding-label">Wedding</span></button>
@@ -148,9 +152,9 @@
             <i class="bi bi-arrow-repeat" aria-hidden="true"></i><span id="years-left-value"></span>
           </button>
           <div class="d-flex align-items-center gap-2">
-            <input id="input-years-left" type="text" inputmode="numeric" pattern="[0-9]*" class="form-control w-auto d-none" aria-label="Years left input"><button id="btn-confirm-years-left" aria-label="Confirm years left" class="btn btn-primary btn-icon d-none"><i class="bi bi-check-lg" aria-hidden="true"></i></button>
+            <input id="input-years-left" type="text" inputmode="numeric" pattern="[0-9]*" class="form-control w-auto d-none" aria-label="Years left input" data-i18n-aria-label="play.yearsLeftInput"><button id="btn-confirm-years-left" aria-label="Confirm years left" data-i18n-aria-label="play.confirmYearsLeft" class="btn btn-primary btn-icon d-none"><i class="bi bi-check-lg" aria-hidden="true"></i></button>
           </div>
-          <button id="btn-end-turn" class="btn btn-primary"><i class="bi bi-arrow-right-circle-fill me-2" aria-hidden="true"></i>End turn</button>
+          <button id="btn-end-turn" class="btn btn-primary"><i class="bi bi-arrow-right-circle-fill me-2" aria-hidden="true"></i><span data-i18n="play.endTurn">End turn</span></button>
         </div>
       </div>
     </div>
@@ -158,108 +162,108 @@
   <button id="btn-fullscreen" class="btn btn-outline-secondary btn-icon m-1" aria-label="Enter fullscreen"><i id="icon-fullscreen" class="bi bi-arrows-fullscreen" aria-hidden="true"></i></button>
   <div id="volume-control" class="d-flex flex-shrink-0 align-items-center gap-2 m-1">
     <i class="bi bi-volume-up-fill" aria-hidden="true"></i>
-    <input id="input-volume" type="range" min="0" max="1" value="0.4" step="0.01" class="form-range" aria-label="Volume">
+    <input id="input-volume" type="range" min="0" max="1" value="0.4" step="0.01" class="form-range" aria-label="Volume" data-i18n-aria-label="volume">
   </div>
 
-  <div id="kids-modal" class="modal fade" tabindex="-1" aria-label="Kids">
+  <div id="kids-modal" class="modal fade" tabindex="-1" aria-label="Kids" data-i18n-aria-label="kids.title">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-body d-flex flex-column flex-sm-row justify-content-center gap-2">
-          <button id="btn-1-kid" class="btn btn-outline-primary flex-sm-fill" data-bs-dismiss="modal"><i class="bi bi-person-fill me-2" aria-hidden="true"></i>1 kid</button>
-          <button id="btn-2-kids" class="btn btn-outline-primary flex-sm-fill" data-bs-dismiss="modal"><i class="bi bi-people-fill me-2" aria-hidden="true"></i>2 kids</button>
-          <button id="btn-try-kid" class="btn btn-outline-primary flex-sm-fill" data-bs-dismiss="modal"><i class="bi bi-question-circle-fill me-2" aria-hidden="true"></i>Try for a kid</button>
+          <button id="btn-1-kid" class="btn btn-outline-primary flex-sm-fill" data-bs-dismiss="modal"><i class="bi bi-person-fill me-2" aria-hidden="true"></i><span data-i18n="kids.one">1 kid</span></button>
+          <button id="btn-2-kids" class="btn btn-outline-primary flex-sm-fill" data-bs-dismiss="modal"><i class="bi bi-people-fill me-2" aria-hidden="true"></i><span data-i18n="kids.two">2 kids</span></button>
+          <button id="btn-try-kid" class="btn btn-outline-primary flex-sm-fill" data-bs-dismiss="modal"><i class="bi bi-question-circle-fill me-2" aria-hidden="true"></i><span data-i18n="kids.try">Try for a kid</span></button>
         </div>
       </div>
     </div>
   </div>
 
-  <div id="lottery-modal" class="modal fade" tabindex="-1" aria-label="Lottery">
+  <div id="lottery-modal" class="modal fade" tabindex="-1" aria-label="Lottery" data-i18n-aria-label="lottery.title">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-body d-flex flex-column align-items-center gap-3">
           <div class="d-flex flex-column align-items-center">
             <div id="lottery-pot" class="stat-value"></div>
-            <div class="stat-label">Pot</div>
+            <div class="stat-label" data-i18n="lottery.pot">Pot</div>
           </div>
           <div id="lottery-player-list" class="d-flex flex-column align-items-stretch gap-2 w-100"></div>
-          <button id="btn-lottery-spin" class="btn btn-primary d-flex align-items-center"><i class="bi bi-ticket-perforated-fill me-2" aria-hidden="true"></i>Spin</button>
+          <button id="btn-lottery-spin" class="btn btn-primary d-flex align-items-center"><i class="bi bi-ticket-perforated-fill me-2" aria-hidden="true"></i><span data-i18n="spin">Spin</span></button>
         </div>
       </div>
     </div>
   </div>
 
-  <div id="houses-modal" class="modal fade" tabindex="-1" aria-label="Houses">
+  <div id="houses-modal" class="modal fade" tabindex="-1" aria-label="Houses" data-i18n-aria-label="houses.title">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-body d-flex flex-column flex-sm-row justify-content-center gap-2">
-          <button id="btn-house-small" class="btn btn-outline-primary flex-sm-fill" data-bs-dismiss="modal">Modest House</button>
-          <button id="btn-house-medium" class="btn btn-outline-primary flex-sm-fill" data-bs-dismiss="modal">Mid-sized House</button>
-          <button id="btn-house-large" class="btn btn-outline-primary flex-sm-fill" data-bs-dismiss="modal">Mansion</button>
+          <button id="btn-house-small" class="btn btn-outline-primary flex-sm-fill" data-bs-dismiss="modal" data-i18n="houses.small">Modest House</button>
+          <button id="btn-house-medium" class="btn btn-outline-primary flex-sm-fill" data-bs-dismiss="modal" data-i18n="houses.medium">Mid-sized House</button>
+          <button id="btn-house-large" class="btn btn-outline-primary flex-sm-fill" data-bs-dismiss="modal" data-i18n="houses.large">Mansion</button>
         </div>
       </div>
     </div>
   </div>
 
-  <div id="cars-modal" class="modal fade" tabindex="-1" aria-label="Cars">
+  <div id="cars-modal" class="modal fade" tabindex="-1" aria-label="Cars" data-i18n-aria-label="cars.title">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-body d-flex flex-column flex-sm-row justify-content-center gap-2">
-          <button id="btn-car-economy" class="btn btn-outline-primary flex-sm-fill" data-bs-dismiss="modal">Economy Car</button>
-          <button id="btn-car-luxury" class="btn btn-outline-primary flex-sm-fill" data-bs-dismiss="modal">Luxury Car</button>
+          <button id="btn-car-economy" class="btn btn-outline-primary flex-sm-fill" data-bs-dismiss="modal" data-i18n="cars.economy">Economy Car</button>
+          <button id="btn-car-luxury" class="btn btn-outline-primary flex-sm-fill" data-bs-dismiss="modal" data-i18n="cars.luxury">Luxury Car</button>
         </div>
       </div>
     </div>
   </div>
 
-  <div id="house-rules-modal" class="modal fade" tabindex="-1" aria-label="House rules">
+  <div id="house-rules-modal" class="modal fade" tabindex="-1" aria-label="House rules" data-i18n-aria-label="houseRules.title">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-body d-flex flex-column gap-3">
-          <h2 class="h5 mb-0">House rules</h2>
+          <h2 class="h5 mb-0" data-i18n="houseRules.title">House rules</h2>
           <div id="house-rules-list" class="d-flex flex-column gap-3"></div>
-          <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+          <button class="btn btn-outline-secondary" data-bs-dismiss="modal" data-i18n="close">Close</button>
         </div>
       </div>
     </div>
   </div>
 
-  <div id="save-editor-modal" class="modal fade" tabindex="-1" aria-label="Edit save">
+  <div id="save-editor-modal" class="modal fade" tabindex="-1" aria-label="Edit save" data-i18n-aria-label="saveEditor.title">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="modal-body d-flex flex-column gap-3">
-          <h2 class="h5 mb-0">Edit save</h2>
-          <textarea id="input-save-editor" class="form-control font-monospace" rows="16" aria-label="Save JSON"></textarea>
+          <h2 class="h5 mb-0" data-i18n="saveEditor.title">Edit save</h2>
+          <textarea id="input-save-editor" class="form-control font-monospace" rows="16" aria-label="Save JSON" data-i18n-aria-label="saveEditor.json"></textarea>
           <div id="save-editor-error" class="alert alert-danger d-none mb-0" role="alert"></div>
           <div class="d-flex flex-column flex-sm-row justify-content-center gap-2">
-            <button id="btn-save-editor-cancel" class="btn btn-outline-secondary flex-sm-fill" data-bs-dismiss="modal">Cancel</button>
-            <button id="btn-save-editor-save" class="btn btn-primary flex-sm-fill">Save</button>
+            <button id="btn-save-editor-cancel" class="btn btn-outline-secondary flex-sm-fill" data-bs-dismiss="modal" data-i18n="cancel">Cancel</button>
+            <button id="btn-save-editor-save" class="btn btn-primary flex-sm-fill" data-i18n="save">Save</button>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <div id="confirm-modal" class="modal fade" tabindex="-1" aria-label="Confirm">
+  <div id="confirm-modal" class="modal fade" tabindex="-1" aria-label="Confirm" data-i18n-aria-label="confirm">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-body">
           <p id="confirm-message" class="text-center"></p>
           <div class="d-flex flex-column flex-sm-row justify-content-center gap-2">
-            <button id="btn-confirm-cancel" class="btn btn-outline-secondary flex-sm-fill" data-bs-dismiss="modal">Cancel</button>
-            <button id="btn-confirm-ok" class="btn btn-primary flex-sm-fill" data-bs-dismiss="modal">Confirm</button>
+            <button id="btn-confirm-cancel" class="btn btn-outline-secondary flex-sm-fill" data-bs-dismiss="modal" data-i18n="cancel">Cancel</button>
+            <button id="btn-confirm-ok" class="btn btn-primary flex-sm-fill" data-bs-dismiss="modal" data-i18n="confirm">Confirm</button>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <div id="roll-modal" class="modal fade fs-2" tabindex="-1" aria-label="Roll">
+  <div id="roll-modal" class="modal fade fs-2" tabindex="-1" aria-label="Roll" data-i18n-aria-label="roll">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-body d-flex flex-column align-items-center gap-2">
           <div id="roll-pot-wrapper" class="d-flex flex-column align-items-center d-none">
             <div id="roll-pot" class="stat-value"></div>
-            <div class="stat-label">Pot</div>
+            <div class="stat-label" data-i18n="lottery.pot">Pot</div>
           </div>
           <div class="roll-circle mx-auto">
             <div id="roll-number-0" class="roll-number border rounded-circle d-flex align-items-center justify-content-center">0</div>
@@ -282,12 +286,12 @@
   </div>
 
   <div id="color-picker-template" class="d-none">
-    <input type="radio" name="player-color-x" class="red color-picker-circle" id="red-color-picker-x" data-color="Red" aria-label="Red">
-    <input type="radio" name="player-color-x" class="blue color-picker-circle" id="blue-color-picker-x" data-color="Blue" aria-label="Blue">
-    <input type="radio" name="player-color-x" class="green color-picker-circle" id="green-color-picker-x" data-color="Green" aria-label="Green">
-    <input type="radio" name="player-color-x" class="yellow color-picker-circle" id="yellow-color-picker-x" data-color="Yellow" aria-label="Yellow">
-    <input type="radio" name="player-color-x" class="magenta color-picker-circle" id="magenta-color-picker-x" data-color="Magenta" aria-label="Magenta">
-    <input type="radio" name="player-color-x" class="black color-picker-circle" id="black-color-picker-x" data-color="Black" aria-label="Black">
+    <input type="radio" name="player-color-x" class="red color-picker-circle" id="red-color-picker-x" data-color="Red" aria-label="Red" data-i18n-aria-label="color.red">
+    <input type="radio" name="player-color-x" class="blue color-picker-circle" id="blue-color-picker-x" data-color="Blue" aria-label="Blue" data-i18n-aria-label="color.blue">
+    <input type="radio" name="player-color-x" class="green color-picker-circle" id="green-color-picker-x" data-color="Green" aria-label="Green" data-i18n-aria-label="color.green">
+    <input type="radio" name="player-color-x" class="yellow color-picker-circle" id="yellow-color-picker-x" data-color="Yellow" aria-label="Yellow" data-i18n-aria-label="color.yellow">
+    <input type="radio" name="player-color-x" class="magenta color-picker-circle" id="magenta-color-picker-x" data-color="Magenta" aria-label="Magenta" data-i18n-aria-label="color.magenta">
+    <input type="radio" name="player-color-x" class="black color-picker-circle" id="black-color-picker-x" data-color="Black" aria-label="Black" data-i18n-aria-label="color.black">
   </div>
 
   <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
