@@ -86,6 +86,7 @@ export const en = {
     "error.lotteryPickCount": "{name} must pick exactly {count} numbers before confirming",
     "info.bidNothing": "Your bid didn't yield anything",
     "info.betterLuck": "Better luck next time",
+    "info.lotteryWinner": "{name} wins € {amount} in the lottery",
     "confirm.wedding": "Confirm Wedding?",
     "confirm.anniversary": "Confirm Anniversary?",
     "confirm.sell": "Sell {name} for € {price}?",
@@ -106,6 +107,7 @@ export const en = {
     "step.twins": "twins",
     "step.auctionLost": "auction lost",
     "step.auctionWon": "auction won",
+    "step.lottery": "lottery",
     "scoreboard.rank": "Rank",
     "scoreboard.player": "Player",
 

@@ -87,6 +87,7 @@ export const it: Partial<Record<TranslationKey, string>> = {
     "error.lotteryPickCount": "{name} deve scegliere esattamente {count} numeri prima di confermare",
     "info.bidNothing": "La tua offerta non ha fruttato nulla",
     "info.betterLuck": "Sarà per la prossima volta",
+    "info.lotteryWinner": "{name} vince € {amount} alla lotteria",
     "confirm.wedding": "Confermi il matrimonio?",
     "confirm.anniversary": "Confermi l'anniversario?",
     "confirm.sell": "Vendere {name} per € {price}?",
@@ -106,6 +107,7 @@ export const it: Partial<Record<TranslationKey, string>> = {
     "step.twins": "gemelli",
     "step.auctionLost": "perso",
     "step.auctionWon": "vinto",
+    "step.lottery": "lotteria",
     "scoreboard.rank": "Posizione",
     "scoreboard.player": "Giocatore",
 

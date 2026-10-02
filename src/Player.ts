@@ -16,6 +16,8 @@ export interface PlayerSave {
     qualification: number;
     hasPressedSpin: boolean;
     assets: OwnedAssetSave[];
+    // Optional: saves from before it existed load as 0
+    pendingLotteryWin?: number;
 }
 
 /**
@@ -24,7 +26,7 @@ export interface PlayerSave {
  * unaware of how (or whether) the UI displays it.
  */
 export type StatStepLabel = "" | "salary" | "rent" | "kids" | "debts" | "houses" | "cars" | "wedding"
-    | "anniversary" | "wedding gifts" | "anniversary gifts" | "baby" | "twins" | "auction lost" | "auction won";
+    | "anniversary" | "wedding gifts" | "anniversary gifts" | "baby" | "twins" | "auction lost" | "auction won" | "lottery";
 
 export interface StatStep {
     // "" for an unlabelled lump sum. An identifier, not display text: the UI translates it.
@@ -52,6 +54,9 @@ export class Player {
     private _qualification: Qualification = Qualification.None;
 
     private _hasPressedSpin: boolean = false;
+    // Lottery money won outside this player's turn, paid out when their turn comes (see
+    // collectPendingLotteryWin()) so they see it arrive, instead of it landing unseen
+    private _pendingLotteryWin: number = 0;
 
     constructor(
         public name: string,
@@ -140,6 +145,26 @@ export class Player {
 
     public get money(): number {
         return this._money;
+    }
+
+    public addPendingLotteryWin(amount: number): void {
+        this._pendingLotteryWin += amount;
+    }
+
+    /**
+     * Pays out the lottery money won outside this player's turn (see addPendingLotteryWin()).
+     * Added straight to _money rather than through addMoney(): two wins piling up before the
+     * player's turn could exceed addMoney()'s range, and this runs inside endTurn()/endGame(),
+     * which must not fail halfway.
+     * @returns the "lottery" breakdown to animate, or null when nothing was pending
+     */
+    public collectPendingLotteryWin(): StatBreakdown | null {
+        if (this._pendingLotteryWin === 0)
+            return null;
+        const amount = this._pendingLotteryWin;
+        this._pendingLotteryWin = 0;
+        this._money += amount;
+        return {money: [{label: "lottery", amount}], lifePoints: []};
     }
 
     public addMoney(money: number): void {
@@ -350,6 +375,7 @@ export class Player {
             qualification: this._qualification,
             hasPressedSpin: this._hasPressedSpin,
             assets: this._assets.map(ownedAsset => ownedAsset.toJSON()),
+            pendingLotteryWin: this._pendingLotteryWin,
         };
     }
 
@@ -363,6 +389,7 @@ export class Player {
         player._qualification = data.qualification;
         player._hasPressedSpin = data.hasPressedSpin;
         player._assets = data.assets.map(assetData => OwnedAsset.fromJSON(assetData));
+        player._pendingLotteryWin = data.pendingLotteryWin ?? 0;
         return player;
     }
 }

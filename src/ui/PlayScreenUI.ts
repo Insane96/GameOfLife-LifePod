@@ -36,6 +36,7 @@ const STAT_STEP_LABEL_KEYS: Record<Exclude<StatStepLabel, "">, TranslationKey> =
     "twins": "step.twins",
     "auction lost": "step.auctionLost",
     "auction won": "step.auctionWon",
+    "lottery": "step.lottery",
 };
 
 enum RollingAnimationType {
@@ -185,8 +186,9 @@ class PlayScreenUI {
         });
         this.btnEndTurn.addEventListener("click", () => {
             this.clearError();
+            let breakdown: StatBreakdown | null = null;
             try {
-                game.endTurn();
+                breakdown = game.endTurn();
             }
             catch (e) {
                 this.onError(e);
@@ -199,7 +201,7 @@ class PlayScreenUI {
             this.inputYearsLeft.value = "";
             this.toastContainerPortrait.replaceChildren();
             this.toastContainerLandscape.replaceChildren();
-            this.render();
+            this.render(undefined, breakdown ?? undefined);
         });
         this.btnAddMoney.addEventListener("click", () => {
             this.toggleOperation(Operation.AddMoney, this.inputMoney);
@@ -467,8 +469,8 @@ class PlayScreenUI {
      * away if there was nothing to animate). Callers that need to open a modal right after a
      * stat change (Spin, Chance, Try for a kid, Auction) pass it instead of opening the modal
      * themselves, so the animation is never covered by a modal that's already sliding in.
-     * @param breakdown a per-category breakdown (Spin, Wedding, Kids, Auction; see StatBreakdown),
-     * animated step by step with its own labelled toast instead of the usual single unlabelled
+     * @param breakdown a per-category breakdown (Spin, Wedding, Kids, Auction, Lottery, and a
+     * lottery win paid out at the start of the winner's turn; see StatBreakdown), animated step by step with its own labelled toast instead of the usual single unlabelled
      * lump sum (see animateStatSteps). Actions without one (manual +/-, assets, salary) still just
      * move the total in one go, like before.
      */
@@ -509,10 +511,14 @@ class PlayScreenUI {
             this.playScreen.dataset.playerColor = PlayerColor[currentPlayer.color];
 
             const samePlayer = this.statsPlayer === currentPlayer;
-            const fromMoney = samePlayer ? this.lastMoney : currentPlayer.money;
-            const fromLifePoints = samePlayer ? this.lastLifePoints : currentPlayer.lifePoints;
             const toMoney = currentPlayer.money;
             const toLifePoints = currentPlayer.lifePoints;
+            // A turn change normally isn't a "change" (the values just show up), except when it
+            // comes with a breakdown (lottery money won outside the turn, paid out by
+            // game.endTurn()): then the count starts from the values before that payout.
+            const sum = (steps: StatStep[]) => steps.reduce((total, s) => total + s.amount, 0);
+            const fromMoney = samePlayer ? this.lastMoney : toMoney - (breakdown ? sum(breakdown.money) : 0);
+            const fromLifePoints = samePlayer ? this.lastLifePoints : toLifePoints - (breakdown ? sum(breakdown.lifePoints) : 0);
 
             this.statsPlayer = currentPlayer;
             this.lastMoney = toMoney;
@@ -520,13 +526,14 @@ class PlayScreenUI {
 
             // Spin reports its change broken down by category (salary, houses, cars; then
             // houses/cars/wedding/kids for Life Points — see Player.onSpin()); Wedding/Kids/
-            // Auction report a single labelled step (see getMarried/addKids/bid). Every other
+            // Auction/Lottery report a single labelled step (see getMarried/addKids/bid/
+            // collectPendingLotteryWin). Every other
             // action still just moves the total in one unlabelled lump, like before (label ""
             // so animateStatSteps shows no "(category)" suffix on its toast).
-            const moneySteps: StatStep[] = samePlayer && breakdown
+            const moneySteps: StatStep[] = breakdown
                 ? breakdown.money
                 : [{label: "", amount: toMoney - fromMoney}];
-            const lifePointsSteps: StatStep[] = samePlayer && breakdown
+            const lifePointsSteps: StatStep[] = breakdown
                 ? breakdown.lifePoints
                 : [{label: "", amount: toLifePoints - fromLifePoints}];
 
@@ -885,9 +892,10 @@ class PlayScreenUI {
 
     /**
      * Toast for an outcome with no money/Life Points change to animate (e.g. Try for a kid
-     * rolling no birth, an Auction bid that didn't yield anything), so it's not left silent.
+     * rolling no birth, an Auction bid that didn't yield anything, another player winning the
+     * lottery), so it's not left silent.
      */
-    private showInfoToast(message: string) {
+    public showInfoToast(message: string) {
         this.showToast(message, "toast-neutral");
     }
 

@@ -1,3 +1,4 @@
+import {game} from "../Game.js";
 import {lottery} from "../Lottery.js";
 import {Player} from "../Player.js";
 import {ALL_PLAYER_COLORS, PlayerColor} from "../PlayerColor.js";
@@ -23,6 +24,9 @@ class LotteryUI {
     private rollingAnimation: RollingAnimation | null = null;
     // True for the whole failed-attempts + winner sequence, including the pauses between spins
     private rollSequenceActive: boolean = false;
+    // Outcome of the last lottery.roll(), shown (toast/animated payout) once the draw sequence
+    // reaches the winner, not as soon as it's known
+    private rollResult: {winner: Player, amount: number} | null = null;
 
     constructor() {
         this.lotteryModal.addEventListener("show.bs.modal", () => {
@@ -145,7 +149,7 @@ class LotteryUI {
         }
         const startingPot = lottery.pot;
         try {
-            lottery.roll();
+            this.rollResult = lottery.roll();
         }
         catch (e) {
             playScreenUI.onError(e);
@@ -190,7 +194,17 @@ class LotteryUI {
         this.setRollPot(attempt.pot);
         if (attempt.won) {
             this.rollSequenceActive = false;
-            playScreenUI.render();
+            const result = this.rollResult;
+            this.rollResult = null;
+            // The play screen only shows the current player: their payout is animated with a
+            // "(lottery)" toast, anyone else's win gets an info toast instead of going unnoticed
+            if (result !== null && result.winner === game.getCurrentPlayerTurn())
+                playScreenUI.render(undefined, {money: [{label: "lottery", amount: result.amount}], lifePoints: []});
+            else {
+                if (result !== null)
+                    playScreenUI.showInfoToast(t("info.lotteryWinner", {name: result.winner.name, amount: result.amount.toLocaleString(i18n.getLocale(), {useGrouping: true})}));
+                playScreenUI.render();
+            }
         }
         else {
             document.getElementById(`roll-number-${attempt.number}`)?.classList.add("roll-number-missed");

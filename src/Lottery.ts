@@ -49,11 +49,18 @@ class Lottery {
         this.numbersPerPlayer.set(player, numbers);
     }
 
-    public roll() {
+    /**
+     * Draws numbers until one belongs to a player (or every number has been tried), pays the pot
+     * out to that player and resets the lottery. A winner other than the current player is paid
+     * when their turn comes instead (see Player.collectPendingLotteryWin()).
+     * @returns the winner and the amount paid out, or null when nobody won
+     */
+    public roll(): {winner: Player, amount: number} | null {
         if (this.numbersPerPlayer.size === 0)
             throw new GameError("error.lotteryNoNumbers");
         this.lastRollAttempts = [];
         let won: boolean = false;
+        let result: {winner: Player, amount: number} | null = null;
         let numbersToRoll: number[] = [];
         for (let i = 0; i < 11; i++) {
             numbersToRoll.push(i);
@@ -65,7 +72,11 @@ class Lottery {
                 if (numbers.includes(rolledNumber)) {
                     won = true;
                     this.winningNumber = rolledNumber;
-                    player.addMoney(this.pot * 1000);
+                    result = {winner: player, amount: this.pot * 1000};
+                    if (player === game.getCurrentPlayerTurn())
+                        player.addMoney(result.amount);
+                    else
+                        player.addPendingLotteryWin(result.amount);
                     break;
                 }
             }
@@ -79,6 +90,7 @@ class Lottery {
             this.lastRollAttempts.push({number: rolledNumber, won, pot: this.pot});
         } while (!won && numbersToRoll.length > 0);
         this.reset();
+        return result;
     }
 
     public reset() {

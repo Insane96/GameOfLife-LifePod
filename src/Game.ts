@@ -1,4 +1,4 @@
-import {Player, PlayerSave} from "./Player.js";
+import {Player, PlayerSave, StatBreakdown} from "./Player.js";
 import {Mth} from "./Mth.js";
 import {PlayerColor} from "./PlayerColor.js";
 import {HouseRules} from "./HouseRules.js";
@@ -49,8 +49,10 @@ class Game {
 
     /**
      * Ends the current player's turn if has pressed spin
+     * @returns the lottery money the next player won outside their turn, now paid out (see
+     * Player.collectPendingLotteryWin()), or null when there's none or the game just ended
      */
-    public endTurn() {
+    public endTurn(): StatBreakdown | null {
         let currentPlayer: Player = this.getCurrentPlayerTurn();
         if (!currentPlayer.hasPressedSpin)
             throw new GameError("error.spinNotPressed");
@@ -62,13 +64,18 @@ class Game {
             this.currentPlayerTurn = 0;
             this.years--;
             this.playedRounds++;
-            if (this.years <= 0)
+            if (this.years <= 0) {
                 this.endGame();
+                return null;
+            }
         }
+        return this.getCurrentPlayerTurn().collectPendingLotteryWin();
     }
 
     public endGame() {
         for (const player of this.players) {
+            // A win from the last round that its winner never got a turn to collect still counts
+            player.collectPendingLotteryWin();
             player.sellAllAssets();
             player.convertMoneyToLifePoints();
         }
