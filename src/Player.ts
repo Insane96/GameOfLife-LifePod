@@ -24,7 +24,7 @@ export interface PlayerSave {
  * unaware of how (or whether) the UI displays it.
  */
 export type StatStepLabel = "" | "salary" | "rent" | "kids" | "debts" | "houses" | "cars" | "wedding"
-    | "anniversary" | "gifts" | "baby" | "twins" | "auction lost" | "auction won";
+    | "anniversary" | "wedding gifts" | "anniversary gifts" | "baby" | "twins" | "auction lost" | "auction won";
 
 export interface StatStep {
     // "" for an unlabelled lump sum. An identifier, not display text: the UI translates it.
@@ -198,7 +198,8 @@ export class Player {
     }
 
     public getMarried(): StatBreakdown {
-        const label = !this._married ? "wedding" : "anniversary";
+        const anniversary = this._married;
+        const label = !anniversary ? "wedding" : "anniversary";
         this.addLifePoints(3000);
         let moneyGift: number = !this._married ? 1000 : 500;
         this._married = true;
@@ -211,7 +212,7 @@ export class Player {
             totalGift += moneyGift;
         }
         return {
-            money: [{label: "gifts", amount: totalGift}],
+            money: [{label: !anniversary ? "wedding gifts" : "anniversary gifts", amount: totalGift}],
             lifePoints: [{label, amount: 3000}],
         };
     }
