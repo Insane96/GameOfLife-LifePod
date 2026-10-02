@@ -526,14 +526,14 @@ class PlayScreenUI {
             // Like the physical Lifepod: money counts up first (through each of its categories),
             // then Life Points, then (via onStatsSettled) the roll/chance modal opens.
             // animateStatSteps/animateStatChange no-op straight through a step whose amount is 0
-            // (e.g. no houses owned), so nothing pauses on an empty category. The end-of-count
-            // sound is suppressed only when a stat has more than one step to chain through (Spin):
-            // otherwise it would fire once per category, right into the next one's tick sound (see
-            // animateStatSteps). A single-step breakdown (Wedding, Kids, Auction) or a plain lump
-            // sum always gets it, same as before this existed.
+            // (e.g. no houses owned), so nothing pauses on an empty category. Only Spin has more
+            // than one step to chain through (its zero-amount categories included), which is what
+            // the "spin" argument of animateStatSteps keys off: a fixed duration for "salary" and
+            // no end-of-count sound. Every other step gets a duration scaled on its amount,
+            // between the thresholds passed here (see getStepDuration).
             const moneyAnimated = moneySteps.some(s => s.amount !== 0);
-            this.animateStatSteps(this.playerMoney, fromMoney, moneySteps, "€", (v) => `€ ${this.formatNumber(v)}`, moneySteps.length <= 1, () => {
-                const startLifePoints = () => this.animateStatSteps(this.playerLifePoints, fromLifePoints, lifePointsSteps, "♥", (v) => `♥ ${this.formatNumber(v)}`, lifePointsSteps.length <= 1, onStatsSettled);
+            this.animateStatSteps(this.playerMoney, fromMoney, moneySteps, "€", (v) => `€ ${this.formatNumber(v)}`, moneySteps.length > 1, [10000, 1000000], () => {
+                const startLifePoints = () => this.animateStatSteps(this.playerLifePoints, fromLifePoints, lifePointsSteps, "♥", (v) => `♥ ${this.formatNumber(v)}`, lifePointsSteps.length > 1, [200, 2000], onStatsSettled);
                 // Half a second of breathing room between the money and Life Points animations,
                 // but only when money actually animated something (see animateStatSteps for the
                 // same rule between categories within one stat).
@@ -816,18 +816,18 @@ class PlayScreenUI {
     /**
      * Chains animateStatChange through a list of category steps (see StatStep), each starting
      * where the previous one left off, with its own labelled delta toast (e.g. "+ € 5,000
-     * (salary)") and its own duration: 2000ms for "salary" (kept at the original pace since it's
-     * a single lump), 1000ms for every other category so a fully loaded Spin (salary, houses,
-     * cars, then houses/cars/wedding/kids Life Points) doesn't drag on. A no-op step (amount 0,
-     * e.g. no houses owned) never gets a pause before or after it: nothing visibly happened, so
-     * there's nothing to breathe between.
-     * @param playEndSound whether animateStatChange's end-of-count sound plays after each step.
-     * False for a multi-step breakdown (Spin): with several categories chained back to back it
-     * would fire repeatedly, right into the next category's tick sound. True for a single-step
-     * breakdown (Wedding, Kids, Auction) or a plain lump sum (manual +/-, assets, salary), which
-     * only ever animate one step anyway (see render()).
+     * (salary)") and its own duration (see getStepDuration()). A no-op step (amount 0, e.g. no
+     * houses owned) never gets a pause before or after it: nothing visibly happened, so there's
+     * nothing to breathe between.
+     * @param spin true for Spin's multi-step breakdown: a fixed duration for "salary" (see
+     * getStepDuration()), and no end-of-count sound from animateStatChange, since with several
+     * categories chained back to back it would fire repeatedly, right into the next category's
+     * tick sound. False for a single-step breakdown (Wedding, Kids, Auction) or a plain lump sum
+     * (manual +/-, assets, salary, lottery), which only ever animate one step anyway (see
+     * render()).
+     * @param durationRange the [low, high] amount thresholds for getStepDuration().
      */
-    private animateStatSteps(element: HTMLElement, from: number, steps: StatStep[], symbol: string, formatFn: (value: number) => string, playEndSound: boolean, onComplete?: () => void) {
+    private animateStatSteps(element: HTMLElement, from: number, steps: StatStep[], symbol: string, formatFn: (value: number) => string, spin: boolean, durationRange: [number, number], onComplete?: () => void) {
         if (steps.length === 0) {
             onComplete?.();
             return;
@@ -838,14 +838,35 @@ class PlayScreenUI {
             const suffix = step.label !== "" ? ` (${t(STAT_STEP_LABEL_KEYS[step.label])})` : "";
             this.showDeltaToast(`${step.amount > 0 ? "+" : "−"} ${symbol} ${this.formatNumber(Math.abs(step.amount))}${suffix}`, step.amount > 0);
         }
-        const duration = step.label === "salary" ? 2000 : 1000;
-        this.animateStatChange(element, from, to, formatFn, duration, playEndSound, () => {
-            const next = () => this.animateStatSteps(element, to, rest, symbol, formatFn, playEndSound, onComplete);
+        const duration = this.getStepDuration(step, spin, durationRange);
+        this.animateStatChange(element, from, to, formatFn, duration, !spin, () => {
+            const next = () => this.animateStatSteps(element, to, rest, symbol, formatFn, spin, durationRange, onComplete);
             if (step.amount !== 0 && rest.length > 0)
                 setTimeout(next, 500);
             else
                 next();
         });
+    }
+
+    /**
+     * Count-up duration of one step. Spin's "salary" step keeps a fixed 2000ms (a single lump,
+     * the original pace). Every other step, Spin's other categories included, scales with the
+     * amount: 750ms at or below durationRange's low threshold, 2000ms at or above the high one,
+     * logarithmic in between, so the duration grows with the number of digits (money thresholds
+     * are two orders of magnitude apart: a linear scale would squash every common amount, e.g.
+     * € 50,000-200,000, near the minimum).
+     */
+    private getStepDuration(step: StatStep, spin: boolean, [low, high]: [number, number]): number {
+        if (spin && step.label === "salary")
+            return 2000;
+        const minDuration = 750, maxDuration = 2000;
+        const amount = Math.abs(step.amount);
+        if (amount <= low)
+            return minDuration;
+        if (amount >= high)
+            return maxDuration;
+        const t = Math.log(amount / low) / Math.log(high / low);
+        return minDuration + (maxDuration - minDuration) * t;
     }
 
     /**
