@@ -103,8 +103,8 @@ export const it: Partial<Record<TranslationKey, string>> = {
     "step.gifts": "regali matrimonio",
     "step.baby": "bebè",
     "step.twins": "gemelli",
-    "step.auctionLost": "asta persa",
-    "step.auctionWon": "asta vinta",
+    "step.auctionLost": "perso",
+    "step.auctionWon": "vinto",
     "scoreboard.rank": "Posizione",
     "scoreboard.player": "Giocatore",
 
