@@ -426,11 +426,12 @@ palette) instead of using the defaults as-is.
   3. **Done.** Player identity: the screen is tinted with the color of the
      player whose turn it is (player name, sticky row border, Spin ring). See
      "Player identity tint" under "Game screen" → "Responsive behavior".
-  4. **Partly done.** Life and feedback: the delta toasts and the count-up
-     animation are implemented for money and Life Points (see "Value change
-     feedback"). Still open: a short number animation for the roll/chance
-     result (`#player-roll`/`#chance-result` still just swap text), and
-     confetti at the end of the game.
+  4. **Done.** Life and feedback: the delta toasts and the count-up
+     animation for money and Life Points (see "Value change feedback"); the
+     roll/chance result is drawn in `roll-modal` (`RollingAnimation`); at the
+     end of the game the scoreboard is revealed row by row
+     (`revealScoreboard`), and the end of the winner's count-up fires a
+     confetti burst and the win tune.
   5. **Done.** Remove "business" signals: the game screen's buttons (and the
      `kids-modal`/`houses-modal`/`cars-modal`/`confirm-modal`/`lottery-modal`
      buttons) went from unstyled plain `<button>`s to `btn`/`btn-outline-*`;

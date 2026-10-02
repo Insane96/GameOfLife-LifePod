@@ -731,7 +731,8 @@ class PlayScreenUI {
     /**
      * Reveals the final ranking one row at a time, from last place up to the winner, instead of
      * the table appearing all at once: each row's Life Points count up from 0 over 4000ms
-     * (reusing animateStatChange), and the winner's reveal triggers a confetti burst. New rows
+     * (reusing animateStatChange), and the end of the winner's count-up triggers a confetti burst
+     * and the win tune. New rows
      * are prepended, so the winner ends up on top once fully revealed, matching getRanking()'s
      * order. revealId is the token this call was started with (see scoreboardRevealId): every
      * step checks it's still current before touching the DOM, so a reveal that's fallen behind
@@ -764,14 +765,14 @@ class PlayScreenUI {
             row.getBoundingClientRect();
             row.classList.remove("scoreboard-row-enter");
 
-            if (isWinner) {
-                confetti.burst();
-                sounds.play("winTune");
-            }
-
-            this.animateStatChange(lifePointsCell, 0, player.lifePoints, (v) => `♥ ${this.formatNumber(v)}`, 4000, true, () => {
+            // The winner's count-up ends with the fanfare instead of the usual end-of-count sound
+            this.animateStatChange(lifePointsCell, 0, player.lifePoints, (v) => `♥ ${this.formatNumber(v)}`, 4000, !isWinner, () => {
                 if (revealId !== this.scoreboardRevealId)
                     return;
+                if (isWinner) {
+                    confetti.burst();
+                    sounds.play("winTune");
+                }
                 setTimeout(() => revealNext(index + 1), 2000);
             });
         };
