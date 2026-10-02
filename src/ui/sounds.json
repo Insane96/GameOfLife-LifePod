@@ -57,5 +57,11 @@
     {"freq": 800, "dur": 125},
     {"freq": 900, "dur": 125, "gap": 250},
     {"freq": 1100, "dur": 125}
+  ]},
+  "salaryDown": {"type": "square", "notes": [
+    {"freq": 1100, "dur": 125},
+    {"freq": 900, "dur": 125},
+    {"freq": 800, "dur": 125, "gap": 250},
+    {"freq": 700, "dur": 125}
   ]}
 }

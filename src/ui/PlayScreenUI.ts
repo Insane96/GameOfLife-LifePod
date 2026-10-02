@@ -242,13 +242,19 @@ class PlayScreenUI {
                 this.showError(t("error.invalidInput"));
                 return;
             }
+            const player = game.getCurrentPlayerTurn();
+            const oldSalary = player.salary;
             try {
-                game.getCurrentPlayerTurn().salary = input;
+                player.salary = input;
             }
             catch (e) {
                 this.onError(e);
                 return;
             }
+            if (input > oldSalary)
+                sounds.play("salaryUp");
+            else if (input < oldSalary)
+                sounds.play("salaryDown");
             this._operation = Operation.None;
             this.render();
         });
