@@ -70,6 +70,7 @@ class PlayScreenUI {
     private playError = document.getElementById("play-error") as HTMLDivElement;
     private playerScoreboard = document.getElementById("player-scoreboard") as HTMLTableSectionElement;
     private playerScoreboardHeader = document.getElementById("player-scoreboard-header") as HTMLTableSectionElement;
+    private conversionRatio = document.getElementById("conversion-ratio") as HTMLDivElement;
 
     private playerMoney = document.getElementById("player-money") as HTMLDivElement;
     private playerMoneyLabel = document.getElementById("player-money-label") as HTMLDivElement;
@@ -480,9 +481,16 @@ class PlayScreenUI {
         this.playerScoreboardHeader.classList.toggle("d-none", game.years > 0);
         if (game.years <= 0) {
             this.playerName.textContent = "";
+            // Rewritten on every render (not just once) so it follows a language change; only
+            // revealScoreboard() shows it, once the whole ranking is out
+            this.conversionRatio.textContent = t("scoreboard.conversionRatio", {
+                lifePoints: this.formatNumber(1000),
+                money: this.formatNumber(Math.round(game.conversionRatio * 1000)),
+            });
             if (!this.scoreboardAnimated) {
                 this.scoreboardAnimated = true;
                 this.playerScoreboard.replaceChildren();
+                this.conversionRatio.classList.add("d-none");
                 // The end-of-game tune plays first, then the Life Points are counted up; the
                 // revealId check at the top of revealScoreboard covers an Undo during the tune
                 const revealId = ++this.scoreboardRevealId;
@@ -494,6 +502,7 @@ class PlayScreenUI {
         else {
             this.playerName.textContent = currentPlayer.name;
             this.playerScoreboard.replaceChildren();
+            this.conversionRatio.classList.add("d-none");
             this.scoreboardAnimated = false;
             this.scoreboardRevealId++;
         }
@@ -732,7 +741,7 @@ class PlayScreenUI {
      * Reveals the final ranking one row at a time, from last place up to the winner, instead of
      * the table appearing all at once: each row's Life Points count up from 0 over 4000ms
      * (reusing animateStatChange), and the end of the winner's count-up triggers a confetti burst
-     * and the win tune. New rows
+     * and the win tune; once every row is out, the conversion ratio appears below. New rows
      * are prepended, so the winner ends up on top once fully revealed, matching getRanking()'s
      * order. revealId is the token this call was started with (see scoreboardRevealId): every
      * step checks it's still current before touching the DOM, so a reveal that's fallen behind
@@ -742,8 +751,13 @@ class PlayScreenUI {
     private revealScoreboard(ranking: Player[], revealId: number) {
         const revealOrder = [...ranking].reverse();
         const revealNext = (index: number) => {
-            if (revealId !== this.scoreboardRevealId || index >= revealOrder.length)
+            if (revealId !== this.scoreboardRevealId)
                 return;
+            // Whole ranking out: explain how money became Life Points
+            if (index >= revealOrder.length) {
+                this.conversionRatio.classList.remove("d-none");
+                return;
+            }
             const player = revealOrder[index];
             const rank = ranking.length - index;
             const isWinner = rank === 1;

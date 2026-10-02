@@ -110,6 +110,7 @@ export const it: Partial<Record<TranslationKey, string>> = {
     "step.lottery": "lotteria",
     "scoreboard.rank": "Posizione",
     "scoreboard.player": "Giocatore",
+    "scoreboard.conversionRatio": "♥ {lifePoints} ogni € {money}",
 
     // Modals
     "kids.title": "Figli",

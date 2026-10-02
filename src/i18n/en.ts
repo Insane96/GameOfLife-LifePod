@@ -110,6 +110,7 @@ export const en = {
     "step.lottery": "lottery",
     "scoreboard.rank": "Rank",
     "scoreboard.player": "Player",
+    "scoreboard.conversionRatio": "♥ {lifePoints} every € {money}",
 
     // Modals
     "kids.title": "Kids",
