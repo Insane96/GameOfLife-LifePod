@@ -43,7 +43,7 @@ class LotteryUI {
     }
 
     public render() {
-        this.lotteryPot.textContent = `€ ${(lottery.pot * 1000).toLocaleString(i18n.getLocale())}`;
+        this.lotteryPot.textContent = `€ ${(lottery.pot * 1000).toLocaleString(i18n.getLocale(), {useGrouping: true})}`;
 
         const activePlayer = lottery.getActivePlayer();
         const chosenNumbers = lottery.getChosenNumbers();
@@ -169,7 +169,7 @@ class LotteryUI {
     }
 
     private setRollPot(potValue: number) {
-        this.rollPot.textContent = `€ ${(potValue * 1000).toLocaleString(i18n.getLocale())}`;
+        this.rollPot.textContent = `€ ${(potValue * 1000).toLocaleString(i18n.getLocale(), {useGrouping: true})}`;
     }
 
     private playRollAttempts(attempts: {number: number, won: boolean, pot: number}[]) {

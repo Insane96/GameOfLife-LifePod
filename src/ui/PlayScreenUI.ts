@@ -709,7 +709,7 @@ class PlayScreenUI {
     }
 
     private formatNumber(value: number): string {
-        return value.toLocaleString(i18n.getLocale());
+        return value.toLocaleString(i18n.getLocale(), {useGrouping: true});
     }
 
     /**
