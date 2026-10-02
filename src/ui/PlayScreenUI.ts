@@ -343,7 +343,13 @@ class PlayScreenUI {
                 this.btnConfirmYearsLeft.click();
         });
         this.btnWedding.addEventListener("click", () => {
-            confirmModal.confirm(t(!game.getCurrentPlayerTurn().married ? "confirm.wedding" : "confirm.anniversary"), () => {
+            const anniversary = game.getCurrentPlayerTurn().married;
+            confirmModal.confirm(t(!anniversary ? "confirm.wedding" : "confirm.anniversary"), () => {
+                // Only the wedding gets the march: an anniversary adds money/Life Points right away
+                if (anniversary) {
+                    this.render(undefined, game.getCurrentPlayerTurn().getMarried());
+                    return;
+                }
                 // The march plays first and money/Life Points are added once it's over; meanwhile
                 // the other buttons are blocked (see "busy" in render())
                 this.weddingTunePlaying = true;
