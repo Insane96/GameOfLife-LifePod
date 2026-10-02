@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="it" data-bs-theme="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sound Editor</title>
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <style>
+        .note-row input, .note-row select { min-width: 5rem; }
+        pre { white-space: pre-wrap; }
+    </style>
+</head>
+<body class="p-3">
+<!-- Dev-only tool to calibrate src/ui/sounds.json (read from its copy in dist/, so run the build first). Not deployed (the workflow only copies index.html). -->
+<div class="container-fluid">
+    <div class="d-flex flex-wrap align-items-center gap-3 mb-3">
+        <h1 class="h3 m-0">Sound Editor</h1>
+        <label class="d-flex align-items-center gap-2">Volume
+            <input id="input-volume" type="range" min="0" max="1" step="0.01" value="0.4">
+            <span id="volume-value">0.40</span>
+        </label>
+        <button id="btn-reset" class="btn btn-outline-danger btn-sm">Ripristina valori di sounds.json</button>
+        <button id="btn-export" class="btn btn-outline-info btn-sm">Genera JSON</button>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <h2 class="h5">Sequenze come in gioco</h2>
+            <div class="d-flex flex-wrap gap-3 align-items-end">
+                <div>
+                    <button id="btn-demo-spin" class="btn btn-primary">Spin completo</button>
+                    <div class="form-text">spinBeep ogni <input id="input-spin-fast" class="form-control form-control-sm d-inline-block" style="width:5rem" value="110"> ms
+                        × <input id="input-spin-fast-count" class="form-control form-control-sm d-inline-block" style="width:4rem" value="20">,
+                        poi ogni <input id="input-spin-slow" class="form-control form-control-sm d-inline-block" style="width:5rem" value="250"> ms
+                        × <input id="input-spin-slow-count" class="form-control form-control-sm d-inline-block" style="width:4rem" value="4">, poi fourBipEnd</div>
+                </div>
+                <div>
+                    <button id="btn-demo-count" class="btn btn-primary">Count-up soldi/LP</button>
+                    <div class="form-text">beep ogni <input id="input-count-tick" class="form-control form-control-sm d-inline-block" style="width:5rem" value="60"> ms
+                        per <input id="input-count-duration" class="form-control form-control-sm d-inline-block" style="width:5rem" value="1000"> ms, poi fourBipEnd</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="sounds" class="row g-3"></div>
+
+    <div id="export-box" class="card mt-3 d-none">
+        <div class="card-body">
+            <div class="d-flex gap-2 mb-2">
+                <h2 class="h5 m-0">Da incollare in src/ui/sounds.json</h2>
+                <button id="btn-copy" class="btn btn-sm btn-outline-secondary">Copia</button>
+            </div>
+            <pre id="export-code" class="m-0"></pre>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    // Same format as src/ui/sounds.json: {name: {type?, gain?, notes: [{freq, dur, gap?, repeat?, type?, gain?}]}}.
+    // Times in ms; "gap" is the silence after a note (and after each repetition).
+    const DEFAULTS = await (await fetch("dist/ui/sounds.json", {cache: "no-store"})).json();
+    const TYPES = ["sine", "square", "sawtooth", "triangle"];
+    const STORAGE_KEY = "lifepod.soundEditor";
+
+    let sounds = load();
+    let ctx = null;
+    let master = null;
+    let volume = 0.4;
+
+    // The edits are saved together with the sounds.json they started from ("base"): a sound whose
+    // entry in sounds.json has changed since (edited by hand, or an exported JSON pasted in) is
+    // taken from the file again, instead of the stale edits hiding the new values.
+    function load() {
+        try {
+            const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+            if (saved?.base && saved?.sounds)
+                return Object.fromEntries(Object.entries(structuredClone(DEFAULTS)).map(([name, sound]) =>
+                    [name, saved.sounds[name] && JSON.stringify(saved.base[name]) === JSON.stringify(sound) ? saved.sounds[name] : sound]));
+        } catch { /* fall back to defaults */ }
+        return structuredClone(DEFAULTS);
+    }
+
+    function save() {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify({base: DEFAULTS, sounds})); } catch { /* ignore */ }
+    }
+
+    function getContext() {
+        if (ctx === null) {
+            ctx = new AudioContext();
+            master = ctx.createGain();
+            master.gain.value = volume;
+            master.connect(ctx.destination);
+        }
+        void ctx.resume();
+        return ctx;
+    }
+
+    // Same envelope as Sounds.playTone: 5ms linear attack, linear release to the end of the note
+    function playTone(freq, startTime, duration, type, gainValue) {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, startTime);
+        gain.gain.setValueAtTime(0, startTime);
+        gain.gain.linearRampToValueAtTime(gainValue, startTime + 0.005);
+        gain.gain.linearRampToValueAtTime(0, startTime + duration);
+        osc.connect(gain).connect(master);
+        osc.start(startTime);
+        osc.stop(startTime + duration);
+    }
+
+    // Same logic as Sounds.play()
+    function playSound(name, when) {
+        getContext();
+        const sound = sounds[name];
+        let t = when ?? ctx.currentTime;
+        for (const n of sound.notes) {
+            for (let i = 0; i < (n.repeat ?? 1); i++) {
+                playTone(n.freq, t, n.dur / 1000, n.type ?? sound.type ?? "sine", n.gain ?? sound.gain ?? 0.15);
+                t += (n.dur + (n.gap ?? 0)) / 1000;
+            }
+        }
+        return t;
+    }
+
+    function totalLength(sound) {
+        return sound.notes.reduce((sum, n) => sum + (n.dur + (n.gap ?? 0)) * (n.repeat ?? 1), 0);
+    }
+
+    const num = (id) => parseFloat(document.getElementById(id).value) || 0;
+
+    function demoSpin() {
+        getContext();
+        let t = ctx.currentTime + 0.05;
+        const fast = num("input-spin-fast") / 1000, slow = num("input-spin-slow") / 1000;
+        for (let i = 0; i < num("input-spin-fast-count"); i++) { playSound("spinBeep", t); t += fast; }
+        for (let i = 0; i < num("input-spin-slow-count"); i++) { playSound("spinBeep", t); t += slow; }
+        playSound("fourBipEnd", t);
+    }
+
+    function demoCount() {
+        getContext();
+        const start = ctx.currentTime + 0.05;
+        const tick = num("input-count-tick") / 1000, duration = num("input-count-duration") / 1000;
+        let t = start;
+        for (; t < start + duration && tick > 0; t += tick) playSound("beep", t);
+        playSound("fourBipEnd", start + duration);
+    }
+
+    function render() {
+        const container = document.getElementById("sounds");
+        container.replaceChildren();
+        for (const name of Object.keys(sounds)) {
+            const col = document.createElement("div");
+            col.className = "col-12 col-xl-6";
+            const card = document.createElement("div");
+            card.className = "card h-100";
+            const sound = sounds[name];
+            const body = document.createElement("div");
+            body.className = "card-body";
+
+            const header = document.createElement("div");
+            header.className = "d-flex align-items-center gap-2 mb-2";
+            const title = document.createElement("h2");
+            title.className = "h5 m-0 me-auto font-monospace";
+            title.textContent = name;
+            const btnPlay = button("▶ Play", "btn btn-success btn-sm", () => playSound(name));
+            const btnAdd = button("+ Nota", "btn btn-outline-secondary btn-sm", () => {
+                sound.notes.push({...sound.notes.at(-1)});
+                changed();
+            });
+            const btnDefault = button("Default", "btn btn-outline-warning btn-sm", () => {
+                sounds[name] = structuredClone(DEFAULTS[name]);
+                changed();
+            });
+            header.append(title, btnPlay, btnAdd, btnDefault);
+
+            // Sound-level type and gain, used by every note that doesn't override them
+            const soundSettings = document.createElement("div");
+            soundSettings.className = "d-flex flex-wrap align-items-center gap-2 mb-2";
+            const typeLabel = document.createElement("span");
+            typeLabel.textContent = "Tipo:";
+            const gainLabel = document.createElement("span");
+            gainLabel.textContent = "Gain:";
+            soundSettings.append(typeLabel, typeSelect(sound, name, false), gainLabel,
+                numberInput(sound, "gain", 0, 1, 0.01, name, 0.15));
+
+            const table = document.createElement("table");
+            table.className = "table table-sm align-middle m-0";
+            table.innerHTML = "<thead><tr><th>Freq (Hz)</th><th>Durata (ms)</th><th>Pausa dopo (ms)</th><th>Ripeti</th><th>Tipo</th><th></th></tr></thead>";
+            const tbody = document.createElement("tbody");
+            sound.notes.forEach((note, i) => {
+                const tr = document.createElement("tr");
+                tr.className = "note-row";
+                tr.append(
+                    cell(numberInput(note, "freq", 20, 5000, 1, name)),
+                    cell(numberInput(note, "dur", 1, 2000, 1, name)),
+                    cell(numberInput(note, "gap", 0, 2000, 1, name, 0)),
+                    cell(numberInput(note, "repeat", 1, 20, 1, name, 1)),
+                    cell(typeSelect(note, name, true)),
+                    cell(button("✕", "btn btn-outline-danger btn-sm", () => {
+                        if (sound.notes.length > 1) { sound.notes.splice(i, 1); changed(); }
+                    })),
+                );
+                tbody.append(tr);
+            });
+            table.append(tbody);
+
+            const info = document.createElement("div");
+            info.className = "form-text";
+            info.textContent = `Durata totale: ${+totalLength(sound).toFixed(2)} ms`;
+
+            body.append(header, soundSettings, table, info);
+            card.append(body);
+            col.append(card);
+            container.append(col);
+        }
+    }
+
+    function button(text, cls, onClick) {
+        const b = document.createElement("button");
+        b.className = cls;
+        b.textContent = text;
+        b.addEventListener("click", onClick);
+        return b;
+    }
+
+    function cell(child) {
+        const td = document.createElement("td");
+        td.append(child);
+        return td;
+    }
+
+    // Slider + number box, kept in sync; releasing the slider replays the sound.
+    // fallback is the value used when the key is missing from the JSON (gap 0, repeat 1, ...)
+    function numberInput(target, key, min, max, step, name, fallback) {
+        const wrap = document.createElement("div");
+        const box = document.createElement("input");
+        box.type = "number";
+        box.className = "form-control form-control-sm";
+        Object.assign(box, {min, max, step, value: target[key] ?? fallback});
+        const range = document.createElement("input");
+        range.type = "range";
+        range.className = "form-range";
+        Object.assign(range, {min, max, step, value: target[key] ?? fallback});
+        const set = (v) => {
+            const value = parseFloat(v);
+            if (Number.isNaN(value)) return;
+            target[key] = value;
+            box.value = value;
+            range.value = value;
+            save();
+        };
+        box.addEventListener("change", () => { set(box.value); render(); playSound(name); });
+        range.addEventListener("input", () => set(range.value));
+        range.addEventListener("change", () => { render(); playSound(name); });
+        wrap.append(box, range);
+        return wrap;
+    }
+
+    // inherit: the note's select, whose empty option means "use the sound's type"
+    function typeSelect(target, name, inherit) {
+        const select = document.createElement("select");
+        select.className = "form-select form-select-sm w-auto";
+        if (inherit) select.add(new Option("(del suono)", "", false, target.type === undefined));
+        const current = target.type ?? (inherit ? undefined : "sine");
+        for (const t of TYPES) select.add(new Option(t, t, false, t === current));
+        select.addEventListener("change", () => {
+            if (select.value === "") delete target.type;
+            else target.type = select.value;
+            save();
+            playSound(name);
+        });
+        return select;
+    }
+
+    function changed() {
+        save();
+        render();
+    }
+
+    // Same layout as src/ui/sounds.json: one note per line, default values (gap 0, repeat 1) left out
+    function exportCode() {
+        const clean = (note) => Object.fromEntries(Object.entries(note)
+            .filter(([key, value]) => !(key === "gap" && value === 0) && !(key === "repeat" && value === 1)));
+        const toLine = (obj) => JSON.stringify(obj).replaceAll('":', '": ').replaceAll(',"', ', "');
+        const entries = Object.entries(sounds).map(([name, {notes, ...settings}]) => {
+            const head = toLine(settings).slice(0, -1);
+            const notesLines = notes.map(n => "    " + toLine(clean(n))).join(",\n");
+            return `  "${name}": ${head}${head.length > 1 ? ", " : ""}"notes": [\n${notesLines}\n  ]}`;
+        });
+        document.getElementById("export-code").textContent = `{\n${entries.join(",\n")}\n}\n`;
+        document.getElementById("export-box").classList.remove("d-none");
+    }
+
+    document.getElementById("input-volume").addEventListener("input", (e) => {
+        volume = parseFloat(e.target.value);
+        document.getElementById("volume-value").textContent = volume.toFixed(2);
+        if (master) master.gain.value = volume;
+    });
+    document.getElementById("btn-reset").addEventListener("click", () => {
+        sounds = structuredClone(DEFAULTS);
+        changed();
+    });
+    document.getElementById("btn-export").addEventListener("click", exportCode);
+    document.getElementById("btn-copy").addEventListener("click", () =>
+        navigator.clipboard.writeText(document.getElementById("export-code").textContent));
+    document.getElementById("btn-demo-spin").addEventListener("click", demoSpin);
+    document.getElementById("btn-demo-count").addEventListener("click", demoCount);
+
+    render();
+</script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+{
+  "beep": {"type": "square", "notes": [
+    {"freq": 630, "dur": 100}
+  ]},
+  "spinBeep": {"type": "square", "notes": [
+    {"freq": 1000, "dur": 120}
+  ]},
+  "fourBipEnd": {"type": "square", "notes": [
+    {"freq": 740, "dur": 125, "repeat": 4}
+  ]},
+  "wedding": {"type": "square", "notes": [
+    {"freq": 523.25, "dur": 184, "gap": 20},
+    {"freq": 698.46, "dur": 275, "gap": 31},
+    {"freq": 698.46, "dur": 92, "gap": 10},
+    {"freq": 698.46, "dur": 367, "gap": 41},
+    {"freq": 523.25, "dur": 184, "gap": 20},
+    {"freq": 783.99, "dur": 275, "gap": 31},
+    {"freq": 659.25, "dur": 92, "gap": 10},
+    {"freq": 698.46, "dur": 367, "gap": 41},
+    {"freq": 523.25, "dur": 184, "gap": 20},
+    {"freq": 698.46, "dur": 275, "gap": 31},
+    {"freq": 932.33, "dur": 92, "gap": 10},
+    {"freq": 932.33, "dur": 184, "gap": 20},
+    {"freq": 880, "dur": 184, "gap": 20},
+    {"freq": 783.99, "dur": 275, "gap": 31},
+    {"freq": 698.46, "dur": 92, "gap": 10},
+    {"freq": 659.25, "dur": 184, "gap": 20},
+    {"freq": 698.46, "dur": 184, "gap": 20},
+    {"freq": 783.99, "dur": 551, "gap": 61}
+  ]},
+  "winTune": {"type": "square", "notes": [
+    {"freq": 523.25, "dur": 120},
+    {"freq": 587.33, "dur": 120},
+    {"freq": 659.25, "dur": 120},
+    {"freq": 698.46, "dur": 120},
+    {"freq": 783.99, "dur": 120, "gap": 350},
+    {"freq": 783.99, "dur": 120},
+    {"freq": 698.46, "dur": 120},
+    {"freq": 659.25, "dur": 120},
+    {"freq": 587.33, "dur": 120},
+    {"freq": 523.25, "dur": 120}
+  ]},
+  "gameEndTune": {"type": "square", "notes": [
+    {"freq": 783.99, "dur": 120},
+    {"freq": 698.46, "dur": 120},
+    {"freq": 659.25, "dur": 120},
+    {"freq": 587.33, "dur": 120},
+    {"freq": 523.25, "dur": 120, "gap": 350},
+    {"freq": 523.25, "dur": 120},
+    {"freq": 587.33, "dur": 120},
+    {"freq": 659.25, "dur": 120},
+    {"freq": 698.46, "dur": 120},
+    {"freq": 783.99, "dur": 120}
+  ]},
+  "salaryUp": {"type": "square", "notes": [
+    {"freq": 700, "dur": 125},
+    {"freq": 800, "dur": 125},
+    {"freq": 900, "dur": 125, "gap": 250},
+    {"freq": 1100, "dur": 125}
+  ]}
+}

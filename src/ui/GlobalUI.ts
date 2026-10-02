@@ -15,6 +15,14 @@ class GlobalUI {
 
         this.inputVolume.addEventListener("input", () => sounds.setVolume(parseFloat(this.inputVolume.value)));
 
+        // Key press beep, like the original device. A single delegated listener covers every
+        // button, including dynamic ones; disabled buttons fire no click, and Enter in the numeric
+        // fields goes through the confirm button's click(), so it beeps too.
+        document.addEventListener("click", (event) => {
+            if (event.target instanceof Element && event.target.closest("button") !== null)
+                sounds.play("beep");
+        });
+
         this.btnFullscreen.addEventListener("click", () => {
             if (document.fullscreenElement)
                 document.exitFullscreen().catch((err) => alert(err));

@@ -77,6 +77,8 @@ class PlayScreenUI {
     private rollModal = document.getElementById("roll-modal") as HTMLDivElement;
     private rollingAnimation: RollingAnimation | null = null;
     private rollingAnimationType: RollingAnimationType | null = null;
+    // True while the wedding march plays, before money and Life Points are added (see btnWedding)
+    private weddingTunePlaying = false;
     // Tracks modal open/close via Bootstrap's own events (fired the instant show()/hide() is
     // called) instead of querying ".modal.show" in the animation loop: that class is only added
     // once the backdrop's own fade-in has already finished, so a class-based check misses the
@@ -286,7 +288,9 @@ class PlayScreenUI {
         // Keyboard/assistive tech has no equivalent of "hold": Enter/Space opens it right away.
         this.btnYearsLeft.addEventListener("keydown", (event) => {
             if (event.key === "Enter" || event.key === " ") {
+                // preventDefault also suppresses the native click, so GlobalUI's beep has to be played here
                 event.preventDefault();
+                sounds.play("beep");
                 openYearsLeftOperation();
             }
         });
@@ -313,8 +317,15 @@ class PlayScreenUI {
         });
         this.btnWedding.addEventListener("click", () => {
             confirmModal.confirm("Confirm Wedding/Anniversary?", () => {
-                const breakdown = game.getCurrentPlayerTurn().getMarried();
-                this.render(undefined, breakdown);
+                // The march plays first and money/Life Points are added once it's over; meanwhile
+                // the other buttons are blocked (see "busy" in render())
+                this.weddingTunePlaying = true;
+                this.render();
+                setTimeout(() => {
+                    this.weddingTunePlaying = false;
+                    const breakdown = game.getCurrentPlayerTurn().getMarried();
+                    this.render(undefined, breakdown);
+                }, sounds.play("wedding") * 1000);
             });
         });
         this.btnKids.addEventListener("click", () => {
@@ -436,7 +447,10 @@ class PlayScreenUI {
             if (!this.scoreboardAnimated) {
                 this.scoreboardAnimated = true;
                 this.playerScoreboard.replaceChildren();
-                this.revealScoreboard(game.getRanking(), ++this.scoreboardRevealId);
+                // The end-of-game tune plays first, then the Life Points are counted up; the
+                // revealId check at the top of revealScoreboard covers an Undo during the tune
+                const revealId = ++this.scoreboardRevealId;
+                setTimeout(() => this.revealScoreboard(game.getRanking(), revealId), sounds.play("gameEndTune") * 1000);
             }
         }
         else {
@@ -513,7 +527,8 @@ class PlayScreenUI {
         // True from the moment Spin/Chance/Try for a kid/Auction is pressed until their roll
         // modal actually closes, including the money/Life Points animation before it opens: the
         // modal's own backdrop can't block these buttons during that gap, so this does instead.
-        const busy = this.rollingAnimationType !== null;
+        // Also true while the wedding march plays, before the gifts are added.
+        const busy = this.rollingAnimationType !== null || this.weddingTunePlaying;
 
         for (const {button, asset, name} of this.assetButtons) {
             const ownedAsset = currentPlayer.getOwnedAsset(asset);
@@ -555,6 +570,7 @@ class PlayScreenUI {
         this.btnYearsLeft.disabled = busy;
         this.btnEndTurn.disabled = !currentPlayer.hasPressedSpin || busy;
         this.btnUndo.disabled = !persistence.canUndo() || busy;
+        this.btnMenu.disabled = busy;
 
         this.btnWeddingLabel.textContent = !currentPlayer.married ? "Wedding" : "Anniversary";
         this.setOwnedStyle(this.btnWedding, currentPlayer.married);
@@ -705,7 +721,7 @@ class PlayScreenUI {
 
             if (isWinner) {
                 confetti.burst();
-                sounds.successTune();
+                sounds.play("winTune");
             }
 
             this.animateStatChange(lifePointsCell, 0, player.lifePoints, (v) => `♥ ${this.formatNumber(v)}`, 4000, true, () => {
@@ -752,7 +768,7 @@ class PlayScreenUI {
             if (value !== lastValue) {
                 lastValue = value;
                 if (now - lastTick >= minTickInterval) {
-                    sounds.moneyLPChanges();
+                    sounds.play("beep");
                     lastTick = now;
                 }
             }
@@ -761,7 +777,7 @@ class PlayScreenUI {
                 requestAnimationFrame(step);
             else {
                 if (playEndSound)
-                    sounds.moneyLPChangesEnd();
+                    sounds.play("fourBipEnd");
                 onComplete?.();
             }
         };

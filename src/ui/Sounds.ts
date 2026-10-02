@@ -1,3 +1,32 @@
+import soundsData from "./sounds.json" with {type: "json"};
+
+/** One note of a sound in sounds.json. Times are in milliseconds */
+interface Note {
+    freq: number;
+    dur: number;
+    /** Silence after the note (and after each repetition), default 0 */
+    gap?: number;
+    /** How many times the note (with its gap) is played, default 1 */
+    repeat?: number;
+    /** Overrides the sound's type/gain for this note only */
+    type?: OscillatorType;
+    gain?: number;
+}
+
+interface SoundDefinition {
+    /** Default "sine" */
+    type?: OscillatorType;
+    /** Default 0.15 */
+    gain?: number;
+    notes: Note[];
+}
+
+/** The keys of sounds.json: a typo in sounds.play("...") is a compile error */
+export type SoundName = keyof typeof soundsData;
+
+// The JSON's inferred types have type: string, not OscillatorType
+const definitions = soundsData as Record<SoundName, SoundDefinition>;
+
 class Sounds {
     // Created on first use: browsers only allow audio after a user gesture
     private ctx: AudioContext | null = null;
@@ -28,7 +57,7 @@ class Sounds {
         return this.ctx;
     }
 
-    private playTone(ctx: AudioContext, freq: number, startTime: number, duration: number, type: OscillatorType = "sine", gainValue = 0.15) {
+    private playTone(ctx: AudioContext, freq: number, startTime: number, duration: number, type: OscillatorType, gainValue: number) {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
 
@@ -44,66 +73,22 @@ class Sounds {
         osc.stop(startTime + duration);
     }
 
-    /** Single “good beep” for button press / money entry */
-    goodBeep() {
+    /**
+     * Plays a sound from sounds.json, its notes one after the other.
+     * Returns its length in seconds (gaps included), so the caller can wait for it to end.
+     */
+    play(name: SoundName): number {
         const ctx = this.getContext();
-        this.playTone(ctx, 1000, ctx.currentTime, 0.1);
-    }
-
-    moneyLPChanges() {
-        const ctx = this.getContext();
-        this.playTone(ctx, 700, ctx.currentTime, 0.05);
-    }
-
-    moneyLPChangesEnd() {
-        const ctx = this.getContext();
-        const noteLength = 0.125;
-        const gap = 0.0;
-        const now = ctx.currentTime;
-        for (let i = 0; i < 4; i++) {
-            this.playTone(ctx, 1000, now + i * (noteLength + gap), noteLength);
+        const sound = definitions[name];
+        const start = ctx.currentTime;
+        let t = start;
+        for (const note of sound.notes) {
+            for (let i = 0; i < (note.repeat ?? 1); i++) {
+                this.playTone(ctx, note.freq, t, note.dur / 1000, note.type ?? sound.type ?? "sine", note.gain ?? sound.gain ?? 0.15);
+                t += (note.dur + (note.gap ?? 0)) / 1000;
+            }
         }
-    }
-
-    spinBeep() {
-        const ctx = this.getContext();
-        this.playTone(ctx, 1000, ctx.currentTime, 0.075, "square");
-    }
-
-    spinEnd() {
-        const ctx = this.getContext();
-        const noteLength = 0.12;
-        const gap = 0.0;
-        const now = ctx.currentTime;
-        for (let i = 0; i < 4; i++) {
-            this.playTone(ctx, 800, now + i * (noteLength + gap), noteLength, "square");
-        }
-    }
-
-    /** Short success “tune” (C–E–G–C) */
-    successTune() {
-        const ctx = this.getContext();
-        const noteLen = 0.12;
-        const gap = 0.02;
-
-        // Simple major arpeggio: C5, E5, G5, C6
-        const freqs = [523.25, 659.25, 783.99, 1046.50];
-        let t = ctx.currentTime;
-        for (const f of freqs) {
-            this.playTone(ctx, f, t, noteLen, "sine", 0.12);
-            t += noteLen + gap;
-        }
-    }
-
-    /** Error “bad beep”: two quick beeps */
-    badBeep() {
-        const ctx = this.getContext();
-        const now = ctx.currentTime;
-        const noteLen = 0.09;
-        const gap = 0.04;
-
-        this.playTone(ctx, 700, now, noteLen, "square", 0.1);
-        this.playTone(ctx, 550, now + noteLen + gap, noteLen, "square", 0.1);
+        return t - start;
     }
 }
 

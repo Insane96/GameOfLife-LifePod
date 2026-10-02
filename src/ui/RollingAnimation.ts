@@ -4,11 +4,12 @@ import {sounds} from "./Sounds.js";
  * Uses the #roll-modal
  */
 export class RollingAnimation {
+    /** How many numbers before the rolled one, on the last lap, the spin slows down */
+    private static readonly SLOWDOWN_STEPS = 3;
+
     private currentSpin: number = 0;
     private currentElement: number;
     private usedElements: HTMLDivElement[] = [];
-
-    private slowdown: boolean = false;
 
     /**
      * minNumber and maxNumber inclusive
@@ -37,24 +38,24 @@ export class RollingAnimation {
     }
 
     private spin() {
-        let timeout = 100;
+        let timeout = 110;
         this.currentElement++;
         if (this.currentElement >= this.usedElements.length)
             this.currentElement = 0;
         const currentNumber = parseInt(this.usedElements[this.currentElement].id.split("-")[2]);
         if (this.rolledNumber == currentNumber)
             this.currentSpin++;
-        if (!this.slowdown && this.currentSpin >= this.spins - 1)
-            this.slowdown = true;
-        if (this.slowdown)
+        // Steps still needed to reach the rolled number going forward
+        const stepsToRolled = (this.rolledNumber - this.minNumber - this.currentElement + this.usedElements.length) % this.usedElements.length;
+        if (this.currentSpin >= this.spins - 1 && stepsToRolled > 0 && stepsToRolled <= RollingAnimation.SLOWDOWN_STEPS)
             timeout = 250;
         if (this.rolledNumber == currentNumber && this.currentSpin >= this.spins) {
-            sounds.spinEnd();
+            sounds.play("fourBipEnd");
             this.usedElements[this.currentElement].classList.add("roll-result-blink");
             this.onEnd();
         }
         else {
-            sounds.spinBeep();
+            sounds.play("spinBeep");
             setTimeout(() => this.spin(), timeout);
         }
 
