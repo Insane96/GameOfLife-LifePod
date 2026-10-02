@@ -486,7 +486,9 @@ class PlayScreenUI {
                 // The end-of-game tune plays first, then the Life Points are counted up; the
                 // revealId check at the top of revealScoreboard covers an Undo during the tune
                 const revealId = ++this.scoreboardRevealId;
-                setTimeout(() => this.revealScoreboard(game.getRanking(), revealId), sounds.play("gameEndTune") * 1000);
+                // Pause between the end of the tune and the start of the count-up, so the two don't run into each other
+                const pauseAfterTune = 2000;
+                setTimeout(() => this.revealScoreboard(game.getRanking(), revealId), sounds.play("gameEndTune") * 1000 + pauseAfterTune);
             }
         }
         else {
