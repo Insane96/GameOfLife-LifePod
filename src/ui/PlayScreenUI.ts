@@ -635,17 +635,17 @@ class PlayScreenUI {
 
         this.btnChance.disabled = busy;
 
-        if (game.years <= 0) {
-            this.btnSpin.disabled = true;
-            this.btnAddMoney.disabled = true;
-            this.btnRemoveMoney.disabled = true;
-            this.btnAddLifePoints.disabled = true;
-            this.btnRemoveLifePoints.disabled = true;
-            this.btnAddMoney.classList.add("d-none");
-            this.btnRemoveMoney.classList.add("d-none");
-            this.btnAddLifePoints.classList.add("d-none");
-            this.btnRemoveLifePoints.classList.add("d-none");
-            this.btnSalary.disabled = true;
+        // Assigned both ways (not just switched off at the end): the DOM outlives a finished game,
+        // so a new game (or an Undo) after the end screen must turn them back on
+        const gameOver = game.years <= 0;
+        this.btnSpin.disabled = gameOver;
+        for (const button of [this.btnAddMoney, this.btnRemoveMoney, this.btnAddLifePoints, this.btnRemoveLifePoints]) {
+            button.disabled = gameOver;
+            button.classList.toggle("d-none", gameOver);
+        }
+        this.btnSalary.disabled = gameOver;
+
+        if (gameOver) {
             this.btnWedding.disabled = true;
             this.btnChance.disabled = true;
             this.btnYearsLeft.disabled = true;
