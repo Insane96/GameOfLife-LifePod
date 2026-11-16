@@ -177,6 +177,11 @@ cards").
     - The warm glow in `main.scss` is a `background-attachment: fixed` gradient
       on `body`; `.sticky-top` repeats it so that the opaque `bg-body` of the
       sticky row does not cut the glow.
+    - **On-screen keyboard**: the viewport meta has
+      `interactive-widget=resizes-content`, so on Android (Chrome/Firefox) the
+      keyboard shrinks the layout viewport and the page can scroll the focused
+      input (money/Life Points, vertically centered in landscape) above it
+      instead of leaving it underneath (#32). iOS Safari ignores it.
     - **Player identity tint**: `PlayScreenUI.render()` sets
       `data-player-color` on `#play-screen` to the current player's
       `PlayerColor` name (removed at `game.years <= 0`); `main.scss` maps it to
