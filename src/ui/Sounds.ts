@@ -27,11 +27,14 @@ export type SoundName = keyof typeof soundsData;
 // The JSON's inferred types have type: string, not OscillatorType
 const definitions = soundsData as Record<SoundName, SoundDefinition>;
 
+const VOLUME_KEY = "lifepod.volume";
+const DEFAULT_VOLUME = 0.4;
+
 class Sounds {
     // Created on first use: browsers only allow audio after a user gesture
     private ctx: AudioContext | null = null;
     private master: GainNode | null = null;
-    private volume = 0.4;
+    private volume = this.loadVolume();
 
     constructor() {
         // The first click anywhere (New game, Resume game...) creates and unlocks the context
@@ -43,6 +46,36 @@ class Sounds {
         this.volume = Math.min(1, Math.max(0, value));
         if (this.master !== null)
             this.master.gain.value = this.volume;
+    }
+
+    public getVolume(): number {
+        return this.volume;
+    }
+
+    /**
+     * Remembers the current volume (0, muted, included) under lifepod.volume. A preference like the
+     * language: separate from lifepod.save, so Undo and a new game never touch it. Separate from
+     * setVolume() so the slider can apply the volume live and save it only once released.
+     */
+    public saveVolume() {
+        // Storage can be unavailable (private window, blocked site data): the volume just isn't remembered.
+        try {
+            localStorage.setItem(VOLUME_KEY, String(this.volume));
+        }
+        catch {
+        }
+    }
+
+    private loadVolume(): number {
+        let saved: string | null = null;
+        try {
+            saved = localStorage.getItem(VOLUME_KEY);
+        }
+        catch {
+        }
+        const value = saved === null ? NaN : parseFloat(saved);
+        // A missing or corrupted value falls back to the default
+        return Number.isNaN(value) ? DEFAULT_VOLUME : Math.min(1, Math.max(0, value));
     }
 
     private getContext(): AudioContext {

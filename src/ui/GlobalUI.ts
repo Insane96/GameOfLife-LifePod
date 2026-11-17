@@ -15,7 +15,11 @@ class GlobalUI {
         if (!document.documentElement.requestFullscreen)
             this.btnFullscreen.classList.add("d-none");
 
+        // The slider starts from the remembered volume, not from the HTML default
+        this.inputVolume.value = String(sounds.getVolume());
+        // "input" applies it live while dragging, "change" (on release) saves it once
         this.inputVolume.addEventListener("input", () => sounds.setVolume(parseFloat(this.inputVolume.value)));
+        this.inputVolume.addEventListener("change", () => sounds.saveVolume());
 
         // Key press beep, like the original device. A single delegated listener covers every
         // button, including dynamic ones; disabled buttons fire no click, and Enter in the numeric

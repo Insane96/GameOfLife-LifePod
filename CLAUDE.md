@@ -210,6 +210,12 @@ cards").
   leave fullscreen with Esc or a system gesture. It is hidden when
   `requestFullscreen` is not available (iPhone Safari does not support it on
   regular pages; the PWA is the way to get fullscreen there, see "Open").
+  The volume is a preference like the language: `Sounds` loads it from
+  `lifepod.volume` at startup (missing/invalid → default 0.4) and saves it
+  with `saveVolume()`, separate from `lifepod.save` (Undo and a new game never
+  touch it). `GlobalUI` sets `input-volume` from `sounds.getVolume()` at
+  startup, applies the value on `input` (live while dragging) and saves on
+  `change` (on release). 0 (muted) is remembered too.
 
 ## Persistence (localStorage) — critical requirement
 
